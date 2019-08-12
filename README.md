@@ -1,11 +1,9 @@
 ## Click Reactor - Game Info
-You have been assigned a reactor. Your mission to start reactions by click then maintaining those reactions so that.
-
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+You have been assigned a reactor. Your mission to start reactions by clicking as fast as you can then maintaining those reactions so that your reactor dosn't meltdown.
 
 ## Dev Info
-This project was created using create-react-app. Firebase is used for backend (hosting/database).
+This project was created using [Create React App](https://github.com/facebook/create-react-app). 
+Firebase is used for backend (hosting/database).
 
 ### `npm start`
 
