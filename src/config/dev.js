@@ -1,8 +1,8 @@
 export const FirebaseConfig = {
-  apiKey: "AIzaSyAT0cyZbPD0fg6bHzVfHCTu2c4j2wGe7Ys",
-  authDomain: "firedux-todo.firebaseapp.com",
-  databaseURL: "https://firedux-todo.firebaseio.com",
-  projectId: "firedux-todo",
-  storageBucket: "firedux-todo.appspot.com",
-  messagingSenderId: "750399659188"
+    apiKey: 'AIzaSyD3h5o2yYDLrz7KpXXwWoicxthIocO41M8',
+    authDomain: 'clicky-71a02.firebaseapp.com',
+    databaseURL: 'https://clicky-71a02.firebaseio.com',
+    projectId: 'clicky-71a02',
+    storageBucket: 'clicky-71a02.appspot.com',
+    messagingSenderId: "123261595739"
 }

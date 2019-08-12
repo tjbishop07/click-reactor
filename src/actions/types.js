@@ -1,1 +1,1 @@
-export const FETCH_TODOS = "FETCH_TODOS"
+export const FETCH_GAME_SESSIONS = "FETCH_GAME_SESSIONS"

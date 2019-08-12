@@ -1,91 +1,105 @@
-import React, {Component} from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import _ from 'lodash';
 import * as actions from '../actions';
 import ListItem from './ListItem';
 import "./style.css";
+import FlipMove from 'react-flip-move';
 
 class List extends Component {
   state = {
     showForm: false,
-    formValue: ""
+    formValue: "",
+    clicks: 0
   };
 
   inputChange = event => {
-    this.setState({formValue: event.target.value});
+    this.setState({ formValue: event.target.value });
   };
 
   formSubmit = event => {
-    const {formValue} = this.state;
-    const {addToDo} = this.props;
+    const { formValue } = this.state;
+    const { addGameSession } = this.props;
     event.preventDefault();
-    addToDo({title: formValue});
-    this.setState({formValue: ""});
+    addGameSession({ title: formValue });
+    this.setState({ formValue: "" });
   };
 
   renderForm = () => {
-    const {showForm, formValue} = this.state;
+    const { showForm, formValue } = this.state;
     if (showForm) {
       return (
-        <div id="todo-add-form" className="col s10 offset-s1">
+        <div id="game-session-add-form" className="name-form">
           <form onSubmit={this.formSubmit}>
             <div className="input-field">
-              <input 
+              <input
                 value={formValue}
                 onChange={this.inputChange}
-                id="toDoNext"
+                id="gameSessionNext"
                 type="text"
               />
-              <label htmlFor="toDoNext">What Next?</label>
+              <label htmlFor="gameSessionNext">Name</label>
             </div>
           </form>
         </div>
       );
     }
   };
-  renderToDo() {
-    const {data} = this.props;
-    const toDos = _.map(data, (value, key) => {
-      return <ListItem key={key} todoId={key} todo={value} />;
+  loadReactions() {
+    const { data } = this.props;
+    const gameSessions = _.map(data, (value, key) => {
+      return <ListItem key={key} gameSessionId={key} gameSession={value} />;
     });
-    if (!_.isEmpty(toDos)) {
-      return toDos;
+    if (!_.isEmpty(gameSessions)) {
+      return gameSessions;
     }
     return (
-      <div className="col s10 offset-s1 center-align">
-        <h4>You have no more things ToDo!</h4>
+      <div className="reactor-down">
+        <h4>Reactor Down</h4>
       </div>
     );
   }
   componentWillMount() {
-    this.props.fetchToDos();
+    this.props.fetchGameSessions();
   }
   render() {
-    const {showForm} = this.state;
+    const { showForm } = this.state;
+    const { addGameSession } = this.props;
     return (
-      <div className="to-do-list-container">
+      <div>
         <div className="row">
-          {this.renderForm()}
-          {this.renderToDo()}
+          <div className="col">
+            {this.renderForm()}
+          </div>
         </div>
-        <div className="fixed-action-btn">
-          <button 
-            onClick={() => this.setState({showForm: !showForm})}
-            className="btn-floating btn-large black darken-4"
-          >
-          {showForm ? (
-            <i className="large material-icons">-</i>
-          ) : (
-            <i className="large material-icons">+</i>
-          )}
-          </button>
+        <div className="game-session-list-container">
+          <FlipMove
+            easing="ease-in-out"
+            duration="500"
+            duration="500"
+            staggerDurationBy="300"
+            enterAnimation="fade">
+            {this.loadReactions()}
+          </FlipMove>
+          <div className="fixed-action-btn">
+            <button onClick={() => addGameSession({ title: 'Start clicking...' })} className="btn-floating btn-large black darken-4"><i className="large material-icons">+</i></button>
+            {/* <button
+              onClick={() => this.setState({ showForm: !showForm })}
+              className="btn-floating btn-large black darken-4">
+              {showForm ? (
+                <i className="large material-icons">-</i>
+              ) : (
+                  <i className="large material-icons">+</i>
+                )}
+            </button> */}
+          </div>
         </div>
       </div>
     );
   }
 }
 
-const mapStateToProps = ({data}) => {
+const mapStateToProps = ({ data }) => {
   return {
     data
   }

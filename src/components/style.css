@@ -1,40 +1,156 @@
-.to-do-list-container {
-  margin-top: 25px;
-}
-.to-do-list-item {
-  margin-top: 10px;
-  color: white;
-  transition: background-color 1s;
-}
-
-.to-do-list-item h4 {
-  padding-left: 25px;
-  padding-bottom: 5px;
-}
-
-.to-do-list-item:hover {
-  background-color: dodgerblue !important;
+@import url('https://fonts.googleapis.com/css?family=Questrial|Russo+One&display=swap');
+body {
+    background: url('../img/bg-moon.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: #282C34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Questrial', sans-serif;
 }
 
-.complete-todo-item {
-  float: right;
-  right: 20px;
+h1 {
+    font-family: 'Russo One', sans-serif;
+    position: absolute;
+    left: 20px;
+    top: -10px;
+    font-size: 2rem;
+    text-shadow: 2px 2px 5px #000000 !important;
 }
 
-#todo-add-form {
-  animation: 1s;
-  animation-name: slidein;
+.game-session-list-container {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row
 }
 
-input#todoNext:active {
-  border-bottom: 1px solid dodgerblue !important;
+.game-session-list-item {
+    margin: 10px;
+    color: white;
+    background: rgba(0, 0, 0, .5) !important;
+    border-radius: 10px;
+    width: 250px;
+    padding: 20px !important;
+    cursor: crosshair !important;
+    position: relative;
+}
+
+.game-session-list-item:hover {
+    background: rgba(0, 0, 0, .5);
+}
+
+.complete-game-session-item {
+    float: right;
+    right: 20px;
+}
+
+.reactor-down {
+    width: 100%;
+    text-align: center;
+    text-shadow: 1px 1px 1px #000;
+}
+
+#game-session-add-form {
+    padding: 10px;
+    background: rgba(0, 0, 0, .5)
+}
+
+input#gameSessionNext:active {
+    border-bottom: 1px solid dodgerblue !important;
+}
+
+.hive {
+    width: 150px;
+    margin: 5px 20px 30px 25px;
+}
+
+.charged {
+    background: url('../img/reaction2.svg') no-repeat center center !important;
+    background-color: rgba(0, 0, 0, 0) !important;
+    background-size: cover !important;
+    height: 15vh;
+    position: relative;
+    overflow: hidden;
+    position: relative;
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+
+.charged img.app-logo {
+    display: none
+}
+
+.charged .hive {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40px;
+    top: 37%;
+}
+
+.clicks {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #000
+}
+
+.energy {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #000
+}
+
+.status-text {
+    text-transform: uppercase;
+    font-size: .8rem;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, .5);
+    padding: 20px;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    text-align: center;
+    text-shadow: 1px 1px 1px #000
+}
+
+.progress-bar {
+    position: absolute !important;
+    width: 225px !important;
+    left: 10px;
+    bottom: 5px;
+}
+
+.fadeOut {
+    animation: 1s;
+    animation-name: fadeout;
 }
 
 @keyframes slidein {
-  from {
-    opacity: 0;
-  }
-  to {
-    margin-left: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        margin-left: 1;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }

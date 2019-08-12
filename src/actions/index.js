@@ -1,19 +1,25 @@
-import {todosRef} from '../config/firebase';
-import {FETCH_TODOS} from './types';
+import { gameSessionRef } from '../config/firebase';
+import { FETCH_GAME_SESSIONS } from './types';
 
-export const addToDo = newToDo => async dispatch => {
-  todosRef.push().set(newToDo);
+export const addGameSession = newGameSession => async dispatch => {
+    newGameSession.clicks = 0;
+    newGameSession.completed = 0;
+    gameSessionRef.push().set(newGameSession);
 };
 
-export const completeToDo = completeToDoId => async dispatch => {
-  todosRef.child(completeToDoId).remove();
+export const updateGameSession = (gameSession, gameSessionId) => async dispatch => {
+    gameSessionRef.child(`/${gameSessionId}`).set(gameSession);
 };
 
-export const fetchToDos = () => async dispatch => {
-  todosRef.on("value", snapshot => {
-    dispatch({
-      type: FETCH_TODOS,
-      payload: snapshot.val()
+export const completeGameSession = (gameSessionId) => async dispatch => {
+    gameSessionRef.child(gameSessionId).remove();
+};
+
+export const fetchGameSessions = () => async dispatch => {
+    gameSessionRef.on("value", snapshot => {
+        dispatch({
+            type: FETCH_GAME_SESSIONS,
+            payload: snapshot.val()
+        });
     });
-  });
 };
