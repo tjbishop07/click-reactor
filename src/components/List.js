@@ -55,7 +55,7 @@ class List extends Component {
     }
     return (
       <div className="reactor-down">
-        <h4>Reactor Down</h4>
+        <h4>Reactor Offline.</h4>
       </div>
     );
   }
@@ -63,7 +63,6 @@ class List extends Component {
     this.props.fetchGameSessions();
   }
   render() {
-    const { showForm } = this.state;
     const { addGameSession } = this.props;
     return (
       <div>
@@ -83,15 +82,6 @@ class List extends Component {
           </FlipMove>
           <div className="fixed-action-btn">
             <button onClick={() => addGameSession({ title: 'Start clicking...' })} className="btn-floating btn-large black darken-4"><i className="large material-icons">+</i></button>
-            {/* <button
-              onClick={() => this.setState({ showForm: !showForm })}
-              className="btn-floating btn-large black darken-4">
-              {showForm ? (
-                <i className="large material-icons">-</i>
-              ) : (
-                  <i className="large material-icons">+</i>
-                )}
-            </button> */}
           </div>
         </div>
       </div>
