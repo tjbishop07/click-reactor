@@ -75,7 +75,6 @@ class List extends Component {
           <FlipMove
             easing="ease-in-out"
             duration="500"
-            duration="500"
             staggerDurationBy="300"
             enterAnimation="fade">
             {this.loadReactions()}

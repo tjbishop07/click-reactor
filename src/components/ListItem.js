@@ -10,17 +10,28 @@ class ListItem extends Component {
 
   state = {
     completed: 0,
-    energy: 100,
     reactionStarted: false
   };
-
   reactionTimer;
+
   componentDidMount() {
-    this.reactionTimer = setInterval(this.triggerReaction.bind(this), 2000);
+    this.initState();
   }
 
   componentWillUnmount() {
     clearInterval(this.reactionTimer);
+  }
+
+  initState = () => {
+    const { gameSession } = this.props;
+    setTimeout(() => {
+      this.reactionTimer = setInterval(this.triggerReaction.bind(this), 2000);
+      this.setState({
+        energy: gameSession.energy,
+        reactionStarted: gameSession.reactionStarted,
+        completed: gameSession.completed
+      });
+    }, 1000);
   }
 
   killReaction = gameSessionId => {
@@ -73,8 +84,6 @@ class ListItem extends Component {
 
   render() {
     const { gameSessionId, gameSession } = this.props;
-    this.state.reactionStarted = gameSession.reactionStarted || false;
-    this.state.completed = gameSession.completed;
     return (
       <div
         key={gameSessionId.replace('$-', '')}
@@ -84,14 +93,14 @@ class ListItem extends Component {
           h={this.state.completed}
           v={30}
           r={(this.state.completed / 10)}>
-          <img src={this.state.reactionStarted ? dna : hive} className="hive" />
+          <img src={this.state.reactionStarted ? dna : hive} className="hive" alt="hive" />
         </Shake>
         <span className="clicks">{gameSession.clicks}</span>
         <span className="energy">{gameSession.energy ? gameSession.energy.toFixed(2) : 0}%</span>
         <span className="status-text">
           {this.state.reactionStarted ? 'Reaction started!' : gameSession.title}
         </span>
-        <LinearProgress className="progress-bar" color={this.state.completed === 100 ? 'secondary' : 'secondary'} variant="determinate" value={this.state.completed} />
+        <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={this.state.completed} />
       </div>
     );
   }
