@@ -4,6 +4,8 @@ import { completeGameSession, updateGameSession } from '../actions';
 import hive from '../img/hive.svg';
 import dna from '../img/dna.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Fab from '@material-ui/core/Fab';
+import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
 
 class ListItem extends Component {
 
@@ -95,6 +97,9 @@ class ListItem extends Component {
           {this.state.reactionStarted ? 'Reaction started!' : gameSession.title}
         </span>
         <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={this.state.completed} />
+        <Fab aria-label="Add" className="fab-reaction" color="primary">
+          <BatteryChargingFullIcon />
+        </Fab>
       </div>
     );
   }

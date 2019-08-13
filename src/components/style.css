@@ -53,12 +53,7 @@ h1 {
     padding: 20px !important;
     cursor: pointer !important;
     position: relative;
-    opacity: .8;
     text-align: center
-}
-
-.game-session-list-item:hover {
-    opacity: 1;
 }
 
 .complete-game-session-item {
@@ -82,18 +77,27 @@ h1 {
     margin: 30px auto;
 }
 
+.fab-reaction {
+    opacity: 0;
+    position: absolute !important;
+}
+
 .charged {
     /* background: url('../img/reaction2.svg') no-repeat center center !important; */
     background-color: #000000 !important;
     /* background-size: cover !important; */
     height: 15vh;
     position: relative;
-    overflow: hidden;
-    position: relative;
     -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+
+.charged .fab-reaction {
     opacity: 1;
+    position: absolute;
+    right: -25px;
+    top: 70px;
 }
 
 .charged .hive {
