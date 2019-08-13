@@ -3,8 +3,7 @@ import { connect } from 'react-redux';
 import { completeGameSession, updateGameSession } from '../actions';
 import hive from '../img/hive.svg';
 import dna from '../img/dna.svg';
-import LinearProgress from "@bit/mui-org.material-ui.linear-progress";
-import { Shake } from 'reshake'
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 class ListItem extends Component {
 
@@ -89,12 +88,7 @@ class ListItem extends Component {
         key={gameSessionId.replace('$-', '')}
         className={`game-session-list-item ${this.state.reactionStarted ? 'charged' : ''}`}
         onClick={() => this.chargeAtoms(gameSessionId, gameSession)}>
-        <Shake
-          h={this.state.completed}
-          v={30}
-          r={(this.state.completed / 10)}>
-          <img src={this.state.reactionStarted ? dna : hive} className="hive" alt="hive" />
-        </Shake>
+        <img src={this.state.reactionStarted ? dna : hive} className="hive" alt="hive" />
         <span className="clicks">{gameSession.clicks}</span>
         <span className="energy">{gameSession.energy ? gameSession.energy.toFixed(2) : 0}%</span>
         <span className="status-text">

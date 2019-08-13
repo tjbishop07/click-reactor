@@ -5,8 +5,11 @@ import * as actions from '../actions';
 import ListItem from './ListItem';
 import "./style.css";
 import FlipMove from 'react-flip-move';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
 
 class List extends Component {
+
   state = {
     showForm: false,
     formValue: "",
@@ -55,7 +58,7 @@ class List extends Component {
     }
     return (
       <div className="reactor-down">
-        <h4>Reactor Offline.</h4>
+        <h4>Meltdown.</h4>
       </div>
     );
   }
@@ -79,10 +82,10 @@ class List extends Component {
             enterAnimation="fade">
             {this.loadReactions()}
           </FlipMove>
-          <div className="fixed-action-btn">
-            <button onClick={() => addGameSession({ title: 'Start clicking...' })} className="btn-floating btn-large black darken-4"><i className="large material-icons">+</i></button>
-          </div>
         </div>
+        <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addGameSession({ title: 'Start clicking...' })}>
+          <AddIcon />
+        </Fab>
       </div>
     );
   }

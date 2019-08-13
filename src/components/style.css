@@ -12,6 +12,23 @@ body {
     font-family: 'Questrial', sans-serif;
 }
 
+.fab-add-reaction {
+    position: absolute !important;
+    bottom: 20px !important;
+    right: 20px !important;
+}
+
+
+/* disable browser image select stuff */
+
+img {
+    -khtml-user-select: none;
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 h1 {
     font-family: 'Russo One', sans-serif;
     position: absolute;
@@ -34,12 +51,14 @@ h1 {
     border-radius: 10px;
     width: 250px;
     padding: 20px !important;
-    cursor: crosshair !important;
+    cursor: pointer !important;
     position: relative;
+    opacity: .8;
+    text-align: center
 }
 
 .game-session-list-item:hover {
-    background: rgba(0, 0, 0, .5);
+    opacity: 1;
 }
 
 .complete-game-session-item {
@@ -58,19 +77,15 @@ h1 {
     background: rgba(0, 0, 0, .5)
 }
 
-input#gameSessionNext:active {
-    border-bottom: 1px solid dodgerblue !important;
-}
-
 .hive {
     width: 150px;
-    margin: 5px 20px 30px 25px;
+    margin: 30px auto;
 }
 
 .charged {
-    background: url('../img/reaction2.svg') no-repeat center center !important;
-    background-color: rgba(0, 0, 0, 0) !important;
-    background-size: cover !important;
+    /* background: url('../img/reaction2.svg') no-repeat center center !important; */
+    background-color: #000000 !important;
+    /* background-size: cover !important; */
     height: 15vh;
     position: relative;
     overflow: hidden;
@@ -78,20 +93,16 @@ input#gameSessionNext:active {
     -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    opacity: 1;
+}
+
+.charged .hive {
+    margin-top: 0px;
+    width: 150px
 }
 
 .charged img.app-logo {
     display: none
-}
-
-.charged .hive {
-    position: absolute;
-    left: 0;
-    right: 0;
-    margin-left: auto;
-    margin-right: auto;
-    width: 40px;
-    top: 37%;
 }
 
 .clicks {
@@ -114,22 +125,16 @@ input#gameSessionNext:active {
     text-transform: uppercase;
     font-size: .8rem;
     position: absolute;
-    width: 100%;
-    left: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, .5);
-    padding: 20px;
-    padding-top: 10px;
-    padding-bottom: 15px;
-    text-align: center;
+    left: 10px;
+    bottom: 20px;
     text-shadow: 1px 1px 1px #000
 }
 
 .progress-bar {
     position: absolute !important;
-    width: 225px !important;
+    width: 125px !important;
     left: 10px;
-    bottom: 5px;
+    bottom: 10px;
 }
 
 .fadeOut {
