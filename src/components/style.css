@@ -12,10 +12,39 @@ body {
     font-family: 'Questrial', sans-serif;
 }
 
+.reactionBg {
+    background: url('../img/reactions/level1.svg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: #282C34;
+    min-height: 100vh;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: .2
+}
+
 .fab-add-reaction {
-    position: absolute !important;
+    position: fixed !important;
     bottom: 20px !important;
     right: 20px !important;
+}
+
+.appbar {
+    bottom: 0,
+}
+
+.appbarFab {
+    position: 'absolute';
+    z-index: 1;
+    top: -30;
+    left: 0;
+    right: 0;
+    margin: '0 auto';
+}
+
+.grow {
+    flex-grow: 1;
 }
 
 
@@ -29,13 +58,25 @@ img {
     user-select: none;
 }
 
-h1 {
+h1.title {
     font-family: 'Russo One', sans-serif;
     position: absolute;
     left: 20px;
-    top: -10px;
+    top: 10px;
     font-size: 2rem;
-    text-shadow: 2px 2px 5px #000000 !important;
+    text-shadow: 0 0 2px #000000 !important;
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+    padding-bottom: 10px;
+    border-bottom: dashed 1px rgba(255, 255, 255, 0.3);
+}
+
+.hud-container {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    width: 200px;
+    opacity: .7;
 }
 
 .game-session-list-container {
@@ -47,13 +88,18 @@ h1 {
 .game-session-list-item {
     margin: 10px;
     color: white;
-    background: rgba(0, 0, 0, .5) !important;
+    background-color: rgba(0, 0, 0, .5) !important;
+    border: solid 5px #000;
     border-radius: 10px;
     width: 250px;
+    height: 200px;
     padding: 20px !important;
     cursor: pointer !important;
     position: relative;
-    text-align: center
+    text-align: center;
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.1) inset;
 }
 
 .complete-game-session-item {
@@ -74,7 +120,12 @@ h1 {
 
 .hive {
     width: 150px;
-    margin: 30px auto;
+    margin: 15px auto;
+}
+
+.hive:active {
+    opacity: .5;
+    width: 145px;
 }
 
 .fab-reaction {
@@ -84,24 +135,20 @@ h1 {
 
 .charged {
     /* background: url('../img/reaction2.svg') no-repeat center center !important; */
-    background-color: #000000 !important;
     /* background-size: cover !important; */
     height: 15vh;
     position: relative;
-    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
-    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
 }
 
 .charged .fab-reaction {
     opacity: 1;
     position: absolute;
-    right: -25px;
+    right: -15px;
     top: 70px;
 }
 
 .charged .hive {
-    margin-top: 0px;
+    margin-top: -3px;
     width: 150px
 }
 
@@ -111,16 +158,16 @@ h1 {
 
 .clicks {
     position: absolute;
-    left: 20px;
-    top: 20px;
+    left: 10px;
+    top: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000
 }
 
 .energy {
     position: absolute;
-    right: 20px;
-    top: 20px;
+    right: 10px;
+    top: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000
 }
@@ -161,5 +208,20 @@ h1 {
     }
     to {
         opacity: 0;
+    }
+}
+
+.reactionFlash {
+    opacity: 1;
+    animation: 4s;
+    animation-name: fadeout
+}
+
+@keyframes fadeout {
+    from {
+        opacity: 1
+    }
+    to {
+        opacity: .4
     }
 }
