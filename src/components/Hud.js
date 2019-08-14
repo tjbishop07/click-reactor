@@ -7,7 +7,6 @@ class Hud extends Component {
 
   render() { 
     const { data } = this.props;
-    const scores = [];
     return (
       <div>
         {this.loadReactions()}

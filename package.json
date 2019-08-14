@@ -9,6 +9,7 @@
         "firebase": "^5.7.2",
         "lodash": "^4.17.11",
         "react": "^16.7.0",
+        "react-card-flip": "^0.8.1",
         "react-dom": "^16.7.0",
         "react-flip-move": "^3.0.3",
         "react-redux": "^6.0.0",

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import * as actions from '../actions';
-import ListItem from './ListItem';
+import ReactionItem from './ReactionItem';
 import "./style.css";
 import FlipMove from 'react-flip-move';
 import Fab from '@material-ui/core/Fab';
@@ -51,7 +51,7 @@ class List extends Component {
   loadReactions() {
     const { data } = this.props;
     const gameSessions = _.map(data, (value, key) => {
-      return <ListItem key={key} gameSessionId={key} gameSession={value} />;
+      return <ReactionItem key={key} gameSessionId={key} gameSession={value} />;
     });
     if (!_.isEmpty(gameSessions)) {
       return gameSessions;
