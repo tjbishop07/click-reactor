@@ -43,14 +43,12 @@ class ReactionItem extends Component {
 
   initState = () => {
     const { gameSession } = this.props;
-
     this.reactionTimer = setInterval(this.triggerReaction.bind(this), 2000);
     this.setState({
       energy: gameSession.energy,
       reactionStarted: gameSession.reactionStarted,
       completed: gameSession.completed
     });
-
   }
 
   killReaction = gameSessionId => {
@@ -108,7 +106,9 @@ class ReactionItem extends Component {
         <div
           key="front"
           className={`game-session-list-item ${this.state.reactionStarted ? 'charged' : ''}`}
-          onClick={() => this.chargeAtoms(gameSessionId, gameSession)}>
+          onClick={() => {
+            this.chargeAtoms(gameSessionId, gameSession);
+          }}>
           <img src={this.state.reactionStarted ? dna : hive} className="hive" alt="hive" />
           <span className="clicks">{gameSession.clicks}</span>
           <span className="energy">{gameSession.energy ? gameSession.energy.toFixed(2) : 0}%</span>

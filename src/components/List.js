@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { reactionRef } from '../config/firebase';
+import { useList } from 'react-firebase-hooks/database';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import * as actions from '../actions';
@@ -8,53 +10,19 @@ import FlipMove from 'react-flip-move';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 
-class List extends Component {
+export default function List(props) {
 
-  state = {
-    showForm: false,
-    formValue: "",
-    clicks: 0
-  };
+  const [snapshots, loading, error] = useList(reactionRef);
+  const [reactionItems, setReactionItems] = useState([]);
 
-  inputChange = event => {
-    this.setState({ formValue: event.target.value });
-  };
-
-  formSubmit = event => {
-    const { formValue } = this.state;
-    const { addGameSession } = this.props;
-    event.preventDefault();
-    addGameSession({ title: formValue });
-    this.setState({ formValue: "" });
-  };
-
-  renderForm = () => {
-    const { showForm, formValue } = this.state;
-    if (showForm) {
-      return (
-        <div id="game-session-add-form" className="name-form">
-          <form onSubmit={this.formSubmit}>
-            <div className="input-field">
-              <input
-                value={formValue}
-                onChange={this.inputChange}
-                id="gameSessionNext"
-                type="text"
-              />
-              <label htmlFor="gameSessionNext">Name</label>
-            </div>
-          </form>
-        </div>
-      );
-    }
-  };
-  loadReactions() {
-    const { data } = this.props;
-    const gameSessions = _.map(data, (value, key) => {
-      return <ReactionItem key={key} gameSessionId={key} gameSession={value} />;
+  function loadReactionItems(reactions) {
+    console.log('load reaction items', reactions);
+    const reactionItems = _.map(reactions, (value, key) => {
+      return <ReactionItem key={key} reactionId={key} reaction={value} />
     });
-    if (!_.isEmpty(gameSessions)) {
-      return gameSessions;
+    if (!_.isEmpty(reactionItems)) {
+      console.log('reaction items', reactionItems);
+      setReactionItems(reactionItems);
     }
     return (
       <div className="reactor-down">
@@ -62,39 +30,46 @@ class List extends Component {
       </div>
     );
   }
-  componentWillMount() {
-    this.props.fetchGameSessions();
+
+  function addReactionItem(reactionItem) {
+    console.log('add reaction item', reactionItem);
+    reactionRef.push().set({
+      title: 'Start clicking...',
+      clicks: 0,
+      completed: 0
+    });
   }
-  render() {
-    const { addGameSession } = this.props;
-    return (
-      <div>
-        <div className="row">
-          <div className="col">
-            {this.renderForm()}
-          </div>
-        </div>
-        <div className="game-session-list-container">
-          <FlipMove
-            easing="ease-in-out"
-            duration="500"
-            staggerDurationBy="300"
-            enterAnimation="fade">
-            {this.loadReactions()}
-          </FlipMove>
-        </div>
-        <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addGameSession({ title: 'Start clicking...' })}>
-          <AddIcon />
-        </Fab>
+
+  useEffect(() => {
+    loadReactionItems(props);
+  });
+
+  return (
+    <div>
+      <div className="game-session-list-container">
+        <FlipMove
+          easing="ease-in-out"
+          duration="500"
+          staggerDurationBy="300"
+          enterAnimation="fade">
+          {/* {this.loadReactions(props)} */}
+          {snapshots.map(v => (
+            <ReactionItem key={v.key} reaction={v.val()} />
+          ))}
+        </FlipMove>
       </div>
-    );
-  }
+      <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
+        <AddIcon />
+      </Fab>
+    </div>
+  );
+
 }
 
-const mapStateToProps = ({ data }) => {
-  return {
-    data
-  }
-}
+// const mapStateToProps = ({ data }) => {
+//   return {
+//     data
+//   }
+// }
 
-export default connect(mapStateToProps, actions)(List);
+// export default connect(mapStateToProps, actions)(List);

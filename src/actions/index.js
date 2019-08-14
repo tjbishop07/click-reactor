@@ -1,10 +1,10 @@
 import { gameSessionRef } from '../config/firebase';
 import { FETCH_GAME_SESSIONS } from './types';
 
-export const addGameSession = newGameSession => async dispatch => {
-    newGameSession.clicks = 0;
-    newGameSession.completed = 0;
-    gameSessionRef.push().set(newGameSession);
+export const addReaction = newReaction => async dispatch => {
+    newReaction.clicks = 0;
+    newReaction.completed = 0;
+    gameSessionRef.push().set(newReaction);
 };
 
 export const updateGameSession = (gameSession, gameSessionId) => async dispatch => {
