@@ -1,100 +1,49 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import _ from 'lodash';
-import * as actions from '../actions';
-import ListItem from './ListItem';
-import "./style.css";
-import FlipMove from 'react-flip-move';
+import React, { useState, useEffect } from 'react';
+import { reactionRef } from '../config/firebase';
+import ReactionItem from './ReactionItem';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
+import "./style.css";
 
-class List extends Component {
+export default function List(props) {
 
-  state = {
-    showForm: false,
-    formValue: "",
-    clicks: 0
-  };
+  const [reactionItems, setReactionItems] = useState([]);
 
-  inputChange = event => {
-    this.setState({ formValue: event.target.value });
-  };
+  useEffect(() => {
+    reactionRef
+      .on('value', snapshot => {
+        const reactions = []
+        snapshot.forEach(doc => {
+          reactions.push({ id: doc.key, reaction: doc.val() })
+        })
+        setReactionItems(reactions)
+      });
+  }, [props]);
 
-  formSubmit = event => {
-    const { formValue } = this.state;
-    const { addGameSession } = this.props;
-    event.preventDefault();
-    addGameSession({ title: formValue });
-    this.setState({ formValue: "" });
-  };
-
-  renderForm = () => {
-    const { showForm, formValue } = this.state;
-    if (showForm) {
-      return (
-        <div id="game-session-add-form" className="name-form">
-          <form onSubmit={this.formSubmit}>
-            <div className="input-field">
-              <input
-                value={formValue}
-                onChange={this.inputChange}
-                id="gameSessionNext"
-                type="text"
-              />
-              <label htmlFor="gameSessionNext">Name</label>
-            </div>
-          </form>
-        </div>
-      );
-    }
-  };
-  loadReactions() {
-    const { data } = this.props;
-    const gameSessions = _.map(data, (value, key) => {
-      return <ListItem key={key} gameSessionId={key} gameSession={value} />;
+  function addReactionItem(reactionItem) {
+    reactionRef.push().set({
+      title: 'Start clicking...',
+      clicks: 0,
+      completed: 0,
+      energy: 0,
+      reactionStarted: false
     });
-    if (!_.isEmpty(gameSessions)) {
-      return gameSessions;
-    }
-    return (
-      <div className="reactor-down">
+  }
+
+  return (
+    <div>
+      <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
         <h4>Meltdown.</h4>
       </div>
-    );
-  }
-  componentWillMount() {
-    this.props.fetchGameSessions();
-  }
-  render() {
-    const { addGameSession } = this.props;
-    return (
-      <div>
-        <div className="row">
-          <div className="col">
-            {this.renderForm()}
-          </div>
-        </div>
-        <div className="game-session-list-container">
-          <FlipMove
-            easing="ease-in-out"
-            duration="500"
-            staggerDurationBy="300"
-            enterAnimation="fade">
-            {this.loadReactions()}
-          </FlipMove>
-        </div>
-        <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addGameSession({ title: 'Start clicking...' })}>
-          <AddIcon />
-        </Fab>
+      <div className="game-session-list-container">
+        {reactionItems.map(r => (
+          <ReactionItem key={r.id} id={r.id} propReaction={r.reaction} />
+        ))}
       </div>
-    );
-  }
-}
+      <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
+        <AddIcon />
+      </Fab>
+    </div>
+  );
 
-const mapStateToProps = ({ data }) => {
-  return {
-    data
-  }
 }
-
-export default connect(mapStateToProps, actions)(List);

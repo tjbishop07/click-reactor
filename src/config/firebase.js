@@ -4,4 +4,4 @@ import { FirebaseConfig } from '../config/keys';
 firebase.initializeApp(FirebaseConfig)
 
 const databaseRef = firebase.database().ref();
-export const gameSessionRef = databaseRef.child('gameSession');
+export const reactionRef = databaseRef.child('reaction');
