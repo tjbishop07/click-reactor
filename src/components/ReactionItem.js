@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { completeGameSession, updateGameSession } from '../actions';
+import React, { useState, useEffect } from 'react';
+import { reactionRef } from '../config/firebase';
 import hive from '../img/hive.svg';
 import dna from '../img/dna.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -12,152 +11,112 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import SettingsBackupRestore from '@material-ui/icons/SettingsBackupRestore';
 
-class ReactionItem extends Component {
+export default function ReactionItem(props) {
 
-  state = {
-    completed: 0,
-    reactionStarted: false
-  };
-  reactionTimer;
+  let reactionTimer = null;
+  const { id, propReaction } = props;
+  const [isFlipped, setIsFlipped] = useState(false);
 
-  constructor() {
-    super();
-    this.state = {
-      isFlipped: false
-    };
-    this.handleClick = this.handleClick.bind(this);
-  }
+  useEffect(() => {
+    if (!reactionTimer) {
+      reactionTimer = setInterval(triggerReaction.bind(this), 2000);
+    }
+  }, []);
 
-  handleClick(e) {
-    e.preventDefault();
-    this.setState(prevState => ({ isFlipped: !prevState.isFlipped }));
-  }
-
-  componentDidMount() {
-    this.initState();
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.reactionTimer);
-  }
-
-  initState = () => {
-    const { gameSession } = this.props;
-    this.reactionTimer = setInterval(this.triggerReaction.bind(this), 2000);
-    this.setState({
-      energy: gameSession.energy,
-      reactionStarted: gameSession.reactionStarted,
-      completed: gameSession.completed
-    });
-  }
-
-  killReaction = gameSessionId => {
-    const { completeGameSession } = this.props;
-    completeGameSession(gameSessionId);
-  };
-
-  updateGameSessionFromTimer = (gameSession, gameSessionId) => {
-    const { updateGameSession } = this.props;
-    updateGameSession(gameSession, gameSessionId);
-  }
-
-  triggerReaction = () => {
-    const { gameSessionId, gameSession } = this.props;
-    const { energy, reactionStarted } = this.state;
-    if (reactionStarted) {
+  async function triggerReaction() {
+    if (propReaction.reactionStarted) {
       const diff = Math.random() * 2;
-      const newEnergyCalculation = Math.min(energy - diff, 100);
-
+      const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
       if (newEnergyCalculation < 0) {
-        // NOTE: Oh no! We ran out of juice
-        this.killReaction(gameSessionId);
+        killReaction(id);
       } else {
-        gameSession.energy = newEnergyCalculation;
-        gameSession.reactionStarted = true;
-        gameSession.completed = newEnergyCalculation;
-        this.updateGameSessionFromTimer(gameSession, gameSessionId);
-        this.setState({ energy: newEnergyCalculation, completed: newEnergyCalculation });
+        propReaction.energy = newEnergyCalculation;
+        propReaction.completed = newEnergyCalculation;
+        propReaction.reactionStarted = true;
+        await reactionRef.child(`/${id}`).set(propReaction);
       }
     }
   }
 
-  chargeAtoms = (gameSessionId, gameSession) => {
-    const { completed, reactionStarted } = this.state;
-    const { updateGameSession } = this.props;
-    if (!reactionStarted) {
+  async function killReaction() {
+    reactionTimer = null;
+    await reactionRef.child(id).remove();
+  };
+
+  function chargeReaction() {
+    if (!propReaction.reactionStarted) {
       const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(this.state.completed + diff, 100);
-      gameSession.clicks = (gameSession.clicks || 0) + 1;
-      gameSession.completed = newCompletedCalulcation;
-      if (completed >= 100) {
-        this.setState({ energy: 100, reactionStarted: true });
-        gameSession.reactionStarted = true;
-      } else {
-        this.setState({ completed: newCompletedCalulcation });
+      const newCompletedCalulcation = Math.min(propReaction.completed + diff, 100);
+      propReaction.clicks = (propReaction.clicks || 0) + 1;
+      propReaction.energy = newCompletedCalulcation;
+      propReaction.completed = newCompletedCalulcation;
+      if (propReaction.completed >= 100) {
+        propReaction.energy = 100;
+        propReaction.reactionStarted = true;
+        if (!reactionTimer) {
+          reactionTimer = setInterval(triggerReaction.bind(this), 2000);
+        }
+
       }
-      updateGameSession(gameSession, gameSessionId);
+      reactionRef.child(`/${id}`).set(propReaction);
     }
   };
 
-  render() {
-    const { gameSessionId, gameSession } = this.props;
-    return (
-      <ReactCardFlip isFlipped={this.state.isFlipped} flipDirection="horizontal">
-        <div
-          key="front"
-          className={`game-session-list-item ${this.state.reactionStarted ? 'charged' : ''}`}
-          onClick={() => {
-            this.chargeAtoms(gameSessionId, gameSession);
-          }}>
-          <img src={this.state.reactionStarted ? dna : hive} className="hive" alt="hive" />
-          <span className="clicks">{gameSession.clicks}</span>
-          <span className="energy">{gameSession.energy ? gameSession.energy.toFixed(2) : 0}%</span>
-          <span className="status-text">
-            {this.state.reactionStarted ? 'Reaction started!' : gameSession.title}
-          </span>
-          <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={this.state.completed} />
-          <Fab aria-label="Energy" className="fab-reaction" color="primary" onClick={this.handleClick}>
-            <BatteryChargingFullIcon />
-          </Fab>
-        </div>
-        <div
-          key="back"
-          className={`game-session-list-item card-back ${this.state.reactionStarted ? 'charged' : ''}`}>
-          <img src={this.state.reactionStarted ? dna : hive} className="hive" alt="hive" />
-          <span className="clicks">Energy Sources</span>
-          <List aria-label="Energy Sources" className="energySourcesList">
-            <ListItem button>
-              <ListItemText>0</ListItemText>
-              <ListItemText>Rub Sticks Together</ListItemText>
-            </ListItem>
-            <ListItem button>
-              <ListItemText>0</ListItemText>
-              <ListItemText>Matches</ListItemText>
-            </ListItem>
-            <ListItem button>
-              <ListItemText>0</ListItemText>
-              <ListItemText primary="Firecracker" />
-            </ListItem>
-            <ListItem button>
-              <ListItemText>0</ListItemText>
-              <ListItemText primary="M80" />
-            </ListItem>
-            <ListItem button>
-              <ListItemText>0</ListItemText>
-              <ListItemText primary="Dynomite" />
-            </ListItem>
-            <ListItem button>
-              <ListItemText>0</ListItemText>
-              <ListItemText primary="C4" />
-            </ListItem>
-          </List>
-          <Fab aria-label="Back" className="fab-reaction" color="primary" onClick={this.handleClick}>
-            <SettingsBackupRestore />
-          </Fab>
-        </div>
-      </ReactCardFlip>
-    );
-  }
-}
+  return (
+    <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
+      <div
+        key="front"
+        className={`game-session-list-item ${propReaction.reactionStarted ? 'charged' : ''}`}
+        onClick={() => {
+          chargeReaction();
+        }}>
+        <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
+        <span className="clicks">{propReaction.clicks}</span>
+        <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
+        <span className="status-text">
+          {propReaction.reactionStarted ? 'Reaction started!' : propReaction.title}
+        </span>
+        <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={propReaction.completed} />
+        <Fab aria-label="Energy" className="fab-reaction" color="primary" onClick={() => setIsFlipped(true)}>
+          <BatteryChargingFullIcon />
+        </Fab>
+      </div>
+      <div
+        key="back"
+        className={`game-session-list-item card-back ${propReaction.reactionStarted ? 'charged' : ''}`}>
+        <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
+        <span className="clicks">Energy Sources</span>
+        <List aria-label="Energy Sources" className="energySourcesList">
+          <ListItem button>
+            <ListItemText>0</ListItemText>
+            <ListItemText>Rub Sticks Together</ListItemText>
+          </ListItem>
+          <ListItem button>
+            <ListItemText>0</ListItemText>
+            <ListItemText>Matches</ListItemText>
+          </ListItem>
+          <ListItem button>
+            <ListItemText>0</ListItemText>
+            <ListItemText primary="Firecracker" />
+          </ListItem>
+          <ListItem button>
+            <ListItemText>0</ListItemText>
+            <ListItemText primary="M80" />
+          </ListItem>
+          <ListItem button>
+            <ListItemText>0</ListItemText>
+            <ListItemText primary="Dynomite" />
+          </ListItem>
+          <ListItem button>
+            <ListItemText>0</ListItemText>
+            <ListItemText primary="C4" />
+          </ListItem>
+        </List>
+        <Fab aria-label="Back" className="fab-reaction" color="primary" onClick={() => setIsFlipped(false)}>
+          <SettingsBackupRestore />
+        </Fab>
+      </div>
+    </ReactCardFlip >
+  );
 
-export default connect(null, { completeGameSession, updateGameSession })(ReactionItem);
+}
