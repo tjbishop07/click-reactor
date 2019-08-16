@@ -4,7 +4,6 @@ You have been assigned a reactor. Your mission to start reactions by clicking as
 ## Dev Info
 This project was created using [Create React App](https://github.com/facebook/create-react-app). 
 Firebase is used for backend (hosting/database).
-- Install bit for dependant components `npm install bit-bin -g` and then `bit init`
 
 ### `npm start`
 
