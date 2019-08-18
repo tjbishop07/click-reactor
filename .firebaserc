@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "clicky-71a02"
+    "default": "clicky-71a02",
+    "prod": "click-reactor-aa2dc"
   }
 }

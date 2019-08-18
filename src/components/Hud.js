@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react';
-export default function useHeadsUpDisplay() {
+import React, { useEffect, Fragment } from 'react';
+import GameContext from "../state/context";
+import { useAuth } from '../state/auth';
 
-    const [score, setScore] = useState(0);
+export default function HUD() {
 
-    useEffect(() => {
-      setScore(0);
-    }, []);
+  const { user } = useAuth();
 
-    return (
-      <div>
-        <div className="reactionBg"></div>
-        <div className="hud-container">
-          <h4>SCORE: {score}</h4>
-        </div>
-      </div>
-    );
+  useEffect(() => {
+    // We'll need this soon?
+  }, []);
+
+  return (
+    <GameContext.Consumer>
+      {context => (
+        <Fragment>
+          <div>
+            <div className="reactionBg"></div>
+            <div className="hud-container">
+              <h5>OPERATOR: {user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A'}</h5>
+              <h5>SCORE: {context.data.score}</h5>
+            </div>
+          </div>
+        </Fragment>
+      )}
+    </GameContext.Consumer>
+  );
 }

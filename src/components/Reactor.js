@@ -1,39 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { reactionRef } from '../config/firebase';
+import { databaseRef } from '../config/firebase';
 import ReactionItem from './ReactionItem';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import "./style.css";
+import { useAuth } from '../state/auth';
 
-export default function List(props) {
+export default function Reactor() {
 
   const [reactionItems, setReactionItems] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    reactionRef
-      .on('value', snapshot => {
-        const reactions = []
-        snapshot.forEach(doc => {
-          reactions.push({ id: doc.key, reaction: doc.val() })
-        })
-        setReactionItems(reactions)
-      });
-  }, [props]);
+    let unsubscribe;
+    if (user) {
+      unsubscribe = databaseRef.child(`userReactors/${user.uid}`)
+        .on('value', snapshot => {
+          const reactions = []
+          snapshot.forEach(doc => {
+            reactions.push({ id: doc.key, reaction: doc.val() })
+          })
+          setReactionItems(reactions)
+        });
+    }
+    return () => unsubscribe;
+  }, [user]);
 
   function addReactionItem(reactionItem) {
-    reactionRef.push().set({
+    databaseRef.child(`userReactors/${user.uid}`).push().set({
       title: 'Start clicking...',
       clicks: 0,
-      completed: 0,
       energy: 0,
-      reactionStarted: false
+      reactionStarted: false,
+      reactionStartedAt: null,
+      extinguished: false,
+      extinguishedAt: null
     });
   }
 
   return (
     <div>
       <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
-        <h4>Meltdown.</h4>
+        <h4><span role="img" aria-label="Battery">🔋</span></h4>
       </div>
       <div className="game-session-list-container">
         {reactionItems.map(r => (
