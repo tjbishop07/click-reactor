@@ -12,11 +12,14 @@ body {
     font-family: 'Questrial', sans-serif;
 }
 
-.hidden {
-    display: none !important;
+.firebaseui-idp-list {
+    list-style: none;
+    padding: 0;
+    margin: 0
 }
 
 .reactionBg {
+    display: none;
     background: url('../img/reactions/level1.svg') no-repeat center center fixed;
     background-size: cover;
     background-color: #282C34;
@@ -25,7 +28,19 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    opacity: .2
+    opacity: .2;
+    z-index: 2;
+}
+
+.login-container {
+    /* z-index: 300 !important; */
+    background: url('../img/bg-waves.svg') no-repeat center 200px fixed;
+    background-size: fill;
+    /* background-color: #282C34; */
+    padding: 20px;
+    /* border-radius: 10px; */
+    /* box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22); */
+    /* min-width: 275px; */
 }
 
 .fab-add-reaction {
@@ -77,10 +92,14 @@ h1.title {
 
 .hud-container {
     position: absolute;
-    top: 60px;
+    top: 75px;
     left: 20px;
-    width: 200px;
+    width: 350px;
     opacity: .7;
+}
+
+.hud-container h5 {
+    margin: 5px 0
 }
 
 .game-session-list-container {
@@ -211,6 +230,15 @@ h1.title {
     text-shadow: 1px 1px 1px #000
 }
 
+.extinguished {
+    opacity: .2 !important;
+    cursor: not-allowed !important;
+}
+
+.extinguished .hive {
+    display: none !important;
+}
+
 .progress-bar {
     position: absolute !important;
     width: 125px !important;
@@ -254,4 +282,8 @@ h1.title {
     to {
         opacity: .4
     }
+}
+
+.hidden {
+    display: none !important;
 }
