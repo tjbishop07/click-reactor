@@ -41,7 +41,7 @@ export default function Reactor() {
   return (
     <div>
       <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
-        <h4><span role="img" aria-label="Battery">🔋</span></h4>
+        <h4><span role="img" aria-label="Battery">🔋</span> Game Over.</h4>
       </div>
       <div className="game-session-list-container">
         {reactionItems.map(r => (

@@ -1,14 +1,10 @@
-import React, { useEffect, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 
 export default function HUD() {
 
   const { user } = useAuth();
-
-  useEffect(() => {
-    // We'll need this soon?
-  }, []);
 
   return (
     <GameContext.Consumer>
