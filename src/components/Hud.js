@@ -6,10 +6,6 @@ export default function HUD() {
 
   const { user } = useAuth();
 
-  useEffect(() => {
-    // We'll need this soon?
-  }, []);
-
   return (
     <GameContext.Consumer>
       {context => (
