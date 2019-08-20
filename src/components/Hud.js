@@ -13,7 +13,7 @@ export default function HUD() {
           <div>
             <div className="reactionBg"></div>
             <div className="hud-container">
-              <h5>OPERATOR: {user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A'}</h5>
+              <h5>OPERATOR: {context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')}</h5>
               <h5>SCORE: {context.data.score}</h5>
             </div>
           </div>
