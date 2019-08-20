@@ -53,7 +53,7 @@ export default function App() {
 
   const [open, setOpen] = useState(false);
   const classes = useStyles();
-  const trackingId = 'UA-207735600';
+  const trackingId = 'UA-207735600-1';
   ReactGA.initialize(trackingId);
   // ReactGA.set({
   //   userId: auth.currentUserId(),
