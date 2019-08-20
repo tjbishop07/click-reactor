@@ -33,6 +33,16 @@ const provider = props => {
         }
     }
 
+    useEffect(() => {
+        updateGameStateFullName();
+    }, [state.fullName]);
+
+    async function updateGameStateFullName() {
+        if (state.fullName) {
+            await databaseRef.child(`gameStates/${user.uid}/fullName`).set(state.fullName);
+        }
+    }
+
     return (
         <GameContext.Provider
             value={{
@@ -41,6 +51,7 @@ const provider = props => {
                     setState({ ...state, isLoggedIn: status });
                 },
                 updateFullName: (newName) => {
+                    console.log('update full name', newName);
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {

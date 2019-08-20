@@ -49,6 +49,12 @@ body {
     right: 20px !important;
 }
 
+.fab-settings-reaction {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+}
+
 .appbar {
     bottom: 0,
 }
