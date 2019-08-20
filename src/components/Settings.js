@@ -8,14 +8,15 @@ import Fab from '@material-ui/core/Fab';
 import CheckIcon from '@material-ui/icons/Check';
 import SaveIcon from '@material-ui/icons/Save';
 import AppBar from '@material-ui/core/AppBar';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
+import Paper from '@material-ui/core/Paper';
 
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
     alignItems: 'center',
-    marginTop: '40px'
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(2, 2, 5, 2)
   },
   appBar: {
     top: 'auto',
@@ -76,19 +77,16 @@ export default function Settings() {
     <GameContext.Consumer>
       {context => (
         <Fragment>
-          <CssBaseline />
-          <div className={classes.root}>
+          <Paper className={classes.root}>
             <TextField
               label="Name"
-              variant="outlined"
               className={classes.input}
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               placeholder="Your name"
               inputProps={{ 'aria-label': 'Your name' }}
             />
-          </div>
-          <AppBar position="fixed" color="primary" className={classes.appBar}>
+          </Paper>
             <Toolbar>
               <div className={classes.wrapper}>
                 <Fab color="secondary" aria-label="save" className={classes.fabButton} onClick={saveFullName(context)}>
@@ -97,7 +95,6 @@ export default function Settings() {
                 {loading && <CircularProgress size={68} className={classes.fabProgress} />}
               </div>
             </Toolbar>
-          </AppBar>
         </Fragment>
       )}
     </GameContext.Consumer>
