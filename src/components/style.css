@@ -34,8 +34,8 @@ body {
 
 .login-container {
     /* z-index: 300 !important; */
-    background: url('../img/bg-waves.svg') no-repeat center 200px fixed;
-    background-size: fill;
+    /* background: url('../img/bg-waves.svg') no-repeat center 200px fixed;
+    background-size: fill; */
     /* background-color: #282C34; */
     padding: 20px;
     /* border-radius: 10px; */
@@ -45,8 +45,8 @@ body {
 
 .MuiDialog-paper {
     /* z-index: 300 !important; */
-    background: url('../img/bg-waves.svg') no-repeat center center fixed;
-    background-size: fill;
+    /* background: url('../img/bg-waves.svg') no-repeat center center fixed;
+    background-size: fill; */
     /* background-color: #282C34; */
     /* padding: 20px; */
     /* border-radius: 10px; */
@@ -65,8 +65,8 @@ body {
 
 .fab-settings-reaction {
     position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
+    bottom: 20px !important;
+    left: 20px !important;
     z-index: 5
 }
 
@@ -108,15 +108,19 @@ h1.title {
     font-size: 1.5rem;
     letter-spacing: 4px;
     padding-bottom: 10px;
-    border-bottom: dashed 1px rgba(255, 255, 255, 0.3);
 }
 
 .hud-container {
+    z-index: 2;
+    background: rgba(0, 0, 0, .9);
     position: fixed;
     top: 75px;
-    left: 20px;
-    width: 350px;
+    left: 0;
+    width: 100%;
+    padding: 20px;
     opacity: .7;
+    border-bottom: dashed 1px rgba(255, 255, 255, 0.3);
+    border-top: dashed 1px rgba(255, 255, 255, 0.3);
 }
 
 .hud-container h5 {
@@ -124,7 +128,7 @@ h1.title {
 }
 
 .game-session-list-container {
-    margin: 100px 0;
+    margin: 200px 0 300px 0;
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -228,12 +232,23 @@ h1.title {
     display: none
 }
 
+.duration {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #000;
+    font-size: .8rem;
+    text-align: right
+}
+
 .clicks {
     position: absolute;
     left: 10px;
     top: 10px;
     font-weight: bold;
-    text-shadow: 1px 1px 1px #000
+    text-shadow: 1px 1px 1px #000;
+    font-size: .8rem;
 }
 
 .energy {
@@ -241,7 +256,8 @@ h1.title {
     right: 10px;
     top: 10px;
     font-weight: bold;
-    text-shadow: 1px 1px 1px #000
+    text-shadow: 1px 1px 1px #000;
+    font-size: .8rem;
 }
 
 .status-text {

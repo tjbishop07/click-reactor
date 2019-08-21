@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import ReactGA from 'react-ga';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
 
-import Provider from "./state/provider";
+import Provider from "./state/Provider";
 import Reactor from './components/Reactor';
 import Welcome from './components/Welcome';
 import HUD from "./components/Hud";
@@ -53,14 +52,6 @@ export default function App() {
 
   const [open, setOpen] = useState(false);
   const classes = useStyles();
-  const trackingId = 'UA-207735600-1';
-  ReactGA.initialize(trackingId);
-  // ReactGA.set({
-  //   userId: auth.currentUserId(),
-  //   // any data that is relevant to the user session
-  //   // that you would like to track with google analytics
-  // })
-
   const { initializing, user } = useAuth();
   if (initializing) {
     return <div>Loading</div>

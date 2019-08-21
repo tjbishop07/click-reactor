@@ -16,15 +16,47 @@ import { useAuth } from '../state/auth';
 export default function ReactionItem(props) {
 
   let reactionTimer = null;
+  let durationTimer = null;
   const { id, propReaction } = props;
   const [isFlipped, setIsFlipped] = useState(false);
+  const [duration, setDuration] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
     if (!reactionTimer) {
       reactionTimer = setInterval(triggerReaction.bind(this), 2000);
     }
+    if (!durationTimer) {
+      durationTimer = setInterval(updateDurationLabel.bind(this), 100);
+    }
   }, []);
+
+  function updateDurationLabel() {
+    var nowDate = new Date();
+    var startedAt = new Date(propReaction.startedAt);
+    var diff = nowDate.getTime() - startedAt.getTime();
+
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    diff -= days * (1000 * 60 * 60 * 24);
+
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+
+    var mins = Math.floor(diff / (1000 * 60));
+    diff -= mins * (1000 * 60);
+
+    var seconds = Math.floor(diff / (1000));
+    diff -= seconds * (1000);
+
+    var milliSeconds = Math.floor(diff / (1000000));
+    diff -= milliSeconds * (1000000);
+
+    setDuration((days < 10 ? `0${days}` : days) + ":" +
+      (hours < 10 ? `0${hours}` : hours) + ":" +
+      (mins < 10 ? `0${mins}` : mins) + ":" +
+      (seconds < 10 ? `0${seconds}` : seconds) + ":" +
+      diff.toString().substr(0, 2));
+  }
 
   async function triggerReaction() {
     if (propReaction.reactionStarted) {
@@ -42,7 +74,8 @@ export default function ReactionItem(props) {
   }
 
   async function killReaction() {
-    reactionTimer = null;
+    clearTimeout(reactionTimer);
+    clearTimeout(durationTimer);
     propReaction.energy = 0;
     propReaction.extinguished = true;
     propReaction.title = 'Extinguished';
@@ -87,8 +120,9 @@ export default function ReactionItem(props) {
                 chargeReaction(context);
               }}>
               <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
-              <span className="clicks">{propReaction.clicks}</span>
-              <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
+              <span className="duration">{duration}</span>
+              <span className="clicks">{propReaction.clicks} CLICKS</span>
+              <span className="energy">ENERGY: {propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
               <span className="status-text">
                 {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}
               </span>

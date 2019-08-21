@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import GameContext from "./context";
 import { databaseRef } from '../config/firebase';
-import { useAuth } from '../state/auth';
+import { useAuth } from './auth';
 
-const provider = props => {
+export default function Provider(props) {
     const { user } = useAuth();
     const [state, setState] = useState({
         fullName: '',
@@ -51,7 +51,6 @@ const provider = props => {
                     setState({ ...state, isLoggedIn: status });
                 },
                 updateFullName: (newName) => {
-                    console.log('update full name', newName);
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {
@@ -63,5 +62,3 @@ const provider = props => {
         </GameContext.Provider>
     );
 };
-
-export default provider;

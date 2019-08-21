@@ -5,6 +5,8 @@ import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import "./style.css";
 import { useAuth } from '../state/auth';
+import Container from '@material-ui/core/Container';
+import * as firebase from 'firebase';
 
 export default function Reactor() {
 
@@ -20,7 +22,7 @@ export default function Reactor() {
           snapshot.forEach(doc => {
             reactions.push({ id: doc.key, reaction: doc.val() })
           })
-          setReactionItems(reactions)
+          setReactionItems(reactions.reverse());
         });
     }
     return () => unsubscribe;
@@ -34,7 +36,8 @@ export default function Reactor() {
       reactionStarted: false,
       reactionStartedAt: null,
       extinguished: false,
-      extinguishedAt: null
+      extinguishedAt: null,
+      startedAt: firebase.database.ServerValue.TIMESTAMP
     });
   }
 
@@ -43,11 +46,13 @@ export default function Reactor() {
       <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
         <h4><span role="img" aria-label="Battery">🔋</span> Game Over.</h4>
       </div>
-      <div className="game-session-list-container">
-        {reactionItems.map(r => (
-          <ReactionItem key={r.id} id={r.id} propReaction={r.reaction} />
-        ))}
-      </div>
+      <Container maxWidth="sm">
+        <div className="game-session-list-container">
+          {reactionItems.map(r => (
+            <ReactionItem key={r.id} id={r.id} propReaction={r.reaction} />
+          ))}
+        </div>
+      </Container>
       <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
         <AddIcon />
       </Fab>
