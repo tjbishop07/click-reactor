@@ -59,6 +59,10 @@ export default function Reactor() {
     }
   }
 
+  const fab = <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
+    <AddIcon />
+  </Fab>;
+
   return (
     <div>
       <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
@@ -71,9 +75,7 @@ export default function Reactor() {
           ))}
         </div>
       </Container>
-      <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
-        <AddIcon />
-      </Fab>
+      {user ? fab : ''}
     </div>
   );
 

@@ -14,6 +14,7 @@ import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
+import PointTarget from 'react-point';
 
 export default function ReactionItem(props) {
 
@@ -123,24 +124,23 @@ export default function ReactionItem(props) {
       {context => (
         <Fragment>
           <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
-            <div
-              key="front"
-              className={`reaction-container ${propReaction.reactionStarted ? 'charged' : ''} ${propReaction.extinguished ? 'extinguished' : ''}`}
-              onClick={() => {
-                chargeReaction(context);
-              }}>
-              <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
-              <span className="duration">{duration}</span>
-              <span className="clicks">{propReaction.clicks}</span>
-              <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
-              <span className="status-text">
-                {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}
-              </span>
-              <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={propReaction.energy} />
-              <Fab aria-label="Energy" className={`fab-reaction ${propReaction.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
-                <BatteryChargingFullIcon />
-              </Fab>
-            </div>
+            <PointTarget key="front" onPoint={() => { chargeReaction(context); }}>
+              <div
+                key="front"
+                className={`reaction-container ${propReaction.reactionStarted ? 'charged' : ''} ${propReaction.extinguished ? 'extinguished' : ''}`}>
+                <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
+                <span className="duration">{duration}</span>
+                <span className="clicks">{propReaction.clicks}</span>
+                <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
+                <span className="status-text">
+                  {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}
+                </span>
+                <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={propReaction.energy} />
+                <Fab aria-label="Energy" className={`fab-reaction ${propReaction.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
+                  <BatteryChargingFullIcon />
+                </Fab>
+              </div>
+            </PointTarget>
             <div
               key="back"
               className={`reaction-container card-back ${propReaction.reactionStarted ? 'charged' : ''}`}>

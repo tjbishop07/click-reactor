@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css?family=Questrial|Russo+One&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Questrial|Orbitron&display=swap');
+@import '../theme/default.scss';
 body {
     background: url('../img/bg-reactor.png') no-repeat center center fixed;
     background-size: cover;
@@ -34,11 +35,11 @@ body {
 
 .login-container {
     position: absolute;
-    right: 10px;
-    top: 60px;
-    background: rgba(0, 0, 0, .7);
+    right: 0;
+    top: 65px;
+    background-image: linear-gradient(to right top, #b05ec2, #d35db0, #eb649c, #f97189, #ff8379, #ff9270, #ffa36a, #ffb467, #ffc466, #ffd566, #ffe66a, #f9f871);
     width: 300px;
-    padding: 10px;
+    padding: 15px;
     text-align: center;
 }
 
@@ -60,13 +61,15 @@ body {
     position: fixed !important;
     bottom: 20px !important;
     right: 20px !important;
+    background: $primaryColor !important;
 }
 
 .fab-settings-reaction {
     position: fixed !important;
     bottom: 20px !important;
     left: 20px !important;
-    z-index: 5
+    z-index: 5;
+    background: $primaryColor !important;
 }
 
 .appbar {
@@ -98,13 +101,13 @@ img {
 }
 
 h1.title {
-    font-family: 'Russo One', sans-serif;
+    font-family: 'Orbitron', sans-serif;
     font-size: 2rem;
     text-shadow: 0 0 2px #000000 !important;
     font-size: 1.5rem;
     letter-spacing: 4px;
     text-align: center;
-    margin-top: 15px
+    margin-top: 25px
 }
 
 .hud-container {
@@ -151,6 +154,7 @@ h1.title {
     cursor: pointer !important;
     position: relative;
     text-align: center;
+    box-shadow: 0px 7px 40px rgba(0, 0, 0, 0.5);
 }
 
 .complete-game-session-item {
