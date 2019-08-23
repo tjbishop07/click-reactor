@@ -9,11 +9,13 @@ import CheckIcon from '@material-ui/icons/Check';
 import SaveIcon from '@material-ui/icons/Save';
 import Toolbar from '@material-ui/core/Toolbar';
 import Paper from '@material-ui/core/Paper';
+import { useAuth } from '../state/auth';
 
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: theme.spacing(2),
     padding: theme.spacing(2, 2, 5, 2)
   },
@@ -50,6 +52,7 @@ const useStyles = makeStyles(theme => ({
 export default function Settings() {
 
   const context = useContext(GameContext);
+  const { user } = useAuth();
   const timer = useRef();
   const classes = useStyles();
   const [fullName, setFullName] = useState('');
@@ -77,23 +80,23 @@ export default function Settings() {
       {context => (
         <Fragment>
           <Paper className={classes.root}>
-            <TextField
+            {/* <TextField
               label="Name"
               className={classes.input}
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               placeholder="Your name"
               inputProps={{ 'aria-label': 'Your name' }}
-            />
+            /> */}
           </Paper>
-            <Toolbar>
-              <div className={classes.wrapper}>
-                <Fab color="secondary" aria-label="save" className={classes.fabButton} onClick={saveFullName(context)}>
-                  {success ? <CheckIcon /> : <SaveIcon />}
-                </Fab>
-                {loading && <CircularProgress size={68} className={classes.fabProgress} />}
-              </div>
-            </Toolbar>
+          <Toolbar>
+            <div className={classes.wrapper}>
+              <Fab color="secondary" aria-label="save" className={classes.fabButton} onClick={saveFullName(context)}>
+                {success ? <CheckIcon /> : <SaveIcon />}
+              </Fab>
+              {loading && <CircularProgress size={68} className={classes.fabProgress} />}
+            </div>
+          </Toolbar>
         </Fragment>
       )}
     </GameContext.Consumer>

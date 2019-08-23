@@ -12,12 +12,15 @@ import ListItemText from '@material-ui/core/ListItemText';
 import SettingsBackupRestore from '@material-ui/icons/SettingsBackupRestore';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
+import { useSnackbar } from 'notistack';
+import Button from '@material-ui/core/Button';
 
 export default function ReactionItem(props) {
 
   let reactionTimer = null;
   let durationTimer = null;
   const { id, propReaction } = props;
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [isFlipped, setIsFlipped] = useState(false);
   const [duration, setDuration] = useState('');
   const { user } = useAuth();
@@ -90,39 +93,46 @@ export default function ReactionItem(props) {
       propReaction.clicks = (propReaction.clicks || 0) + 1;
       propReaction.energy = newCompletedCalulcation;
       context.updateScore(1);
-
       if (propReaction.energy >= 100) {
         propReaction.energy = 100;
         propReaction.reactionStarted = true;
         context.updateScore(10);
+        showMessage('Reaction started!', 'success');
         if (!reactionTimer) {
           reactionTimer = setInterval(triggerReaction.bind(this), 2000);
         }
-      } else {
       }
       databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
     }
   };
 
-  return (
+  const showMessage = (message, variant) => {
+    enqueueSnackbar(message,
+      {
+        variant: variant,
+        action:
+          <Button onClick={() => { closeSnackbar() }}>
+            {'Dismiss'}
+          </Button>
+      });
+  }
 
+  return (
 
     <GameContext.Consumer>
       {context => (
         <Fragment>
-
-
           <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
             <div
               key="front"
-              className={`game-session-list-item ${propReaction.reactionStarted ? 'charged' : ''} ${propReaction.extinguished ? 'extinguished' : ''}`}
+              className={`reaction-container ${propReaction.reactionStarted ? 'charged' : ''} ${propReaction.extinguished ? 'extinguished' : ''}`}
               onClick={() => {
                 chargeReaction(context);
               }}>
               <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
               <span className="duration">{duration}</span>
-              <span className="clicks">{propReaction.clicks} CLICKS</span>
-              <span className="energy">ENERGY: {propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
+              <span className="clicks">{propReaction.clicks}</span>
+              <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
               <span className="status-text">
                 {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}
               </span>
@@ -133,7 +143,7 @@ export default function ReactionItem(props) {
             </div>
             <div
               key="back"
-              className={`game-session-list-item card-back ${propReaction.reactionStarted ? 'charged' : ''}`}>
+              className={`reaction-container card-back ${propReaction.reactionStarted ? 'charged' : ''}`}>
               <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
               <span className="clicks">Energy Sources</span>
               <List aria-label="Energy Sources" className="energySourcesList">
@@ -167,7 +177,6 @@ export default function ReactionItem(props) {
               </Fab>
             </div>
           </ReactCardFlip >
-
 
         </Fragment>
       )}

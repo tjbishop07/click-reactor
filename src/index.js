@@ -7,6 +7,7 @@ import TagManager from 'react-gtm-module'
 const tagManagerArgs = {
     gtmId: 'GTM-5F7T2ZF'
 }
+
 TagManager.initialize(tagManagerArgs)
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.register();

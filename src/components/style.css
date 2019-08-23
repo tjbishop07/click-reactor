@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Questrial|Russo+One&display=swap');
 body {
-    background: url('../img/bg-reactor2.png') no-repeat center center fixed;
+    background: url('../img/bg-reactor.png') no-repeat center center fixed;
     background-size: cover;
     background-color: #282C34;
     min-height: 100vh;
@@ -33,25 +33,24 @@ body {
 }
 
 .login-container {
-    /* z-index: 300 !important; */
-    /* background: url('../img/bg-waves.svg') no-repeat center 200px fixed;
-    background-size: fill; */
-    /* background-color: #282C34; */
-    padding: 20px;
-    /* border-radius: 10px; */
-    /* box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22); */
-    /* min-width: 275px; */
+    position: absolute;
+    right: 10px;
+    top: 60px;
+    background: rgba(0, 0, 0, .7);
+    width: 300px;
+    padding: 10px;
+    text-align: center;
+}
+
+.login-container h4 {
+    text-align: center !important;
+}
+
+.login-container .button-anon {
+    margin-bottom: 20px;
 }
 
 .MuiDialog-paper {
-    /* z-index: 300 !important; */
-    /* background: url('../img/bg-waves.svg') no-repeat center center fixed;
-    background-size: fill; */
-    /* background-color: #282C34; */
-    /* padding: 20px; */
-    /* border-radius: 10px; */
-    /* box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22); */
-    /* min-width: 275px; */
     display: flex;
     align-items: center;
     margin-top: 40px
@@ -100,60 +99,58 @@ img {
 
 h1.title {
     font-family: 'Russo One', sans-serif;
-    position: fixed;
-    left: 20px;
-    top: 10px;
     font-size: 2rem;
     text-shadow: 0 0 2px #000000 !important;
     font-size: 1.5rem;
     letter-spacing: 4px;
-    padding-bottom: 10px;
+    text-align: center;
+    margin-top: 15px
 }
 
 .hud-container {
     z-index: 2;
-    background: rgba(0, 0, 0, .9);
+    background: rgba(0, 0, 0, .5);
     position: fixed;
-    top: 75px;
+    top: 0;
     left: 0;
     width: 100%;
-    padding: 20px;
-    opacity: .7;
-    border-bottom: dashed 1px rgba(255, 255, 255, 0.3);
-    border-top: dashed 1px rgba(255, 255, 255, 0.3);
 }
 
-.hud-container h5 {
-    margin: 5px 0
+.hud-container .username {
+    text-align: right;
+    margin-right: 25px;
+    margin-top: 25px;
+}
+
+.hud-container .score {
+    margin-left: 25px;
+    margin-top: 25px;
 }
 
 .game-session-list-container {
-    margin: 200px 0 300px 0;
+    margin-top: 100px;
     display: flex;
     flex-wrap: wrap;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     align-content: center;
     width: 100%;
-    height: 100nvm
+    height: 100nvm;
+    padding-bottom: 500px;
 }
 
-.game-session-list-item {
+.reaction-container {
     margin: 10px;
     color: white;
-    background-color: rgba(0, 0, 0, .5) !important;
+    background-color: rgba(0, 0, 0, .7) !important;
     border: solid 5px #000;
-    border-radius: 10px;
     width: 250px;
-    height: 200px;
+    height: 150px !important;
     padding: 20px !important;
     cursor: pointer !important;
     position: relative;
     text-align: center;
-    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.1) inset;
-    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.1) inset;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.1) inset;
 }
 
 .complete-game-session-item {
@@ -165,6 +162,8 @@ h1.title {
     width: 100%;
     text-align: center;
     text-shadow: 1px 1px 1px #000;
+    margin-top: 400px;
+    opacity: .7;
 }
 
 #game-session-add-form {
@@ -174,7 +173,8 @@ h1.title {
 
 .hive {
     width: 150px;
-    margin: 15px auto;
+    margin: 0 auto;
+    margin-top: -5px;
 }
 
 .hive:active {
@@ -219,12 +219,12 @@ h1.title {
 .charged .fab-reaction {
     opacity: 1;
     position: absolute;
-    right: -15px;
+    right: -30px;
     top: 70px;
 }
 
 .charged .hive {
-    margin-top: -3px;
+    margin-top: -10px;
     width: 150px
 }
 
@@ -234,39 +234,43 @@ h1.title {
 
 .duration {
     position: absolute;
-    right: 10px;
+    right: 0;
     bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
-    text-align: right
+    text-align: right;
+    opacity: .7;
 }
 
 .clicks {
     position: absolute;
-    left: 10px;
-    top: 10px;
+    left: 0;
+    top: 0;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
+    opacity: .7;
 }
 
 .energy {
     position: absolute;
-    right: 10px;
-    top: 10px;
+    right: 0;
+    top: 0;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
+    opacity: .7;
 }
 
 .status-text {
     text-transform: uppercase;
     font-size: .8rem;
     position: absolute;
-    left: 10px;
-    bottom: 20px;
-    text-shadow: 1px 1px 1px #000
+    left: 0;
+    bottom: 10px;
+    text-shadow: 1px 1px 1px #000;
+    opacity: .7;
 }
 
 .extinguished {
@@ -280,9 +284,9 @@ h1.title {
 
 .progress-bar {
     position: absolute !important;
-    width: 125px !important;
-    left: 10px;
-    bottom: 10px;
+    width: 100% !important;
+    left: 0;
+    bottom: 0;
 }
 
 .fadeOut {
