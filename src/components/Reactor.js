@@ -3,7 +3,7 @@ import { databaseRef } from '../config/firebase';
 import ReactionItem from './ReactionItem';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import "./style.css";
+import "./style.scss";
 import { useAuth } from '../state/auth';
 import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
