@@ -1,0 +1,23 @@
+@import '../theme/default.scss';
+.fab-add-reaction {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    background: $primaryColor !important;
+}
+
+.fab-settings-reaction {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    z-index: 5;
+    background: $primaryColor !important;
+}
+
+.reactor-down {
+    width: 100%;
+    text-align: center;
+    text-shadow: 1px 1px 1px #000;
+    margin-top: 100px;
+    opacity: .7;
+}

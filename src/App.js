@@ -15,6 +15,7 @@ import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import SettingsIcon from '@material-ui/icons/Settings';
 import { SnackbarProvider } from 'notistack';
+import './styles/style.scss';
 
 const useStyles = makeStyles(theme => ({
   appBar: {

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { databaseRef } from '../config/firebase';
-import ReactionItem from './ReactionItem';
+import Reaction from './Reaction';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import "./style.scss";
 import { useAuth } from '../state/auth';
 import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import * as firebase from 'firebase';
 import { useSnackbar } from 'notistack';
+import "../styles/reactor.scss";
 
 export default function Reactor() {
 
@@ -65,13 +65,14 @@ export default function Reactor() {
 
   return (
     <div>
-      <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
-        <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration." - Nikola Tesla</h4>
-      </div>
-      <Container maxWidth="md">
+      <Container maxWidth="sm">
+        <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
+          <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
+          <h5> - Nikola Tesla</h5>
+        </div>
         <div className="game-session-list-container">
           {reactionItems.map(r => (
-            <ReactionItem key={r.id} id={r.id} propReaction={r.reaction} />
+            <Reaction key={r.id} id={r.id} propReaction={r.reaction} />
           ))}
         </div>
       </Container>

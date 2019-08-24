@@ -1,11 +1,15 @@
-import React, { useEffect, Fragment } from "react";
+import React, { useEffect, Fragment, useState } from "react";
 import GameContext from "../state/context";
 import * as firebase from 'firebase';
 import * as firebaseui from 'firebaseui';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Divider from '@material-ui/core/Divider';
+import '../styles/login.scss';
 
 export default function Login() {
+
+    const [showLogin, setShowLogin] = useState(true);
 
     useEffect(() => {
         // NOTE: Let the UI render before attaching Firebase UI elements. 
@@ -31,12 +35,8 @@ export default function Login() {
     }, []);
 
     function signInAnon() {
-        firebase.auth().signInAnonymously().catch(function (error) {
-            // Handle Errors here.
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log('sign in anon err', error);
-        });
+        setShowLogin(false);
+        firebase.auth().signInAnonymously();
     };
 
     return (
@@ -44,7 +44,8 @@ export default function Login() {
             {context => (
                 <Fragment>
                     <div className="login-container">
-                        <Button className="button-anon" size="large" color="primary" fullWidth variant="contained" onClick={() => { signInAnon(); }}>Play Now!</Button>
+                        <Button className="playNow" size="large" color="primary" fullWidth variant="contained" onClick={() => { signInAnon(); }}>Play Now!</Button>
+                        <Divider variant="middle" className="divider-login" />
                         <div id="firebaseui-auth-container"></div>
                         <CircularProgress id="loader" className="loader" />
                     </div>

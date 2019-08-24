@@ -15,6 +15,7 @@ import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
 import PointTarget from 'react-point';
+import '../styles/reaction.scss';
 
 export default function ReactionItem(props) {
 
@@ -135,7 +136,7 @@ export default function ReactionItem(props) {
                 <span className="status-text">
                   {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}
                 </span>
-                <LinearProgress className="progress-bar" color="secondary" variant="determinate" value={propReaction.energy} />
+                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={propReaction.energy} />
                 <Fab aria-label="Energy" className={`fab-reaction ${propReaction.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
                   <BatteryChargingFullIcon />
                 </Fab>

@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css?family=Lexend+Deca|Codystar&display=swap');
+@import '../theme/default.scss';
+body {
+    background: #ad5389;
+    /* fallback for old browsers */
+    background: -webkit-linear-gradient(to bottom, #3c1053, #ad5389);
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to bottom, #3c1053, #ad5389);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Lexend Deca', sans-serif;
+}
+
+img {
+    -khtml-user-select: none;
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.title {
+    text-align: center;
+    margin: 20px 0 0 0 !important
+}
+
+.hidden {
+    display: none !important;
+}

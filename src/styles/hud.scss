@@ -1,0 +1,21 @@
+.hud-container {
+    z-index: 2;
+    background: rgba(0, 0, 0, .3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.hud-container .username {
+    text-align: right;
+    margin-right: 25px;
+    margin-top: 25px;
+    opacity: .5
+}
+
+.hud-container .score {
+    margin-left: 25px;
+    margin-top: 25px;
+    opacity: .5;
+}
