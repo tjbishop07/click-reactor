@@ -21,20 +21,31 @@ export default function ReactionItem(props) {
 
   let reactionTimer = null;
   let durationTimer = null;
+  let gameSaveTimer = null;
   const { id, propReaction } = props;
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [isFlipped, setIsFlipped] = useState(false);
   const [duration, setDuration] = useState('');
+  const [clickBuffer, setClickBuffer] = useState(0);
+  const [clickCount, setClickCount] = useState(0);
   const { user } = useAuth();
 
   useEffect(() => {
+    setClickCount(propReaction.clicks);
     if (!reactionTimer) {
-      reactionTimer = setInterval(triggerReaction.bind(this), 2000);
+      reactionTimer = setInterval(triggerReaction.bind(this), 5000);
     }
     if (!durationTimer) {
       durationTimer = setInterval(updateDurationLabel.bind(this), 100);
     }
+    // if (!gameSaveTimer) {
+    //   gameSaveTimer = setInterval(saveGame.bind(this), 10000);
+    // }
   }, []);
+
+  function saveGame() {
+    databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+  }
 
   function updateDurationLabel() {
     var nowDate = new Date();
@@ -63,7 +74,7 @@ export default function ReactionItem(props) {
       diff.toString().substr(0, 2));
   }
 
-  async function triggerReaction() {
+  function triggerReaction() {
     if (propReaction.reactionStarted) {
       const diff = Math.random() * 2;
       const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
@@ -73,19 +84,20 @@ export default function ReactionItem(props) {
         propReaction.energy = newEnergyCalculation;
         propReaction.reactionStarted = true;
         propReaction.reactionStartedAt = new Date();
-        await databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+        propReaction.clicks = clickCount;
+        databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
       }
     }
   }
 
-  async function killReaction() {
+  function killReaction() {
     clearTimeout(reactionTimer);
     clearTimeout(durationTimer);
     propReaction.energy = 0;
     propReaction.extinguished = true;
     propReaction.title = 'Extinguished';
     propReaction.extinguishedAt = new Date();
-    await databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+    databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
   };
 
   function chargeReaction(context) {
@@ -93,18 +105,31 @@ export default function ReactionItem(props) {
       const diff = Math.random() * 2;
       const newCompletedCalulcation = Math.min(propReaction.energy + diff, 100);
       propReaction.clicks = (propReaction.clicks || 0) + 1;
+      setClickCount(propReaction.clicks);
       propReaction.energy = newCompletedCalulcation;
       context.updateScore(1);
       if (propReaction.energy >= 100) {
         propReaction.energy = 100;
         propReaction.reactionStarted = true;
-        context.updateScore(10);
-        showMessage('Reaction started!', 'success');
+        context.updateScore(propReaction.clicks * 10);
+        showMessage('Reaction started! Now keep it going...', 'success');
         if (!reactionTimer) {
           reactionTimer = setInterval(triggerReaction.bind(this), 2000);
         }
       }
       databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+    } else {
+      const diff = Math.random() * 2;
+      const newCompletedCalulcation = Math.min(propReaction.energy + diff, 100);
+      propReaction.energy = newCompletedCalulcation;
+      context.updateScore(1);
+      setClickBuffer(clickBuffer + 1);
+      if (clickBuffer === 10) {
+        setClickBuffer(0);
+        setClickCount(clickCount + 1);
+        propReaction.clicks = clickCount;
+        databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
+      }
     }
   };
 
@@ -131,7 +156,7 @@ export default function ReactionItem(props) {
                 className={`reaction-container ${propReaction.reactionStarted ? 'charged' : ''} ${propReaction.extinguished ? 'extinguished' : ''}`}>
                 <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
                 <span className="duration">{duration}</span>
-                <span className="clicks">{propReaction.clicks}</span>
+                <span className="clicks">{clickCount}</span>
                 <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
                 <span className="status-text">
                   {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}

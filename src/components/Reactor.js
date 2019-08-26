@@ -42,7 +42,7 @@ export default function Reactor() {
       });
   }
 
-  function addReactionItem() {
+  const addReactionItem = () => {
     if (reactionItems.length < 3) {
       databaseRef.child(`userReactors/${user.uid}`).push().set({
         title: 'Start clicking...',
