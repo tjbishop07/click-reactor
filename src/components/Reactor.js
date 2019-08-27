@@ -15,7 +15,7 @@ export default function Reactor() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [reactionItems, setReactionItems] = useState([]);
   const { user } = useAuth();
-  
+
   useEffect(() => {
     let unsubscribe;
     if (user) {
@@ -49,7 +49,6 @@ export default function Reactor() {
         clicks: 0,
         energy: 0,
         reactionStarted: false,
-        reactionStartedAt: null,
         extinguished: false,
         extinguishedAt: null,
         startedAt: firebase.database.ServerValue.TIMESTAMP

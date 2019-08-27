@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { databaseRef } from '../config/firebase';
+import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
 import dna from '../img/dna.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -29,52 +30,44 @@ export default function ReactionItem(props) {
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState({});
   const { user } = useAuth();
-  // TODO: I think we need to hook into the Reactor list and useEffect when (propReaction) it changes
 
   useEffect(() => {
-    setClickCount(propReaction.clicks);
-    if (!reactionTimer) {
-      reactionTimer = setInterval(triggerReaction.bind(this), 5000);
-    }
-    if (!durationTimer) {
-      durationTimer = setInterval(updateDurationLabel.bind(this), 100);
-    }
+    reactionTimer = setInterval(triggerReaction.bind(this), 5000);
+    durationTimer = setInterval(updateDurationLabel.bind(this), 100);
   }, []);
 
   useEffect(() => {
-    console.log('prop reaction update', propReaction);
     setReactionState(propReaction);
+    setClickCount(propReaction.clicks);
   }, [propReaction]);
 
-  function saveGame() {
-    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
-  }
-
   function updateDurationLabel() {
-    var nowDate = new Date();
-    var startedAt = new Date(reactionState.startedAt);
-    var diff = nowDate.getTime() - startedAt.getTime();
+    if (propReaction && propReaction.startedAt) {
+      var nowDate = new Date();
+      var startedAt = new Date(propReaction.startedAt);
+      var diff = nowDate.getTime() - startedAt.getTime();
 
-    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    diff -= days * (1000 * 60 * 60 * 24);
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
 
-    var hours = Math.floor(diff / (1000 * 60 * 60));
-    diff -= hours * (1000 * 60 * 60);
+      var hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
 
-    var mins = Math.floor(diff / (1000 * 60));
-    diff -= mins * (1000 * 60);
+      var mins = Math.floor(diff / (1000 * 60));
+      diff -= mins * (1000 * 60);
 
-    var seconds = Math.floor(diff / (1000));
-    diff -= seconds * (1000);
+      var seconds = Math.floor(diff / (1000));
+      diff -= seconds * (1000);
 
-    var milliSeconds = Math.floor(diff / (1000000));
-    diff -= milliSeconds * (1000000);
+      var milliSeconds = Math.floor(diff / (1000000));
+      diff -= milliSeconds * (1000000);
 
-    setDuration((days < 10 ? `0${days}` : days) + ":" +
-      (hours < 10 ? `0${hours}` : hours) + ":" +
-      (mins < 10 ? `0${mins}` : mins) + ":" +
-      (seconds < 10 ? `0${seconds}` : seconds) + ":" +
-      diff.toString().substr(0, 2));
+      setDuration((days < 10 ? `0${days}` : days) + ":" +
+        (hours < 10 ? `0${hours}` : hours) + ":" +
+        (mins < 10 ? `0${mins}` : mins) + ":" +
+        (seconds < 10 ? `0${seconds}` : seconds) + ":" +
+        diff.toString().substr(0, 2));
+    }
   }
 
   function triggerReaction() {
@@ -86,7 +79,6 @@ export default function ReactionItem(props) {
       } else {
         reactionState.energy = newEnergyCalculation;
         reactionState.reactionStarted = true;
-        reactionState.reactionStartedAt = new Date();
         reactionState.clicks = clickCount;
         databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
       }
@@ -96,16 +88,14 @@ export default function ReactionItem(props) {
   function killReaction() {
     clearTimeout(reactionTimer);
     clearTimeout(durationTimer);
-    // TODO: Don't update propReaction. Update Firebase and let the props trickle down
     reactionState.energy = 0;
     reactionState.extinguished = true;
     reactionState.title = 'Extinguished';
-    reactionState.extinguishedAt = new Date();
+    reactionState.extinguishedAt = firebase.database.ServerValue.TIMESTAMP;
     databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
   };
 
   function chargeReaction(context) {
-    // TODO: Don't update propReaction. Update Firebase and let the props trickle down
     if (!reactionState.reactionStarted) {
       const diff = Math.random() * 2;
       const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
