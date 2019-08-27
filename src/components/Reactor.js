@@ -15,7 +15,7 @@ export default function Reactor() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [reactionItems, setReactionItems] = useState([]);
   const { user } = useAuth();
-
+  
   useEffect(() => {
     let unsubscribe;
     if (user) {

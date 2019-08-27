@@ -21,14 +21,15 @@ export default function ReactionItem(props) {
 
   let reactionTimer = null;
   let durationTimer = null;
-  let gameSaveTimer = null;
   const { id, propReaction } = props;
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [isFlipped, setIsFlipped] = useState(false);
   const [duration, setDuration] = useState('');
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
+  const [reactionState, setReactionState] = useState({});
   const { user } = useAuth();
+  // TODO: I think we need to hook into the Reactor list and useEffect when (propReaction) it changes
 
   useEffect(() => {
     setClickCount(propReaction.clicks);
@@ -38,18 +39,20 @@ export default function ReactionItem(props) {
     if (!durationTimer) {
       durationTimer = setInterval(updateDurationLabel.bind(this), 100);
     }
-    // if (!gameSaveTimer) {
-    //   gameSaveTimer = setInterval(saveGame.bind(this), 10000);
-    // }
   }, []);
 
+  useEffect(() => {
+    console.log('prop reaction update', propReaction);
+    setReactionState(propReaction);
+  }, [propReaction]);
+
   function saveGame() {
-    databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
   }
 
   function updateDurationLabel() {
     var nowDate = new Date();
-    var startedAt = new Date(propReaction.startedAt);
+    var startedAt = new Date(reactionState.startedAt);
     var diff = nowDate.getTime() - startedAt.getTime();
 
     var days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -75,17 +78,17 @@ export default function ReactionItem(props) {
   }
 
   function triggerReaction() {
-    if (propReaction.reactionStarted) {
+    if (reactionState.reactionStarted) {
       const diff = Math.random() * 2;
-      const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
+      const newEnergyCalculation = Math.min(reactionState.energy - diff, 100);
       if (newEnergyCalculation < 0) {
         killReaction(id);
       } else {
-        propReaction.energy = newEnergyCalculation;
-        propReaction.reactionStarted = true;
-        propReaction.reactionStartedAt = new Date();
-        propReaction.clicks = clickCount;
-        databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+        reactionState.energy = newEnergyCalculation;
+        reactionState.reactionStarted = true;
+        reactionState.reactionStartedAt = new Date();
+        reactionState.clicks = clickCount;
+        databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
       }
     }
   }
@@ -93,41 +96,43 @@ export default function ReactionItem(props) {
   function killReaction() {
     clearTimeout(reactionTimer);
     clearTimeout(durationTimer);
-    propReaction.energy = 0;
-    propReaction.extinguished = true;
-    propReaction.title = 'Extinguished';
-    propReaction.extinguishedAt = new Date();
-    databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+    // TODO: Don't update propReaction. Update Firebase and let the props trickle down
+    reactionState.energy = 0;
+    reactionState.extinguished = true;
+    reactionState.title = 'Extinguished';
+    reactionState.extinguishedAt = new Date();
+    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
   };
 
   function chargeReaction(context) {
-    if (!propReaction.reactionStarted) {
+    // TODO: Don't update propReaction. Update Firebase and let the props trickle down
+    if (!reactionState.reactionStarted) {
       const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(propReaction.energy + diff, 100);
-      propReaction.clicks = (propReaction.clicks || 0) + 1;
-      setClickCount(propReaction.clicks);
-      propReaction.energy = newCompletedCalulcation;
+      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
+      reactionState.clicks = (reactionState.clicks || 0) + 1;
+      setClickCount(reactionState.clicks);
+      reactionState.energy = newCompletedCalulcation;
       context.updateScore(1);
-      if (propReaction.energy >= 100) {
-        propReaction.energy = 100;
-        propReaction.reactionStarted = true;
-        context.updateScore(propReaction.clicks * 10);
+      if (reactionState.energy >= 100) {
+        reactionState.energy = 100;
+        reactionState.reactionStarted = true;
+        context.updateScore(reactionState.clicks * 10);
         showMessage('Reaction started! Now keep it going...', 'success');
         if (!reactionTimer) {
           reactionTimer = setInterval(triggerReaction.bind(this), 2000);
         }
       }
-      databaseRef.child(`userReactors/${user.uid}/${id}`).set(propReaction);
+      databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
     } else {
       const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(propReaction.energy + diff, 100);
-      propReaction.energy = newCompletedCalulcation;
+      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
+      reactionState.energy = newCompletedCalulcation;
       context.updateScore(1);
       setClickBuffer(clickBuffer + 1);
       if (clickBuffer === 10) {
         setClickBuffer(0);
         setClickCount(clickCount + 1);
-        propReaction.clicks = clickCount;
+        reactionState.clicks = clickCount;
         databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
       }
     }
@@ -153,24 +158,24 @@ export default function ReactionItem(props) {
             <PointTarget key="front" onPoint={() => { chargeReaction(context); }}>
               <div
                 key="front"
-                className={`reaction-container ${propReaction.reactionStarted ? 'charged' : ''} ${propReaction.extinguished ? 'extinguished' : ''}`}>
-                <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
+                className={`reaction-container ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
+                <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" />
                 <span className="duration">{duration}</span>
                 <span className="clicks">{clickCount}</span>
-                <span className="energy">{propReaction.energy ? propReaction.energy.toFixed(2) : 0}%</span>
+                <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
                 <span className="status-text">
-                  {(propReaction.reactionStarted && !propReaction.extinguished) ? 'Reaction started!' : propReaction.title}
+                  {(reactionState.reactionStarted && !reactionState.extinguished) ? 'Reaction started!' : reactionState.title}
                 </span>
-                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={propReaction.energy} />
-                <Fab aria-label="Energy" className={`fab-reaction ${propReaction.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
+                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy} />
+                <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
                   <BatteryChargingFullIcon />
                 </Fab>
               </div>
             </PointTarget>
             <div
               key="back"
-              className={`reaction-container card-back ${propReaction.reactionStarted ? 'charged' : ''}`}>
-              <img src={propReaction.reactionStarted ? dna : hive} className="hive" alt="hive" />
+              className={`reaction-container card-back ${reactionState.reactionStarted ? 'charged' : ''}`}>
+              <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" />
               <span className="clicks">Energy Sources</span>
               <List aria-label="Energy Sources" className="energySourcesList">
                 <ListItem button>
