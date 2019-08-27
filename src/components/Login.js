@@ -44,8 +44,12 @@ export default function Login() {
             {context => (
                 <Fragment>
                     <div className="login-container">
-                        <Button className="playNow" size="large" color="primary" fullWidth variant="contained" onClick={() => { signInAnon(); }}>Play Now!</Button>
-                        <Divider variant="middle" className="divider-login" />
+                        {showLogin ?
+                            <div>
+                                <Button className="playNow" size="large" color="primary" fullWidth variant="contained" onClick={() => { signInAnon(); }}>Play Now!</Button>
+                                <Divider variant="middle" className="divider-login" />
+                            </div>
+                            : ''}
                         <div id="firebaseui-auth-container"></div>
                         <CircularProgress id="loader" className="loader" />
                     </div>

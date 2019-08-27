@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
+import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
@@ -20,8 +21,6 @@ import '../styles/reaction.scss';
 
 export default function ReactionItem(props) {
 
-  let reactionTimer = null;
-  let durationTimer = null;
   const { id, propReaction } = props;
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [isFlipped, setIsFlipped] = useState(false);
@@ -31,10 +30,8 @@ export default function ReactionItem(props) {
   const [reactionState, setReactionState] = useState({});
   const { user } = useAuth();
 
-  useEffect(() => {
-    reactionTimer = setInterval(triggerReaction.bind(this), 5000);
-    durationTimer = setInterval(updateDurationLabel.bind(this), 100);
-  }, []);
+  useInterval(triggerReaction.bind(this), 2000);
+  useInterval(updateDurationLabel.bind(this), 100);
 
   useEffect(() => {
     setReactionState(propReaction);
@@ -71,23 +68,23 @@ export default function ReactionItem(props) {
   }
 
   function triggerReaction() {
-    if (reactionState.reactionStarted) {
+    if (propReaction && propReaction.reactionStarted) {
       const diff = Math.random() * 2;
-      const newEnergyCalculation = Math.min(reactionState.energy - diff, 100);
+      const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
       if (newEnergyCalculation < 0) {
         killReaction(id);
       } else {
-        reactionState.energy = newEnergyCalculation;
-        reactionState.reactionStarted = true;
-        reactionState.clicks = clickCount;
-        databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
+        const reactionUpdates = {
+          ...propReaction,
+          energy: newEnergyCalculation,
+          reactionStarted: true
+        };
+        databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionUpdates);
       }
     }
   }
 
   function killReaction() {
-    clearTimeout(reactionTimer);
-    clearTimeout(durationTimer);
     reactionState.energy = 0;
     reactionState.extinguished = true;
     reactionState.title = 'Extinguished';
@@ -100,17 +97,14 @@ export default function ReactionItem(props) {
       const diff = Math.random() * 2;
       const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
       reactionState.clicks = (reactionState.clicks || 0) + 1;
-      setClickCount(reactionState.clicks);
       reactionState.energy = newCompletedCalulcation;
+      setClickCount(reactionState.clicks);
       context.updateScore(1);
       if (reactionState.energy >= 100) {
         reactionState.energy = 100;
         reactionState.reactionStarted = true;
         context.updateScore(reactionState.clicks * 10);
         showMessage('Reaction started! Now keep it going...', 'success');
-        if (!reactionTimer) {
-          reactionTimer = setInterval(triggerReaction.bind(this), 2000);
-        }
       }
       databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
     } else {
@@ -122,7 +116,6 @@ export default function ReactionItem(props) {
       if (clickBuffer === 10) {
         setClickBuffer(0);
         setClickCount(clickCount + 1);
-        reactionState.clicks = clickCount;
         databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
       }
     }
@@ -156,7 +149,7 @@ export default function ReactionItem(props) {
                 <span className="status-text">
                   {(reactionState.reactionStarted && !reactionState.extinguished) ? 'Reaction started!' : reactionState.title}
                 </span>
-                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy} />
+                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
                 <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
                   <BatteryChargingFullIcon />
                 </Fab>
