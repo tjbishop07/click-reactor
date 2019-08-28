@@ -62,6 +62,7 @@ export default function Reactor() {
     <AddIcon />
   </Fab>;
 
+  // TODO: Remove Reaction item from DOM once it has extinguished.
   return (
     <div>
       <Container maxWidth="sm">

@@ -1,3 +1,63 @@
+<h1 align="center">Welcome to Click Reactors 👋</h1>
+<p>
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0 (BETA)-blue.svg?cacheSeconds=2592000" />
+</p>
+
+> You inherit a nuclear reactor from your grandma. Now it's up to you to start it up and keep it alive, risking the lives of all humanity if you fail. DON'T FAIL.
+
+### 🏠 [Homepage](clickreactors.com)
+
+## Install
+
+```sh
+npm install
+```
+
+## Usage
+
+```sh
+npm run start
+```
+
+## Author
+
+👤 **Tom Bishop <tjbishop@gmail.com>**
+
+
+## 🤝 Contributing
+
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/tjbishop07/click-reactor/issues).
+
+## Show your support
+
+Give a ⭐️ if this project helped you!
+
+***
+_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+
+
 ## Click Reactor - Game Info
 You have been assigned a reactor. Your mission to start reactions by clicking as fast as you can then maintaining those reactions so that your reactor dosn't meltdown.
 
@@ -28,4 +88,4 @@ Your app is ready to be deployed!
 
 ## Credit
 ### Background
-- https://www.reddit.com/user/ElsieSetu/
+- https://www.reddit.com/user/ElsieSetu/ -->
