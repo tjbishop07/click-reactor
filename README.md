@@ -1,11 +1,11 @@
-<h1 align="center">Welcome to Click Reactors 👋</h1>
+<h1 align="center">&#9762; Welcome to Click Reactors &#9762;</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.0 (BETA)-blue.svg?cacheSeconds=2592000" />
 </p>
 
 > You inherit a nuclear reactor from your grandma. Now it's up to you to start it up and keep it alive, risking the lives of all humanity if you fail. DON'T FAIL.
 
-### 🏠 [Homepage](clickreactors.com)
+### 🏠 [clickreactors.com](clickreactors.com)
 
 ## Install
 
@@ -19,6 +19,11 @@ npm install
 npm run start
 ```
 
+## In the works
+[ ] Game Over Process
+[ ] Leaderboard
+[ ] Performance Enhancements
+ 
 ## Author
 
 👤 **Tom Bishop <tjbishop@gmail.com>**
