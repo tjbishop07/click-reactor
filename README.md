@@ -20,9 +20,9 @@ npm run start
 ```
 
 ## In the works
-[ ] Game Over Process
-[ ] Leaderboard
-[ ] Performance Enhancements
+- [ ] Game Over Process
+- [ ] Leaderboard
+- [ ] Performance Enhancements
  
 ## Author
 
