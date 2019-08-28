@@ -65,6 +65,9 @@ export default function Reactor() {
   return (
     <div>
       <Container maxWidth="sm">
+        {/* <h1 className={`tmp-class ${reactionItems.find(r => r.extinguished).length === 3 ? 'hidden' : ''}`}>
+
+        </h1> */}
         <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
           <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
           <h5> - Nikola Tesla</h5>

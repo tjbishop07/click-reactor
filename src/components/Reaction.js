@@ -149,15 +149,16 @@ export default function ReactionItem(props) {
     <GameContext.Consumer>
       {context => (
         <Fragment>
-          <ReactTooltip id="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} />
+          <ReactTooltip id={`reactionTip${id}`} className="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} effect="solid" />
           <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
             <PointTarget key="front" onPoint={() => { chargeReaction(context); }}>
               <div
                 key="front"
                 className={`reaction-container ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
-                <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for="reactionTip" data-tip="" />
+                <span className={reactionState.extinguished ? 'skully' : 'hidden'}>☠</span>
+                <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${id}`} data-tip="Hi" />
                 <span className="duration">{duration}</span>
-                <span className="clicks">{clickCount}</span>
+                <span className="clicks">${clickCount}</span>
                 <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
                 <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
                 <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
