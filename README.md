@@ -1,6 +1,8 @@
 <h1 align="center">&#9762; Welcome to Click Reactors &#9762;</h1>
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0 (BETA)-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0 (BETA)-blue.svg?cacheSeconds=2592000&style=plastic" />&nbsp;
+  <img alt="Website" src="https://img.shields.io/website/https/www.clickreactors.com?style=plastic" />&nbsp;
+  <img alt="Discord" src="https://img.shields.io/discord/616340249072762881?style=plastic" />
 </p>
 
 > You inherit a nuclear reactor from your grandma. Now it's up to you to start it up and keep it alive, risking the lives of all humanity if you fail. DON'T FAIL.
@@ -8,6 +10,8 @@
 ### 🏠 [clickreactors.com](https://www.clickreactors.com)
 
 ## Install
+This project was created using [Create React App](https://github.com/facebook/create-react-app). 
+Firebase is used for backend (hosting/database). You'll need to supply your own configuration info to connect to Firebase.
 
 ```sh
 npm install
@@ -23,6 +27,7 @@ npm run start
 - [ ] Game Over Process
 - [ ] Leaderboard
 - [ ] Performance Enhancements
+- [ ] Mobile Optimization (Larger screens are first priority)
  
 ## Author
 
