@@ -32,10 +32,12 @@ export default function ReactionItem(props) {
   const [toolTipText, setToolTipText] = useState('Start clicking!');
   const [reactionTimerDelay, setReactionTimerDelay] = useState(2000);
   const [durationTimerDelay, setDurationTimerDelay] = useState(100);
+  const [saveGameTimerDelay, setSaveGameTimerDelay] = useState(10000);
   const { user } = useAuth();
 
   useInterval(triggerReaction.bind(this), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(this), durationTimerDelay);
+  useInterval(saveGame.bind(this), saveGameTimerDelay);
 
   useEffect(() => {
     setReactionState(propReaction);
@@ -45,7 +47,11 @@ export default function ReactionItem(props) {
     } else {
       setToolTipText('Start clicking!');
     }
-  }, [propReaction]);
+  }, []);
+
+  function saveGame() {
+    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
+  }
 
   function updateDurationLabel() {
     if (propReaction && propReaction.startedAt) {
@@ -77,18 +83,18 @@ export default function ReactionItem(props) {
   }
 
   function triggerReaction() {
-    if (propReaction && propReaction.reactionStarted) {
+    if (reactionState && reactionState.reactionStarted) {
       const diff = Math.random() * 2;
-      const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
+      const newEnergyCalculation = Math.min(reactionState.energy - diff, 100);
       if (newEnergyCalculation < 0) {
         killReaction();
       } else {
         const reactionUpdates = {
-          ...propReaction,
+          ...reactionState,
           energy: newEnergyCalculation,
           reactionStarted: true
         };
-        databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionUpdates);
+        setReactionState(reactionUpdates);
       }
     }
   }
@@ -96,42 +102,52 @@ export default function ReactionItem(props) {
   function killReaction() {
     setReactionTimerDelay(null);
     setDurationTimerDelay(null);
-    reactionState.energy = 0;
-    reactionState.extinguished = true;
-    reactionState.title = 'Extinguished';
-    reactionState.extinguishedAt = firebase.database.ServerValue.TIMESTAMP;
-    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
+    setSaveGameTimerDelay(null);
+    const reactionUpdates = {
+      ...reactionState,
+      energy: 0,
+      extinguished: true,
+      title: 'Extinguished',
+      extinguishedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+    setReactionState(reactionUpdates);
+    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionUpdates);
   };
 
   function chargeReaction(context) {
+    const reactionUpdates = {
+      ...reactionState
+    };
     if (!reactionState.reactionStarted) {
       const diff = Math.random() * 2;
       const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-      reactionState.clicks = (reactionState.clicks || 0) + 1;
-      reactionState.energy = newCompletedCalulcation;
+      reactionUpdates.clicks = (reactionState.clicks || 0) + 1;
+      reactionUpdates.energy = newCompletedCalulcation;
       setClickCount(reactionState.clicks);
       context.updateScore(1);
+
       if (reactionState.energy >= 100) {
-        reactionState.energy = 100;
-        reactionState.reactionStarted = true;
+        reactionUpdates.energy = 100;
+        reactionUpdates.reactionStarted = true;
         context.updateScore(reactionState.clicks * 10);
         showMessage('Reaction started! Now keep it going...', 'success');
       }
-      databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
+
     } else {
-      if (!reactionState.extinguished) {
+      if (!reactionUpdates.extinguished) {
         const diff = Math.random() * 2;
-        const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-        reactionState.energy = newCompletedCalulcation;
+        const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
+        reactionUpdates.energy = newCompletedCalulcation;
         context.updateScore(1);
         setClickBuffer(clickBuffer + 1);
         if (clickBuffer === 10) {
           setClickBuffer(0);
           setClickCount(clickCount + 1);
-          databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
+          reactionUpdates.clicks = (reactionState.clicks || 0) + 1;
         }
       }
     }
+    setReactionState(reactionUpdates);
   };
 
   const showMessage = (message, variant) => {

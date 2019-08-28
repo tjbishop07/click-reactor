@@ -62,13 +62,9 @@ export default function Reactor() {
     <AddIcon />
   </Fab>;
 
-  // TODO: Remove Reaction item from DOM once it has extinguished.
   return (
-    <div>
+    <React.Fragment>
       <Container maxWidth="sm">
-        {/* <h1 className={`tmp-class ${reactionItems.find(r => r.extinguished).length === 3 ? 'hidden' : ''}`}>
-
-        </h1> */}
         <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
           <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
           <h5> - Nikola Tesla</h5>
@@ -80,7 +76,7 @@ export default function Reactor() {
         </div>
       </Container>
       {user ? fab : ''}
-    </div>
+    </React.Fragment>
   );
 
 }
