@@ -28,11 +28,6 @@ npm run start
 - [ ] Leaderboard
 - [ ] Performance Enhancements
 - [ ] Mobile Optimization (Larger screens are first priority)
- 
-## Author
-
-👤 **Tom Bishop <tjbishop@gmail.com>**
-
 
 ## 🤝 Contributing
 
