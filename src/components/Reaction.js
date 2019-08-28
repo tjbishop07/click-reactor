@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import useInterval from '../hooks/useInterval';
+import ReactTooltip from 'react-tooltip'
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
@@ -28,14 +29,22 @@ export default function ReactionItem(props) {
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState({});
+  const [toolTipText, setToolTipText] = useState('Start clicking!');
+  const [reactionTimerDelay, setReactionTimerDelay] = useState(2000);
+  const [durationTimerDelay, setDurationTimerDelay] = useState(100);
   const { user } = useAuth();
 
-  useInterval(triggerReaction.bind(this), 2000);
-  useInterval(updateDurationLabel.bind(this), 100);
+  useInterval(triggerReaction.bind(this), reactionTimerDelay);
+  useInterval(updateDurationLabel.bind(this), durationTimerDelay);
 
   useEffect(() => {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
+    if (reactionState.energy > 0) {
+      setToolTipText('Sweet! Now keep clicking...');
+    } else {
+      setToolTipText('Start clicking!');
+    }
   }, [propReaction]);
 
   function updateDurationLabel() {
@@ -72,7 +81,7 @@ export default function ReactionItem(props) {
       const diff = Math.random() * 2;
       const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
       if (newEnergyCalculation < 0) {
-        killReaction(id);
+        killReaction();
       } else {
         const reactionUpdates = {
           ...propReaction,
@@ -85,6 +94,8 @@ export default function ReactionItem(props) {
   }
 
   function killReaction() {
+    setReactionTimerDelay(null);
+    setDurationTimerDelay(null);
     reactionState.energy = 0;
     reactionState.extinguished = true;
     reactionState.title = 'Extinguished';
@@ -108,15 +119,17 @@ export default function ReactionItem(props) {
       }
       databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
     } else {
-      const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-      reactionState.energy = newCompletedCalulcation;
-      context.updateScore(1);
-      setClickBuffer(clickBuffer + 1);
-      if (clickBuffer === 10) {
-        setClickBuffer(0);
-        setClickCount(clickCount + 1);
-        databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
+      if (!reactionState.extinguished) {
+        const diff = Math.random() * 2;
+        const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
+        reactionState.energy = newCompletedCalulcation;
+        context.updateScore(1);
+        setClickBuffer(clickBuffer + 1);
+        if (clickBuffer === 10) {
+          setClickBuffer(0);
+          setClickCount(clickCount + 1);
+          databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
+        }
       }
     }
   };
@@ -133,22 +146,19 @@ export default function ReactionItem(props) {
   }
 
   return (
-
     <GameContext.Consumer>
       {context => (
         <Fragment>
+          <ReactTooltip id="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} />
           <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
             <PointTarget key="front" onPoint={() => { chargeReaction(context); }}>
               <div
                 key="front"
                 className={`reaction-container ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
-                <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" />
+                <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for="reactionTip" data-tip="" />
                 <span className="duration">{duration}</span>
                 <span className="clicks">{clickCount}</span>
                 <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
-                <span className="status-text">
-                  {(reactionState.reactionStarted && !reactionState.extinguished) ? 'Reaction started!' : reactionState.title}
-                </span>
                 <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
                 <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
                   <BatteryChargingFullIcon />
