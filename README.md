@@ -1,5 +1,5 @@
 <h1 align="center">&#9762; Welcome to Click Reactors &#9762;</h1>
-<p>
+<p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.0 (BETA)-blue.svg?cacheSeconds=2592000" />
 </p>
 
