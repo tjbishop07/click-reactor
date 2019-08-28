@@ -5,7 +5,7 @@
 
 > You inherit a nuclear reactor from your grandma. Now it's up to you to start it up and keep it alive, risking the lives of all humanity if you fail. DON'T FAIL.
 
-### 🏠 [clickreactors.com](clickreactors.com)
+### 🏠 [clickreactors.com](https://www.clickreactors.com)
 
 ## Install
 
