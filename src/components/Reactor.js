@@ -43,7 +43,7 @@ export default function Reactor() {
   }
 
   const addReactionItem = () => {
-    if (reactionItems.length < 3) {
+    if (reactionItems.length < 1) {
       databaseRef.child(`userReactors/${user.uid}`).push().set({
         title: 'Start clicking...',
         clicks: 0,
@@ -51,7 +51,9 @@ export default function Reactor() {
         reactionStarted: false,
         extinguished: false,
         extinguishedAt: null,
-        startedAt: firebase.database.ServerValue.TIMESTAMP
+        startedAt: firebase.database.ServerValue.TIMESTAMP,
+        cps: 0,
+        energySources: [{ type: 'init', cps: 0, basePrice: 0 }]
       });
     } else {
       showMessage('You cannot create more reactions at this time.', 'error');
