@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import { useAuth } from './state/auth';
 import Provider from "./state/Provider";
 import Reactor from './components/Reactor';
 import HUD from "./components/Hud";
@@ -12,8 +13,6 @@ import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
-import Fab from '@material-ui/core/Fab';
-import SettingsIcon from '@material-ui/icons/Settings';
 import { SnackbarProvider } from 'notistack';
 import './styles/style.scss';
 
@@ -48,6 +47,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 export default function App() {
 
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const classes = useStyles();
   function handleClose() {
@@ -58,13 +58,13 @@ export default function App() {
     <Provider>
       <SnackbarProvider
         maxSnack={3}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
         <div className="App">
-          <Fab aria-label="Settings" className="fab-settings-reaction" color="primary" onClick={() => setOpen(true)}>
+          {/* <Fab aria-label="Settings" className="fab-settings-reaction" color="primary" onClick={() => setOpen(true)}>
             <SettingsIcon />
-          </Fab>
+          </Fab> */}
           <HUD />
-          <Reactor />
+          ${user ? <Reactor /> : ''}
         </div>
         <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
           <AppBar className={classes.appBar}>

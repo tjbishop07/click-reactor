@@ -1,4 +1,5 @@
 import React, { useEffect, Fragment, useState } from "react";
+import { useSpring, animated } from 'react-spring'
 import GameContext from "../state/context";
 import * as firebase from 'firebase';
 import * as firebaseui from 'firebaseui';
@@ -9,7 +10,13 @@ import '../styles/login.scss';
 
 export default function Login() {
 
-    const [showLogin, setShowLogin] = useState(true);
+    const [state, toggle] = useState(true)
+
+    const { x } = useSpring({
+        from: { x: 0 },
+        x: state ? 1 : 0,
+        config: { duration: 1000 }
+    })
 
     useEffect(() => {
         // NOTE: Let the UI render before attaching Firebase UI elements. 
@@ -35,7 +42,7 @@ export default function Login() {
     }, []);
 
     function signInAnon() {
-        setShowLogin(false);
+        toggle(!state);
         firebase.auth().signInAnonymously();
     };
 
@@ -44,12 +51,20 @@ export default function Login() {
             {context => (
                 <Fragment>
                     <div className="login-container">
-                        {showLogin ?
-                            <div>
-                                <Button className="playNow" size="large" color="primary" fullWidth variant="contained" onClick={() => { signInAnon(); }}>Play Now!</Button>
-                                <Divider variant="middle" className="divider-login" />
-                            </div>
-                            : ''}
+
+                        <animated.div style={{
+                            opacity: x.interpolate({ range: [0, 1], output: [0.3, 1] }),
+                            transform: x
+                                .interpolate({
+                                    range: [0, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1],
+                                    output: [1, 0.97, 0.9, 1.1, 0.9, 1.1, 1.03, 1]
+                                })
+                                .interpolate(x => `scale(${x})`)
+                        }}>
+                            <Button className="playNow" size="large" color="primary" fullWidth variant="contained" onClick={() => { signInAnon(); }}>Play Now!</Button>
+                            <Divider variant="middle" className="divider-login" />
+                        </animated.div>
+
                         <div id="firebaseui-auth-container"></div>
                         <CircularProgress id="loader" className="loader" />
                     </div>

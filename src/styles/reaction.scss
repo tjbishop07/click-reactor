@@ -1,29 +1,39 @@
 @import '../theme/default.scss';
 .reaction-container {
-    margin-bottom: 10px;
     color: white;
-    background-color: rgba(0, 0, 0, .5) !important;
-    width: 250px;
-    height: 150px !important;
-    padding: 20px !important;
+    background: url('../img/bg-reactor.png');
+    background-size: cover !important;
+    // background-color: rgba(255, 255, 255, .1) !important;
+    padding: 35px !important;
     cursor: pointer !important;
     position: relative;
+    width: 250px;
+    height: 100%;
+    --aug-tr: 25px;
+}
+
+.reaction-graphic {
     text-align: center;
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    // background-image: url('../img/lines-vertical.svg');
 }
 
 .hive {
-    width: 130px;
+    width: 100px;
     margin: 0 auto;
-    margin-top: -5px;
+    margin-top: -30px !important;
 }
 
 .hive:active {
     opacity: .5;
-    width: 125px;
+    width: 105px;
 }
 
 .card-back {
-    background-color: rgba(0, 0, 0, .9) !important;
+    background-color: #000 !important;
     text-align: left !important;
 }
 
@@ -32,12 +42,7 @@
 }
 
 .energySourcesList {
-    position: absolute !important;
-    left: 0;
-    top: 30px;
-    width: 100%;
-    height: 150px !important;
-    overflow-y: scroll;
+    color: #fff;
 }
 
 .energySourcesList .MuiSvgIcon-root {
@@ -45,8 +50,9 @@
 }
 
 .fab-reaction {
-    opacity: 0;
     position: absolute !important;
+    right: -10px;
+    top: 25px;
 }
 
 .charged {
@@ -83,8 +89,8 @@
 
 .duration {
     position: absolute;
-    right: 5px;
-    bottom: 15px;
+    right: 20px;
+    bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -104,8 +110,8 @@
 
 .energy {
     position: absolute;
-    left: 5px;
-    bottom: 15px;
+    left: 15px;
+    bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -123,8 +129,8 @@
 }
 
 .extinguished {
-    opacity: .1 !important;
     cursor: not-allowed !important;
+    // background: none !important;
 }
 
 .extinguished .hive {
@@ -149,4 +155,9 @@
     left: 37%;
     top: 20%;
     font-size: 5rem;
+}
+
+.MuiDrawer-paper {
+    padding: 20px;
+    background: rgba(0, 0, 0, .7) !important;
 }
