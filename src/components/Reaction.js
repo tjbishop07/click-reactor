@@ -26,10 +26,9 @@ import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import '../styles/reaction.scss';
 
-// TODO: Research using "Context" instead of passing props down?
 export default function ReactionItem(props) {
 
-  const { id, propReaction } = props;
+  const { propReaction } = props;
   const [state, toggle] = useState(true)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -80,7 +79,7 @@ export default function ReactionItem(props) {
   }, [reactionState]);
 
   const saveGame = () => {
-    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
+    databaseRef.child(`userReactors/${user.uid}/${propReaction.id}`).set(reactionState);
   }
 
   const updateDurationLabel = () => {
@@ -216,13 +215,12 @@ export default function ReactionItem(props) {
         variant: variant,
         action:
           <Button onClick={() => { closeSnackbar() }}>
-            {'Dismiss'}
+            {'OK'}
           </Button>
       });
   }
 
   const purchaseItem = (energySource) => {
-    setOpenDrawer(false);
     const cost = calculateCost(energySource.type, energySource.basePrice);
     if (cost === 0) {
       showMessage('Purchase failed.', 'error');
@@ -242,6 +240,7 @@ export default function ReactionItem(props) {
     setClickCount(reactionUpdates.clicks);
     saveGame();
     showMessage('Purchase complete!', 'success');
+    setOpenDrawer(false);
   }
 
   const calculateCost = (type, basePrice) => {
@@ -280,34 +279,36 @@ export default function ReactionItem(props) {
       {context => (
         <div>
           {(isLoading) ? <CircularProgress color="secondary" /> :
-            <div className="reaction-container" augmented-ui="tr-clip exe">
-              <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
-              <span className="duration">{duration}</span>
-              <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
-              <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
-              <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
-              <animated.div style={{
-                opacity: x.interpolate({ range: [0, 1], output: [0.7, 1] }),
-                transform: x
-                  .interpolate({
-                    range: [0, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1],
-                    output: [1, 0.97, 0.9, 1.1, 0.9, 1.1, 1.03, 1]
-                  })
-                  .interpolate(x => `scale(${x})`)
-              }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
-                <PointTarget onPoint={() => chargeReaction()}>
-                  <div>
-                    <span className={reactionState.extinguished ? 'skully' : 'hidden'}>☠</span>
-                    <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${id}`} data-tip="Hi" />
-                  </div>
-                </PointTarget>
-              </animated.div>
-              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(true)}>
-                <BatteryChargingFullIcon />
-              </Fab>
+            <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
+              <div className="reaction-container">
+                <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(true)}>
+                  <BatteryChargingFullIcon />
+                </Fab>
+                <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
+                <span className="duration">{duration}</span>
+                <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
+                <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
+                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
+                <animated.div style={{
+                  opacity: x.interpolate({ range: [0, 1], output: [0.7, 1] }),
+                  transform: x
+                    .interpolate({
+                      range: [0, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1],
+                      output: [1, 0.97, 0.9, 1.1, 0.9, 1.1, 1.03, 1]
+                    })
+                    .interpolate(x => `scale(${x})`)
+                }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
+                  <PointTarget onPoint={() => chargeReaction()}>
+                    <div>
+                      <span className={reactionState.extinguished ? 'skully' : 'hidden'}>☠</span>
+                      <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${propReaction.id}`} data-tip="Hive" />
+                    </div>
+                  </PointTarget>
+                </animated.div>
+              </div>
             </div>
           }
-          <ReactTooltip id={`reactionTip${id}`} className="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} effect="solid" />
+          <ReactTooltip id={`reactionTip${propReaction.id}`} className="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} effect="solid" />
           <Drawer anchor="bottom" open={openDrawer} className="reactionDrawer" onClose={() => setOpenDrawer(false)}>
 
             <div className={classes.root}>

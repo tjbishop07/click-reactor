@@ -1,35 +1,43 @@
 @import '../theme/default.scss';
+.augment-container {
+    --aug-tr: 15px;
+    --aug-bl: 15px;
+    --aug-br-width: 10px;
+    --aug-br-height: 15%;
+    --aug-border: 45px;
+    --aug-border-bg: rgba(0, 0, 0, .2);
+    --aug-border-fallback-color: #ffffff;
+    padding: 20px;
+    z-index: 1;
+}
+
 .reaction-container {
     color: white;
     background: url('../img/bg-reactor.png');
     background-size: cover !important;
-    // background-color: rgba(255, 255, 255, .1) !important;
+    background-position-x: -15px;
     padding: 35px !important;
     cursor: pointer !important;
     position: relative;
-    width: 250px;
-    height: 100%;
-    --aug-tr: 25px;
+    width: 300px;
+    height: 15vh;
+    z-index: 2;
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, .4);
 }
 
 .reaction-graphic {
-    text-align: center;
     position: relative;
-    margin: 0 auto;
     width: 100%;
     height: 100%;
-    // background-image: url('../img/lines-vertical.svg');
+    text-align: center;
 }
 
 .hive {
     width: 100px;
-    margin: 0 auto;
-    margin-top: -30px !important;
 }
 
 .hive:active {
     opacity: .5;
-    width: 105px;
 }
 
 .card-back {
@@ -50,26 +58,12 @@
 }
 
 .fab-reaction {
-    position: absolute !important;
-    right: -10px;
-    top: 25px;
-}
-
-.charged {
-    height: 15vh;
-    position: relative;
-}
-
-.charged .fab-reaction {
     opacity: 1;
-    position: absolute;
-    right: -30px;
-    top: 70px;
-}
-
-.charged .hive {
-    margin-top: -10px;
-    width: 150px
+    position: absolute !important;
+    left: 50%;
+    margin-left: -25px !important;
+    bottom: -8px;
+    z-index: 3
 }
 
 .charged img.app-logo {
@@ -78,8 +72,8 @@
 
 .totalcps {
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 20px;
+    top: 20px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -89,7 +83,7 @@
 
 .duration {
     position: absolute;
-    right: 20px;
+    right: 10px;
     bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
@@ -100,8 +94,8 @@
 
 .clicks {
     position: absolute;
-    left: 5px;
-    top: 5px;
+    left: 20px;
+    top: 20px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -110,7 +104,7 @@
 
 .energy {
     position: absolute;
-    left: 15px;
+    left: 10px;
     bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;

@@ -57,14 +57,14 @@ export default function App() {
   return (
     <Provider>
       <SnackbarProvider
-        maxSnack={3}
+        maxSnack={1}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
         <div className="App">
           {/* <Fab aria-label="Settings" className="fab-settings-reaction" color="primary" onClick={() => setOpen(true)}>
             <SettingsIcon />
           </Fab> */}
           <HUD />
-          ${user ? <Reactor /> : ''}
+          {user ? <Reactor /> : ''}
         </div>
         <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
           <AppBar className={classes.appBar}>
