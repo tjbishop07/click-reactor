@@ -65,6 +65,7 @@ export default function ReactionItem(props) {
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
+    setDurationTimerDelay(100);
   }, []);
 
   useEffect(() => {
@@ -79,13 +80,15 @@ export default function ReactionItem(props) {
   }, [reactionState]);
 
   const saveGame = () => {
-    databaseRef.child(`userReactors/${user.uid}/${propReaction.id}`).set(reactionState);
+    databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
   }
 
   const updateDurationLabel = () => {
-    if (propReaction && propReaction.reactionStartedAt) {
+    if (reactionState
+      && reactionState.reactionStartedAt
+      && reactionState.reactionStartedAt > 0) {
       var nowDate = new Date();
-      var reactionStartedAt = new Date(propReaction.reactionStartedAt);
+      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
       var diff = nowDate.getTime() - reactionStartedAt.getTime();
 
       var days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -179,7 +182,11 @@ export default function ReactionItem(props) {
         reactionUpdates.reactionStarted = true;
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
         context.updateScore(reactionState.clicks * 10);
-        setDurationTimerDelay(100);
+
+        setTimeout(() => {
+          setDurationTimerDelay(100);
+        }, 1000);
+
         showMessage('Reaction started! Now keep it going...', 'success');
       }
     } else {

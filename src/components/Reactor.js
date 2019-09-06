@@ -65,7 +65,7 @@ export default function Reactor() {
             ))}
           </div>
         </Container>
-        {/* {user ? fab : ''} */}
+        {user ? fab : ''}
       </React.Fragment>
     );
   } else {
