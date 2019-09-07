@@ -52,6 +52,7 @@ export default function ReactionItem(props) {
     config: { duration: 50 }
   })
 
+  // Initial load effect
   useEffect(() => {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
@@ -68,7 +69,9 @@ export default function ReactionItem(props) {
     setDurationTimerDelay(100);
   }, []);
 
+  // propReaction (from parent) effect
   useEffect(() => {
+    setReactionState(propReaction);
     if (reactionState && reactionState.energySources) {
       let purchasedItemResults = reactionState.energySources.filter(source => source.type === 'sticks');
       if (!purchasedItemResults) {
@@ -77,13 +80,14 @@ export default function ReactionItem(props) {
         setStickCount(purchasedItemResults.length);
       }
     }
-  }, [reactionState]);
+  }, [propReaction]);
 
   const saveGame = () => {
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
   }
 
   const updateDurationLabel = () => {
+    // TODO: reactionState.reactionStartedAt is still the TIMESTAMP object, not a number from the db
     if (reactionState
       && reactionState.reactionStartedAt
       && reactionState.reactionStartedAt > 0) {
@@ -182,11 +186,7 @@ export default function ReactionItem(props) {
         reactionUpdates.reactionStarted = true;
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
         context.updateScore(reactionState.clicks * 10);
-
-        setTimeout(() => {
-          setDurationTimerDelay(100);
-        }, 1000);
-
+        setDurationTimerDelay(100);
         showMessage('Reaction started! Now keep it going...', 'success');
       }
     } else {

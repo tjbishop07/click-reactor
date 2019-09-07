@@ -13,9 +13,9 @@
 
 .reaction-container {
     color: white;
-    background: url('../img/bg-reactor.png');
+    background: #000 url('../img/bg-reactor.png');
+    background-repeat: no-repeat;
     background-size: cover !important;
-    background-position-x: -37px;
     padding: 35px !important;
     cursor: pointer !important;
     position: relative;
@@ -23,6 +23,36 @@
     height: 15vh;
     z-index: 2;
     box-shadow: inset 0 0 25px rgba(0, 0, 0, .4);
+}
+
+@media screen and (min-width: 768px) {
+    .reaction-container {
+        background-position-x: -11px
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .reaction-container {
+        background-position-x: -57px
+    }
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px) {
+    .reaction-container {
+        background-position-x: 0
+    }
+}
+
+@media screen and (min-width: 1025px) {
+    .reaction-container {
+        background-position-x: -37px
+    }
+}
+
+@media screen and (min-width: 1366px) {
+    .reaction-container {
+        background-position-x: -15px
+    }
 }
 
 .reaction-graphic {
@@ -38,15 +68,6 @@
 
 .hive:active {
     opacity: .5;
-}
-
-.card-back {
-    background-color: #000 !important;
-    text-align: left !important;
-}
-
-.card-back .hive {
-    opacity: .1 !important;
 }
 
 .energySourcesList {
@@ -110,6 +131,8 @@
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
     opacity: .7;
+    padding: 10px;
+    backdrop-filter: blur(5px);
 }
 
 .status-text {
