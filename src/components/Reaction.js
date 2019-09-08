@@ -1,57 +1,90 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useSpring, animated } from 'react-spring'
 import useInterval from '../hooks/useInterval';
-import ReactTooltip from 'react-tooltip'
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
 import dna from '../img/dna.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
-import ReactCardFlip from 'react-card-flip';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import SettingsBackupRestore from '@material-ui/icons/SettingsBackupRestore';
+import Grid from '@material-ui/core/Grid';
+import { makeStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
 import PointTarget from 'react-point';
+import Drawer from '@material-ui/core/Drawer';
+import Typography from '@material-ui/core/Typography';
 import '../styles/reaction.scss';
 
 export default function ReactionItem(props) {
 
-  const { id, propReaction } = props;
+  const { propReaction } = props;
+  const [state, toggle] = useState(true)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
   const [duration, setDuration] = useState('');
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState({});
-  const [toolTipText, setToolTipText] = useState('Start clicking!');
-  const [reactionTimerDelay, setReactionTimerDelay] = useState(2000);
-  const [durationTimerDelay, setDurationTimerDelay] = useState(100);
+  const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
+  const [durationTimerDelay, setDurationTimerDelay] = useState(null);
+  const [saveGameTimerDelay] = useState(10000);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const context = useContext(GameContext);
 
-  useInterval(triggerReaction.bind(this), reactionTimerDelay);
-  useInterval(updateDurationLabel.bind(this), durationTimerDelay);
+  const [stickCount, setStickCount] = useState(0);
 
+  const { x } = useSpring({
+    from: { x: 0 },
+    x: state ? 1 : 0,
+    config: { duration: 50 }
+  })
+
+  // Initial load effect
   useEffect(() => {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
-    if (reactionState.energy > 0) {
-      setToolTipText('Sweet! Now keep clicking...');
-    } else {
-      setToolTipText('Start clicking!');
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    setDurationTimerDelay(100);
+  }, []);
+
+  // propReaction (from parent) effect
+  useEffect(() => {
+    setReactionState(propReaction);
+    if (reactionState && reactionState.energySources) {
+      let purchasedItemResults = reactionState.energySources.filter(source => source.type === 'sticks');
+      if (!purchasedItemResults) {
+        setStickCount(0);
+      } else {
+        setStickCount(purchasedItemResults.length);
+      }
     }
   }, [propReaction]);
 
-  function updateDurationLabel() {
-    if (propReaction && propReaction.startedAt) {
+  const saveGame = () => {
+    databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
+  }
+
+  const updateDurationLabel = () => {
+    // TODO: reactionState.reactionStartedAt is still the TIMESTAMP object, not a number from the db
+    if (reactionState
+      && reactionState.reactionStartedAt
+      && reactionState.reactionStartedAt > 0) {
       var nowDate = new Date();
-      var startedAt = new Date(propReaction.startedAt);
-      var diff = nowDate.getTime() - startedAt.getTime();
+      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
+      var diff = nowDate.getTime() - reactionStartedAt.getTime();
 
       var days = Math.floor(diff / (1000 * 60 * 60 * 24));
       diff -= days * (1000 * 60 * 60 * 24);
@@ -76,63 +109,101 @@ export default function ReactionItem(props) {
     }
   }
 
-  function triggerReaction() {
-    if (propReaction && propReaction.reactionStarted) {
-      const diff = Math.random() * 2;
-      const newEnergyCalculation = Math.min(propReaction.energy - diff, 100);
-      if (newEnergyCalculation < 0) {
+  const burnEnergy = () => {
+    if (reactionState
+      && reactionState.reactionStarted
+      && reactionState.reactionStartedAt > 0) {
+
+      const reactionUpdates = {
+        ...reactionState
+      };
+
+      var nowDate = new Date();
+      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
+      var duration = nowDate.getTime() - reactionStartedAt.getTime();
+      var durationMinutes = Math.floor(duration / (1000 * 60));
+
+      const diff = Math.random() * durationMinutes;
+      let newEnergyCalculation = Math.min(reactionState.energy - diff, 100);
+      newEnergyCalculation = Math.min(newEnergyCalculation + (reactionState.cps * 2), 100);
+
+      if (reactionState.cps > 0) {
+        calculateClicks();
+      }
+
+      if (newEnergyCalculation <= 0) {
         killReaction();
+        return;
       } else {
-        const reactionUpdates = {
-          ...propReaction,
-          energy: newEnergyCalculation,
-          reactionStarted: true
-        };
-        databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionUpdates);
+        reactionUpdates.energy = newEnergyCalculation;
+        reactionUpdates.reactionStarted = true;
+        setReactionState(reactionUpdates);
       }
     }
   }
 
-  function killReaction() {
+  const killReaction = () => {
     setReactionTimerDelay(null);
     setDurationTimerDelay(null);
-    reactionState.energy = 0;
-    reactionState.extinguished = true;
-    reactionState.title = 'Extinguished';
-    reactionState.extinguishedAt = firebase.database.ServerValue.TIMESTAMP;
-    databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
+    const reactionUpdates = {
+      ...reactionState,
+      energy: 0,
+      cps: 0,
+      extinguished: true,
+      title: 'Extinguished',
+      extinguishedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+    setReactionState(reactionUpdates);
   };
 
-  function chargeReaction(context) {
-    if (!reactionState.reactionStarted) {
+  const chargeReaction = () => {
+    toggle(!state);
+    const reactionUpdates = {
+      ...reactionState
+    };
+    if (!reactionUpdates.reactionStarted) {
       const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-      reactionState.clicks = (reactionState.clicks || 0) + 1;
-      reactionState.energy = newCompletedCalulcation;
-      setClickCount(reactionState.clicks);
+      const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
+      reactionUpdates.clicks = parseFloat((parseFloat(reactionState.clicks) || 0) + 1).toFixed(2);
+      reactionUpdates.energy = newCompletedCalulcation;
+      setClickCount(reactionUpdates.clicks);
+      setReactionState(reactionUpdates);
       context.updateScore(1);
-      if (reactionState.energy >= 100) {
-        reactionState.energy = 100;
-        reactionState.reactionStarted = true;
+      if (reactionUpdates.energy >= 100) {
+        reactionUpdates.energy = 100;
+        reactionUpdates.reactionStarted = true;
+        reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
+        setReactionState(reactionUpdates);
         context.updateScore(reactionState.clicks * 10);
+        setDurationTimerDelay(100);
         showMessage('Reaction started! Now keep it going...', 'success');
       }
-      databaseRef.child(`userReactors/${user.uid}/${id}`).set(reactionState);
     } else {
-      if (!reactionState.extinguished) {
+      if (!reactionUpdates.extinguished) {
         const diff = Math.random() * 2;
-        const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-        reactionState.energy = newCompletedCalulcation;
-        context.updateScore(1);
-        setClickBuffer(clickBuffer + 1);
-        if (clickBuffer === 10) {
-          setClickBuffer(0);
-          setClickCount(clickCount + 1);
-          databaseRef.child(`userReactors/${user.uid}/${id}/clicks`).set(clickCount + 1);
-        }
+        const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
+        reactionUpdates.energy = newCompletedCalulcation;
+        setReactionState(reactionUpdates);
+        calculateClicks();
       }
     }
   };
+
+  const calculateClicks = () => {
+    const reactionUpdates = {
+      ...reactionState
+    };
+    let totalClickCount = Math.min((reactionUpdates.cps / 10) + 1, 100);
+    context.updateScore(1);
+    setClickBuffer(totalClickCount + parseFloat(clickBuffer));
+    totalClickCount = totalClickCount + parseFloat(clickCount);
+    if (clickBuffer > 2) {
+      setClickBuffer(0);
+      setClickCount(totalClickCount.toFixed(2));
+      reactionUpdates.clicks = parseFloat(totalClickCount.toFixed(2));
+      setReactionState(reactionUpdates);
+    }
+  }
 
   const showMessage = (message, variant) => {
     enqueueSnackbar(message,
@@ -140,72 +211,199 @@ export default function ReactionItem(props) {
         variant: variant,
         action:
           <Button onClick={() => { closeSnackbar() }}>
-            {'Dismiss'}
+            {'OK'}
           </Button>
       });
   }
 
+  const purchaseItem = (energySource) => {
+    const cost = calculateCost(energySource.type, energySource.basePrice);
+    if (cost === 0) {
+      showMessage('Purchase failed.', 'error');
+      return;
+    }
+    if (parseFloat(cost) > parseFloat(clickCount)) {
+      showMessage('You do not have enough cash for this item', 'error');
+      return;
+    }
+    const reactionUpdates = {
+      ...reactionState,
+      cps: reactionState.cps + energySource.cps,
+      clicks: parseFloat(clickCount - cost).toFixed(2)
+    };
+    reactionUpdates.energySources.push(energySource);
+    setReactionState(reactionUpdates);
+    setClickCount(reactionUpdates.clicks);
+    showMessage('Purchase complete!', 'success');
+    setOpenDrawer(false);
+  }
+
+  const calculateCost = (type, basePrice) => {
+    if (reactionState && reactionState.energySources) {
+      let purchasedItemResults = reactionState.energySources.filter(source => source.type === type);
+      if (purchasedItemResults.length === 0) {
+        return parseFloat(basePrice).toFixed(2);
+      } else {
+        return parseFloat(basePrice * (purchasedItemResults.length + 1)).toFixed(2);
+      }
+    }
+    return 0;
+  }
+
+  const deleteReaction = () => {
+    const reactionUpdates = {
+      ...reactionState,
+      deleted: true
+    };
+    setReactionState(reactionUpdates);
+    saveGame();
+  }
+
+  useInterval(burnEnergy.bind(this), reactionTimerDelay);
+  useInterval(updateDurationLabel.bind(this), durationTimerDelay);
+  useInterval(saveGame.bind(this), saveGameTimerDelay);
+
+  const useStyles = makeStyles({
+    root: {
+      flexGrow: 1,
+      paddingTop: 40
+    },
+    card: {
+      maxWidth: 345,
+      height: 350
+    },
+    media: {
+      height: 140,
+    },
+  });
+  const classes = useStyles();
+
   return (
     <GameContext.Consumer>
       {context => (
-        <Fragment>
-          <ReactTooltip id={`reactionTip${id}`} className="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} effect="solid" />
-          <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
-            <PointTarget key="front" onPoint={() => { chargeReaction(context); }}>
-              <div
-                key="front"
-                className={`reaction-container ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
-                <span className={reactionState.extinguished ? 'skully' : 'hidden'}>☠</span>
-                <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${id}`} data-tip="Hi" />
-                <span className="duration">{duration}</span>
-                <span className="clicks">${clickCount}</span>
-                <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
-                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
-                <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setIsFlipped(true)}>
+        <div>
+          {(isLoading) ? <CircularProgress color="secondary" /> :
+            <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
+              <div className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
+                <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(true)}>
                   <BatteryChargingFullIcon />
                 </Fab>
+                <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
+                <span className="duration">{duration}</span>
+                <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
+                <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
+                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
+                <animated.div style={{
+                  opacity: x.interpolate({ range: [0, 1], output: [0.7, 1] }),
+                  transform: x
+                    .interpolate({
+                      range: [0, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1],
+                      output: [1, 0.97, 0.9, 1.1, 0.9, 1.1, 1.03, 1]
+                    })
+                    .interpolate(x => `scale(${x})`)
+                }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
+                  <PointTarget onPoint={() => chargeReaction()}>
+                    <div>
+                      {reactionState.extinguished ?
+                        <React.Fragment>
+                          <h4 className="game-over">GAME OVER</h4>
+                          <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
+                        </React.Fragment>
+                        : ''}
+                      <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${propReaction.id}`} data-tip="Hive" />
+                    </div>
+                  </PointTarget>
+                </animated.div>
               </div>
-            </PointTarget>
-            <div
-              key="back"
-              className={`reaction-container card-back ${reactionState.reactionStarted ? 'charged' : ''}`}>
-              <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" />
-              <span className="clicks">Energy Sources</span>
-              <List aria-label="Energy Sources" className="energySourcesList">
-                <ListItem button>
-                  <ListItemText>0</ListItemText>
-                  <ListItemText>Rub Sticks Together</ListItemText>
-                </ListItem>
-                <ListItem button>
-                  <ListItemText>0</ListItemText>
-                  <ListItemText>Matches</ListItemText>
-                </ListItem>
-                <ListItem button>
-                  <ListItemText>0</ListItemText>
-                  <ListItemText primary="Firecracker" />
-                </ListItem>
-                <ListItem button>
-                  <ListItemText>0</ListItemText>
-                  <ListItemText primary="M80" />
-                </ListItem>
-                <ListItem button>
-                  <ListItemText>0</ListItemText>
-                  <ListItemText primary="Dynomite" />
-                </ListItem>
-                <ListItem button>
-                  <ListItemText>0</ListItemText>
-                  <ListItemText primary="C4" />
-                </ListItem>
-              </List>
-              <Fab aria-label="Back" className="fab-reaction" color="primary" onClick={() => setIsFlipped(false)}>
-                <SettingsBackupRestore />
-              </Fab>
             </div>
-          </ReactCardFlip >
+          }
+          <Drawer anchor="bottom" open={openDrawer} className="reactionDrawer" onClose={() => setOpenDrawer(false)}>
 
-        </Fragment>
-      )}
-    </GameContext.Consumer>
+            <div className={classes.root}>
+              <Grid container spacing={5}>
+                <Grid item sm={6}>
+
+                  <Card className={classes.card} augmented-ui="tr-clip bl-clip br-clip-y exe" onClick={() => purchaseItem({ type: 'sticks', cps: 0.2, basePrice: 10 })}>
+                    <CardActionArea>
+                      <CardMedia
+                        className={classes.media}
+                        image="https://images.pexels.com/photos/1174461/pexels-photo-1174461.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+                        title="Rub Sticks"
+                      />
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          Rub Sticks Together
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                          You heard right! Nothing better than good old fashioned elbow grease.
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                    <CardActions>
+                      <Button size="small" color="primary" onClick={() => purchaseItem({ type: 'sticks', cps: 0.2, basePrice: 10 })}>Buy ${calculateCost('sticks', 10)}</Button>
+                      <Typography>
+                        Purchased: {stickCount}
+                      </Typography>
+                    </CardActions>
+                  </Card>
+
+                </Grid>
+                <Grid item sm={6}>
+
+                  <Card className={classes.card} augmented-ui="tr-clip bl-clip br-clip-y exe">
+                    <CardActionArea>
+                      <CardMedia
+                        className={classes.media}
+                        image="https://images.pexels.com/photos/21462/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+                        title="Matches"
+                      />
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          Matches
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                          Finally! Give you arms a rest and start flicking those matches.
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                    <CardActions>
+                      <Button size="small" color="primary" onClick={() => purchaseItem({ type: 'matches', cps: 0.4, basePrice: 20 })}>Buy ${calculateCost('matches', 20)}</Button>
+                    </CardActions>
+                  </Card>
+
+                </Grid>
+                <Grid item sm={6}>
+
+                  <Card className={classes.card} augmented-ui="tr-clip bl-clip br-clip-y exe">
+                    <CardActionArea>
+                      <CardMedia
+                        className={classes.media}
+                        image="https://images.pexels.com/photos/167080/pexels-photo-167080.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+                        title="Firecracker"
+                      />
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          Firecrackers
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                          Now it's time to start moving on to some more serious stuff.
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                    <CardActions>
+                      <Button size="small" color="primary" onClick={() => purchaseItem({ type: 'firecracker', cps: 0.6, basePrice: 30 })}>Buy ${calculateCost('firecracker', 30)}</Button>
+                    </CardActions>
+                  </Card>
+
+                </Grid>
+              </Grid>
+            </div>
+
+          </Drawer>
+        </div>
+      )
+      }
+    </GameContext.Consumer >
 
   );
 

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useListVals } from 'react-firebase-hooks/database';
 import { databaseRef } from '../config/firebase';
 import Reaction from './Reaction';
 import Fab from '@material-ui/core/Fab';
@@ -12,24 +13,9 @@ import "../styles/reactor.scss";
 
 export default function Reactor() {
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [reactionItems, setReactionItems] = useState([]);
   const { user } = useAuth();
-
-  useEffect(() => {
-    let unsubscribe;
-    if (user) {
-      unsubscribe = databaseRef.child(`userReactors/${user.uid}`)
-        .on('value', snapshot => {
-          const reactions = []
-          snapshot.forEach(doc => {
-            reactions.push({ id: doc.key, reaction: doc.val() })
-          })
-          setReactionItems(reactions.reverse());
-        });
-    }
-    return () => unsubscribe;
-  }, [user]);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const [values, loading] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
 
   const showMessage = (message, variant) => {
     enqueueSnackbar(message,
@@ -37,21 +23,25 @@ export default function Reactor() {
         variant: variant,
         action:
           <Button onClick={() => { closeSnackbar() }}>
-            {'Dismiss'}
+            {'OK'}
           </Button>
       });
   }
 
   const addReactionItem = () => {
-    if (reactionItems.length < 3) {
+    if (values.filter(r => !r.deleted).length < 1) {
       databaseRef.child(`userReactors/${user.uid}`).push().set({
         title: 'Start clicking...',
         clicks: 0,
         energy: 0,
         reactionStarted: false,
+        reactionStartedAt: 0,
         extinguished: false,
-        extinguishedAt: null,
-        startedAt: firebase.database.ServerValue.TIMESTAMP
+        extinguishedAt: 0,
+        gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
+        cps: 0,
+        energySources: [{ type: 'init', cps: 0, basePrice: 0 }],
+        deleted: false
       });
     } else {
       showMessage('You cannot create more reactions at this time.', 'error');
@@ -62,25 +52,29 @@ export default function Reactor() {
     <AddIcon />
   </Fab>;
 
-  // TODO: Remove Reaction item from DOM once it has extinguished.
-  return (
-    <div>
-      <Container maxWidth="sm">
-        {/* <h1 className={`tmp-class ${reactionItems.find(r => r.extinguished).length === 3 ? 'hidden' : ''}`}>
-
-        </h1> */}
-        <div className={`reactor-down ${reactionItems.length > 0 ? 'hidden' : ''}`}>
-          <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
-          <h5> - Nikola Tesla</h5>
-        </div>
-        <div className="game-session-list-container">
-          {reactionItems.map(r => (
-            <Reaction key={r.id} id={r.id} propReaction={r.reaction} />
-          ))}
-        </div>
-      </Container>
-      {user ? fab : ''}
-    </div>
-  );
-
+  if (values) {
+    return (
+      <React.Fragment>
+        <Container maxWidth="lg">
+          <div className={`reactor-down ${values.filter(r => !r.deleted).length > 0 ? 'hidden' : ''}`}>
+            <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
+            <h5> - Nikola Tesla</h5>
+          </div>
+          {loading ?
+            <React.Fragment>
+              <h4>Loading...</h4>
+            </React.Fragment> :
+            <div className="game-session-list-container">
+              {values.filter(r => !r.deleted).map(r => (
+                <Reaction key={r.id} propReaction={r} />
+              ))}
+            </div>
+          }
+        </Container>
+        {user ? fab : ''}
+      </React.Fragment>
+    );
+  } else {
+    return (<React.Fragment>Loading...{user ? fab : ''}</React.Fragment>)
+  }
 }

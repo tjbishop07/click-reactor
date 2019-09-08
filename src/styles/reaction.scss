@@ -1,42 +1,77 @@
+@import '../theme/default.scss';
+.augment-container {
+    --aug-tr: 15px;
+    --aug-bl: 15px;
+    --aug-br-width: 10px;
+    --aug-br-height: 15%;
+    --aug-border: 45px;
+    --aug-border-bg: rgba(0, 0, 0, .2);
+    --aug-border-fallback-color: #ffffff;
+    padding: 20px;
+    z-index: 1;
+}
+
 .reaction-container {
-    margin-bottom: 10px;
     color: white;
-    background-color: rgba(0, 0, 0, .5) !important;
-    width: 250px;
-    height: 150px !important;
-    padding: 20px !important;
+    background: #000 url('../img/bg-reactor.png');
+    background-repeat: no-repeat;
+    background-size: cover !important;
+    padding: 35px !important;
     cursor: pointer !important;
     position: relative;
+    width: 300px;
+    height: 15vh;
+    z-index: 2;
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, .4);
+}
+
+@media screen and (min-width: 768px) {
+    .reaction-container {
+        background-position-x: -11px
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .reaction-container {
+        background-position-x: -57px
+    }
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px) {
+    .reaction-container {
+        background-position-x: 0
+    }
+}
+
+@media screen and (min-width: 1025px) {
+    .reaction-container {
+        background-position-x: -37px
+    }
+}
+
+@media screen and (min-width: 1366px) {
+    .reaction-container {
+        background-position-x: -15px
+    }
+}
+
+.reaction-graphic {
+    position: relative;
+    width: 100%;
+    height: 100%;
     text-align: center;
 }
 
 .hive {
-    width: 130px;
-    margin: 0 auto;
-    margin-top: -5px;
+    width: 100px;
 }
 
 .hive:active {
     opacity: .5;
-    width: 125px;
-}
-
-.card-back {
-    background-color: rgba(0, 0, 0, .9) !important;
-    text-align: left !important;
-}
-
-.card-back .hive {
-    opacity: .1 !important;
 }
 
 .energySourcesList {
-    position: absolute !important;
-    left: 0;
-    top: 30px;
-    width: 100%;
-    height: 150px !important;
-    overflow-y: scroll;
+    color: #fff;
 }
 
 .energySourcesList .MuiSvgIcon-root {
@@ -44,35 +79,33 @@
 }
 
 .fab-reaction {
-    opacity: 0;
-    position: absolute !important;
-}
-
-.charged {
-    height: 15vh;
-    position: relative;
-}
-
-.charged .fab-reaction {
     opacity: 1;
-    position: absolute;
-    right: -30px;
-    top: 70px;
-}
-
-.charged .hive {
-    margin-top: -10px;
-    width: 150px
+    position: absolute !important;
+    left: 50%;
+    margin-left: -25px !important;
+    bottom: -8px;
+    z-index: 3
 }
 
 .charged img.app-logo {
     display: none
 }
 
+.totalcps {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #000;
+    font-size: .8rem;
+    text-align: right;
+    opacity: .7;
+}
+
 .duration {
     position: absolute;
-    left: 100px;
-    bottom: 15px;
+    right: 10px;
+    bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -82,8 +115,8 @@
 
 .clicks {
     position: absolute;
-    left: 10px;
-    top: 10px;
+    left: 20px;
+    top: 20px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -92,8 +125,8 @@
 
 .energy {
     position: absolute;
-    right: 10px;
-    top: 10px;
+    left: 10px;
+    bottom: 10px;
     font-weight: bold;
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
@@ -104,15 +137,14 @@
     text-transform: uppercase;
     font-size: .8rem;
     position: absolute;
-    left: 15px;
-    bottom: 15px;
+    left: 10px;
+    bottom: 10px;
     text-shadow: 1px 1px 1px #000;
     opacity: .7;
 }
 
 .extinguished {
-    opacity: .1 !important;
-    cursor: not-allowed !important;
+    background: linear-gradient(rgb(212, 21, 21), rgb(49, 2, 2));
 }
 
 .extinguished .hive {
@@ -124,6 +156,7 @@
     width: 100% !important;
     left: 0;
     bottom: 0;
+    background: $primaryColor !important;
 }
 
 .reactionTip {
@@ -136,4 +169,14 @@
     left: 37%;
     top: 20%;
     font-size: 5rem;
+}
+
+.MuiDrawer-paper {
+    padding: 20px;
+    background: rgba(0, 0, 0, .7) !important;
+}
+
+.game-over {
+    text-align: center;
+    text-shadow: 1px 1px 1px #000;
 }
