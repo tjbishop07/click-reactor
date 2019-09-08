@@ -131,8 +131,6 @@
     text-shadow: 1px 1px 1px #000;
     font-size: .8rem;
     opacity: .7;
-    padding: 10px;
-    backdrop-filter: blur(5px);
 }
 
 .status-text {
@@ -146,8 +144,7 @@
 }
 
 .extinguished {
-    cursor: not-allowed !important;
-    // background: none !important;
+    background: linear-gradient(rgb(212, 21, 21), rgb(49, 2, 2));
 }
 
 .extinguished .hive {
@@ -177,4 +174,9 @@
 .MuiDrawer-paper {
     padding: 20px;
     background: rgba(0, 0, 0, .7) !important;
+}
+
+.game-over {
+    text-align: center;
+    text-shadow: 1px 1px 1px #000;
 }

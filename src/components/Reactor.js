@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useListVals } from 'react-firebase-hooks/database';
 import { databaseRef } from '../config/firebase';
 import Reaction from './Reaction';
@@ -15,7 +15,7 @@ export default function Reactor() {
 
   const { user } = useAuth();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [values, loading, error] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
+  const [values, loading] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
 
   const showMessage = (message, variant) => {
     enqueueSnackbar(message,
@@ -29,7 +29,7 @@ export default function Reactor() {
   }
 
   const addReactionItem = () => {
-    if (values.length < 1) {
+    if (values.filter(r => !r.deleted).length < 1) {
       databaseRef.child(`userReactors/${user.uid}`).push().set({
         title: 'Start clicking...',
         clicks: 0,
@@ -40,7 +40,8 @@ export default function Reactor() {
         extinguishedAt: 0,
         gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
         cps: 0,
-        energySources: [{ type: 'init', cps: 0, basePrice: 0 }]
+        energySources: [{ type: 'init', cps: 0, basePrice: 0 }],
+        deleted: false
       });
     } else {
       showMessage('You cannot create more reactions at this time.', 'error');
@@ -55,15 +56,20 @@ export default function Reactor() {
     return (
       <React.Fragment>
         <Container maxWidth="lg">
-          <div className={`reactor-down ${values.length > 0 ? 'hidden' : ''}`}>
+          <div className={`reactor-down ${values.filter(r => !r.deleted).length > 0 ? 'hidden' : ''}`}>
             <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
             <h5> - Nikola Tesla</h5>
           </div>
-          <div className="game-session-list-container">
-            {values.map(r => (
-              <Reaction key={r.id} propReaction={r} />
-            ))}
-          </div>
+          {loading ?
+            <React.Fragment>
+              <h4>Loading...</h4>
+            </React.Fragment> :
+            <div className="game-session-list-container">
+              {values.filter(r => !r.deleted).map(r => (
+                <Reaction key={r.id} propReaction={r} />
+              ))}
+            </div>
+          }
         </Container>
         {user ? fab : ''}
       </React.Fragment>

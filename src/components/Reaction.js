@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useSpring, animated } from 'react-spring'
 import useInterval from '../hooks/useInterval';
-import ReactTooltip from 'react-tooltip'
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
@@ -36,10 +35,9 @@ export default function ReactionItem(props) {
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState({});
-  const [toolTipText, setToolTipText] = useState('Start clicking!');
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
   const [durationTimerDelay, setDurationTimerDelay] = useState(null);
-  const [saveGameTimerDelay, setSaveGameTimerDelay] = useState(10000);
+  const [saveGameTimerDelay] = useState(10000);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const context = useContext(GameContext);
@@ -56,13 +54,6 @@ export default function ReactionItem(props) {
   useEffect(() => {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
-    if (propReaction && propReaction.energy) {
-      if (propReaction.energy > 0) {
-        setToolTipText('Sweet! Now keep clicking...');
-      } else {
-        setToolTipText('Start clicking!');
-      }
-    }
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -140,23 +131,20 @@ export default function ReactionItem(props) {
         calculateClicks();
       }
 
-      if (newEnergyCalculation < 0) {
+      if (newEnergyCalculation <= 0) {
         killReaction();
         return;
       } else {
         reactionUpdates.energy = newEnergyCalculation;
         reactionUpdates.reactionStarted = true;
+        setReactionState(reactionUpdates);
       }
-
-      setReactionState(reactionUpdates);
-
     }
   }
 
   const killReaction = () => {
     setReactionTimerDelay(null);
     setDurationTimerDelay(null);
-    setSaveGameTimerDelay(null);
     const reactionUpdates = {
       ...reactionState,
       energy: 0,
@@ -166,7 +154,6 @@ export default function ReactionItem(props) {
       extinguishedAt: firebase.database.ServerValue.TIMESTAMP
     };
     setReactionState(reactionUpdates);
-    saveGame();
   };
 
   const chargeReaction = () => {
@@ -174,17 +161,19 @@ export default function ReactionItem(props) {
     const reactionUpdates = {
       ...reactionState
     };
-    if (!reactionState.reactionStarted) {
+    if (!reactionUpdates.reactionStarted) {
       const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-      reactionUpdates.clicks = parseFloat((reactionState.clicks || 0) + 1).toFixed(2);
+      const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
+      reactionUpdates.clicks = parseFloat((parseFloat(reactionState.clicks) || 0) + 1).toFixed(2);
       reactionUpdates.energy = newCompletedCalulcation;
-      setClickCount(reactionState.clicks);
+      setClickCount(reactionUpdates.clicks);
+      setReactionState(reactionUpdates);
       context.updateScore(1);
       if (reactionUpdates.energy >= 100) {
         reactionUpdates.energy = 100;
         reactionUpdates.reactionStarted = true;
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
+        setReactionState(reactionUpdates);
         context.updateScore(reactionState.clicks * 10);
         setDurationTimerDelay(100);
         showMessage('Reaction started! Now keep it going...', 'success');
@@ -194,17 +183,17 @@ export default function ReactionItem(props) {
         const diff = Math.random() * 2;
         const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
         reactionUpdates.energy = newCompletedCalulcation;
+        setReactionState(reactionUpdates);
         calculateClicks();
       }
     }
-    setReactionState(reactionUpdates);
   };
 
   const calculateClicks = () => {
     const reactionUpdates = {
       ...reactionState
     };
-    let totalClickCount = Math.min((reactionState.cps / 10) + 1, 100);
+    let totalClickCount = Math.min((reactionUpdates.cps / 10) + 1, 100);
     context.updateScore(1);
     setClickBuffer(totalClickCount + parseFloat(clickBuffer));
     totalClickCount = totalClickCount + parseFloat(clickCount);
@@ -245,7 +234,6 @@ export default function ReactionItem(props) {
     reactionUpdates.energySources.push(energySource);
     setReactionState(reactionUpdates);
     setClickCount(reactionUpdates.clicks);
-    saveGame();
     showMessage('Purchase complete!', 'success');
     setOpenDrawer(false);
   }
@@ -260,6 +248,15 @@ export default function ReactionItem(props) {
       }
     }
     return 0;
+  }
+
+  const deleteReaction = () => {
+    const reactionUpdates = {
+      ...reactionState,
+      deleted: true
+    };
+    setReactionState(reactionUpdates);
+    saveGame();
   }
 
   useInterval(burnEnergy.bind(this), reactionTimerDelay);
@@ -287,7 +284,7 @@ export default function ReactionItem(props) {
         <div>
           {(isLoading) ? <CircularProgress color="secondary" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
-              <div className="reaction-container">
+              <div className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
                 <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(true)}>
                   <BatteryChargingFullIcon />
                 </Fab>
@@ -304,10 +301,15 @@ export default function ReactionItem(props) {
                       output: [1, 0.97, 0.9, 1.1, 0.9, 1.1, 1.03, 1]
                     })
                     .interpolate(x => `scale(${x})`)
-                }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''} ${reactionState.extinguished ? 'extinguished' : ''}`}>
+                }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
                   <PointTarget onPoint={() => chargeReaction()}>
                     <div>
-                      <span className={reactionState.extinguished ? 'skully' : 'hidden'}>☠</span>
+                      {reactionState.extinguished ?
+                        <React.Fragment>
+                          <h4 className="game-over">GAME OVER</h4>
+                          <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
+                        </React.Fragment>
+                        : ''}
                       <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${propReaction.id}`} data-tip="Hive" />
                     </div>
                   </PointTarget>
@@ -315,7 +317,6 @@ export default function ReactionItem(props) {
               </div>
             </div>
           }
-          <ReactTooltip id={`reactionTip${propReaction.id}`} className="reactionTip" delayUpdate={1000} border={true} type="light" getContent={() => toolTipText} effect="solid" />
           <Drawer anchor="bottom" open={openDrawer} className="reactionDrawer" onClose={() => setOpenDrawer(false)}>
 
             <div className={classes.root}>
