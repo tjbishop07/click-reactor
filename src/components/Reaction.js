@@ -9,23 +9,15 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
-import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/core/styles';
-import Badge from '@material-ui/core/Badge';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
 import PointTarget from 'react-point';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
 import '../styles/reaction.scss';
 import store from '../data/store';
-import { Item, Global, Container } from '../styles/styles'
+import { Item, Container } from '../styles/styles'
 
 // TODO: This component is too big? Need to see if we car break it down
 export default function ReactionItem(props) {
@@ -102,7 +94,6 @@ export default function ReactionItem(props) {
   }
 
   const updateDurationLabel = () => {
-    // TODO: reactionState.reactionStartedAt is still the TIMESTAMP object, not a number from the db
     if (reactionState
       && reactionState.reactionStartedAt
       && reactionState.reactionStartedAt > 0) {
