@@ -193,7 +193,6 @@
     margin: 10px 0 0 10px;
     padding: 0;
     font-size: 1.4rem;
-    text-shadow: 0 0 2px #000000
 }
 
 .reaction-store p {
@@ -201,4 +200,11 @@
     padding: 0;
     opacity: .6;
     font-size: .9rem;
+}
+
+.store-icon {
+    fill: rgba(255, 255, 255, .3) !important;
+    position: absolute;
+    right: 10px;
+    top: -5px;
 }

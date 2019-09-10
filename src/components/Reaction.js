@@ -31,7 +31,7 @@ export default function ReactionItem(props) {
   const [reactionState, setReactionState] = useState({});
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
   const [durationTimerDelay, setDurationTimerDelay] = useState(null);
-  const [saveGameTimerDelay] = useState(10000);
+  const [saveGameTimerDelay] = useState(5000);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const context = useContext(GameContext);
@@ -264,7 +264,7 @@ export default function ReactionItem(props) {
   return (
     <GameContext.Consumer>
       {context => (
-        <div>
+        <React.Fragment>
           {(isLoading) ? <CircularProgress color="secondary" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
               <div className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
@@ -300,6 +300,8 @@ export default function ReactionItem(props) {
                       <h4>{item.name}</h4>
                       <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
                       <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
+                      {item.icon ? <svg viewBox="0 0 23 23" width="100px" height="100px" className="store-icon" xmlns="http://www.w3.org/2000/svg"><path d={item.icon} /></svg>
+                        : ''}
                     </Item>
                   ))}
                 </Container>
@@ -309,7 +311,7 @@ export default function ReactionItem(props) {
               </Fab>
             </div>
           }
-        </div>
+        </React.Fragment>
       )
       }
     </GameContext.Consumer >

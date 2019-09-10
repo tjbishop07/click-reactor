@@ -28,7 +28,7 @@ const Container = styled(animated.div)`
   left: 0;
   display: grid;
   grid-template-columns: repeat(1, minmax(100px, 1fr));
-  grid-gap: 10px;
+  grid-gap: 0px;
   background: none;
   border-radius: 0;
   cursor: pointer;
@@ -39,11 +39,13 @@ const Container = styled(animated.div)`
 
 const Item = styled(animated.div)`
   width: 100%;
-  height: 100%;
+  height: 85px;
   will-change: transform, opacity;
-  padding: 5px;
   color: #ffffff;
   box-shadow: inset 0 2px 2px rgba(0, 0, 0, .5);
+  border-bottom: solid 2px rgba(255, 2555, 255, .05);
+  position: relative;
+  overflow: hidden;
 `
 
 export { Global, Container, Item }
