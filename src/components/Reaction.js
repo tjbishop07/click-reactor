@@ -9,7 +9,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
-import { makeStyles } from '@material-ui/core/styles';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
@@ -37,8 +36,6 @@ export default function ReactionItem(props) {
   const { user } = useAuth();
   const context = useContext(GameContext);
 
-  const [stickCount, setStickCount] = useState(0);
-
   // Spring JS Configs
   const { x } = useSpring({
     from: { x: 0 },
@@ -59,7 +56,7 @@ export default function ReactionItem(props) {
   const springRef = useRef()
   const { size, opacity, ...rest } = useSpring({
     ref: springRef,
-    config: config.stiff,
+    config: config.gentle,
     from: { size: '0%' },
     to: { size: openDrawer ? '100%' : '0%' }
   })
@@ -75,19 +72,6 @@ export default function ReactionItem(props) {
     }, 1000);
     setDurationTimerDelay(100);
   }, []);
-
-  // propReaction (from parent) effect
-  useEffect(() => {
-    setReactionState(propReaction);
-    if (reactionState && reactionState.energySources) {
-      let purchasedItemResults = reactionState.energySources.filter(source => source.type === 'sticks');
-      if (!purchasedItemResults) {
-        setStickCount(0);
-      } else {
-        setStickCount(purchasedItemResults.length);
-      }
-    }
-  }, [propReaction]);
 
   const saveGame = () => {
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
@@ -254,7 +238,7 @@ export default function ReactionItem(props) {
 
   const calculateCost = (id, basePrice) => {
     if (reactionState && reactionState.energySources) {
-      let purchasedItemResults = reactionState.energySources.filter(source => source.id === id);
+      const purchasedItemResults = reactionState.energySources.filter(source => source.id === id);
       if (purchasedItemResults.length === 0) {
         return parseFloat(basePrice).toFixed(2);
       } else {
@@ -276,21 +260,6 @@ export default function ReactionItem(props) {
   useInterval(burnEnergy.bind(this), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(this), durationTimerDelay);
   useInterval(saveGame.bind(this), saveGameTimerDelay);
-
-  const useStyles = makeStyles({
-    root: {
-      flexGrow: 1,
-      paddingTop: 40
-    },
-    card: {
-      maxWidth: 345,
-      height: 350
-    },
-    media: {
-      height: 140,
-    },
-  });
-  const classes = useStyles();
 
   return (
     <GameContext.Consumer>
