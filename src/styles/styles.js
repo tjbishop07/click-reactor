@@ -42,8 +42,7 @@ const Item = styled(animated.div)`
   height: 100%;
   will-change: transform, opacity;
   padding: 5px;
-  color: #333;
-  text-shadow: 1px 1px 1px #fff;
+  color: #ffffff;
 `
 
 export { Global, Container, Item }

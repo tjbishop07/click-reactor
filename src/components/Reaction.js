@@ -338,7 +338,8 @@ export default function ReactionItem(props) {
                   {transitions.map(({ item, key, props }) => (
                     <Item onClick={() => purchaseItem({ id: item.id, cps: item.baseCPS, basePrice: item.basePrice })} key={key} style={{ ...props, background: item.css }}>
                       <h4>{item.name}</h4>
-                      <p>Price: ${calculateCost(item.id, item.basePrice)}, Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
+                      <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
+                      <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
                     </Item>
                   ))}
                 </Container>
