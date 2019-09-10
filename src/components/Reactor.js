@@ -31,7 +31,6 @@ export default function Reactor() {
   const addReactionItem = () => {
     if (values.filter(r => !r.deleted).length < 1) {
       databaseRef.child(`userReactors/${user.uid}`).push().set({
-        title: 'Start clicking...',
         clicks: 0,
         energy: 0,
         reactionStarted: false,
@@ -40,7 +39,7 @@ export default function Reactor() {
         extinguishedAt: 0,
         gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
         cps: 0,
-        energySources: [{ type: 'init', cps: 0, basePrice: 0 }],
+        energySources: [],
         deleted: false
       });
     } else {

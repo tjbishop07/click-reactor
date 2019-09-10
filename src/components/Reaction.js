@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useSpring, animated } from 'react-spring'
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useTransition, useSpring, useChain, config, animated } from 'react-spring'
 import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
@@ -11,7 +11,7 @@ import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
+import Badge from '@material-ui/core/Badge';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -24,7 +24,10 @@ import PointTarget from 'react-point';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import '../styles/reaction.scss';
+import store from '../data/store';
+import { Item, Global, Container } from '../styles/styles'
 
+// TODO: This component is too big? Need to see if we car break it down
 export default function ReactionItem(props) {
 
   const { propReaction } = props;
@@ -44,11 +47,32 @@ export default function ReactionItem(props) {
 
   const [stickCount, setStickCount] = useState(0);
 
+  // Spring JS Configs
   const { x } = useSpring({
     from: { x: 0 },
     x: state ? 1 : 0,
     config: { duration: 50 }
   })
+
+  const transRef = useRef();
+  const transitions = useTransition(openDrawer ? store : [], item => item.name, {
+    ref: transRef,
+    unique: true,
+    trail: 400 / store.length,
+    from: { opacity: 0, transform: 'scale(0)' },
+    enter: { opacity: 1, transform: 'scale(1)' },
+    leave: { opacity: 0, transform: 'scale(0)' }
+  })
+
+  const springRef = useRef()
+  const { size, opacity, ...rest } = useSpring({
+    ref: springRef,
+    config: config.stiff,
+    from: { size: '0%' },
+    to: { size: openDrawer ? '100%' : '0%' }
+  })
+
+  useChain(openDrawer ? [springRef, transRef] : [transRef, springRef], [0, openDrawer ? 0.1 : 0.6])
 
   // Initial load effect
   useEffect(() => {
@@ -217,11 +241,7 @@ export default function ReactionItem(props) {
   }
 
   const purchaseItem = (energySource) => {
-    const cost = calculateCost(energySource.type, energySource.basePrice);
-    if (cost === 0) {
-      showMessage('Purchase failed.', 'error');
-      return;
-    }
+    const cost = calculateCost(energySource.id, energySource.basePrice);
     if (parseFloat(cost) > parseFloat(clickCount)) {
       showMessage('You do not have enough cash for this item', 'error');
       return;
@@ -231,6 +251,9 @@ export default function ReactionItem(props) {
       cps: reactionState.cps + energySource.cps,
       clicks: parseFloat(clickCount - cost).toFixed(2)
     };
+    if (!reactionUpdates.energySources) {
+      reactionUpdates.energySources = [];
+    }
     reactionUpdates.energySources.push(energySource);
     setReactionState(reactionUpdates);
     setClickCount(reactionUpdates.clicks);
@@ -238,9 +261,9 @@ export default function ReactionItem(props) {
     setOpenDrawer(false);
   }
 
-  const calculateCost = (type, basePrice) => {
+  const calculateCost = (id, basePrice) => {
     if (reactionState && reactionState.energySources) {
-      let purchasedItemResults = reactionState.energySources.filter(source => source.type === type);
+      let purchasedItemResults = reactionState.energySources.filter(source => source.id === id);
       if (purchasedItemResults.length === 0) {
         return parseFloat(basePrice).toFixed(2);
       } else {
@@ -285,9 +308,6 @@ export default function ReactionItem(props) {
           {(isLoading) ? <CircularProgress color="secondary" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
               <div className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
-                <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(true)}>
-                  <BatteryChargingFullIcon />
-                </Fab>
                 <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
                 <span className="duration">{duration}</span>
                 <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
@@ -314,92 +334,21 @@ export default function ReactionItem(props) {
                     </div>
                   </PointTarget>
                 </animated.div>
+                <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
+                  {transitions.map(({ item, key, props }) => (
+                    <Item onClick={() => purchaseItem({ id: item.id, cps: item.baseCPS, basePrice: item.basePrice })} key={key} style={{ ...props, background: item.css }}>
+                      <h4>{item.name}</h4>
+                      <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
+                      <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
+                    </Item>
+                  ))}
+                </Container>
               </div>
+              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
+                <BatteryChargingFullIcon />
+              </Fab>
             </div>
           }
-          <Drawer anchor="bottom" open={openDrawer} className="reactionDrawer" onClose={() => setOpenDrawer(false)}>
-
-            <div className={classes.root}>
-              <Grid container spacing={5}>
-                <Grid item sm={6}>
-
-                  <Card className={classes.card} augmented-ui="tr-clip bl-clip br-clip-y exe" onClick={() => purchaseItem({ type: 'sticks', cps: 0.2, basePrice: 10 })}>
-                    <CardActionArea>
-                      <CardMedia
-                        className={classes.media}
-                        image="https://images.pexels.com/photos/1174461/pexels-photo-1174461.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
-                        title="Rub Sticks"
-                      />
-                      <CardContent>
-                        <Typography gutterBottom variant="h5" component="h2">
-                          Rub Sticks Together
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          You heard right! Nothing better than good old fashioned elbow grease.
-                        </Typography>
-                      </CardContent>
-                    </CardActionArea>
-                    <CardActions>
-                      <Button size="small" color="primary" onClick={() => purchaseItem({ type: 'sticks', cps: 0.2, basePrice: 10 })}>Buy ${calculateCost('sticks', 10)}</Button>
-                      <Typography>
-                        Purchased: {stickCount}
-                      </Typography>
-                    </CardActions>
-                  </Card>
-
-                </Grid>
-                <Grid item sm={6}>
-
-                  <Card className={classes.card} augmented-ui="tr-clip bl-clip br-clip-y exe">
-                    <CardActionArea>
-                      <CardMedia
-                        className={classes.media}
-                        image="https://images.pexels.com/photos/21462/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
-                        title="Matches"
-                      />
-                      <CardContent>
-                        <Typography gutterBottom variant="h5" component="h2">
-                          Matches
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          Finally! Give you arms a rest and start flicking those matches.
-                        </Typography>
-                      </CardContent>
-                    </CardActionArea>
-                    <CardActions>
-                      <Button size="small" color="primary" onClick={() => purchaseItem({ type: 'matches', cps: 0.4, basePrice: 20 })}>Buy ${calculateCost('matches', 20)}</Button>
-                    </CardActions>
-                  </Card>
-
-                </Grid>
-                <Grid item sm={6}>
-
-                  <Card className={classes.card} augmented-ui="tr-clip bl-clip br-clip-y exe">
-                    <CardActionArea>
-                      <CardMedia
-                        className={classes.media}
-                        image="https://images.pexels.com/photos/167080/pexels-photo-167080.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
-                        title="Firecracker"
-                      />
-                      <CardContent>
-                        <Typography gutterBottom variant="h5" component="h2">
-                          Firecrackers
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                          Now it's time to start moving on to some more serious stuff.
-                        </Typography>
-                      </CardContent>
-                    </CardActionArea>
-                    <CardActions>
-                      <Button size="small" color="primary" onClick={() => purchaseItem({ type: 'firecracker', cps: 0.6, basePrice: 30 })}>Buy ${calculateCost('firecracker', 30)}</Button>
-                    </CardActions>
-                  </Card>
-
-                </Grid>
-              </Grid>
-            </div>
-
-          </Drawer>
         </div>
       )
       }
