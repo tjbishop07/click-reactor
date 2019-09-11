@@ -26,8 +26,8 @@ export default function HUD() {
                   <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
                 </Grid>
                 <Grid item xs={4}>
-                  <Typography className="title" variant="h4">
-                    <span>☢</span>
+                  <Typography className="title" variant="h6">
+                    Click Reactors
                   </Typography>
                 </Grid>
                 <Grid item xs={4}>

@@ -52,7 +52,7 @@
 
 @media screen and (min-width: 1366px) {
     .reaction-container {
-        background-position-x: -15px
+        background-position-x: -115px
     }
 }
 
@@ -65,6 +65,8 @@
 
 .hive {
     width: 100px;
+    // font-size: 75px;
+    // cursor: pointer;
 }
 
 .hive:active {
@@ -207,4 +209,14 @@
     position: absolute;
     right: 10px;
     top: -5px;
+}
+
+.click-count-fade {
+    background: #000000;
+    color: #ffffff;
+    width: 100px;
+    height: 20px;
+    position: absolute;
+    left: 0;
+    top: 200px;
 }

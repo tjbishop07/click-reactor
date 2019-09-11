@@ -4,7 +4,6 @@ import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
-import dna from '../img/dna.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
@@ -13,7 +12,6 @@ import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
-import PointTarget from 'react-point';
 import '../styles/reaction.scss';
 import store from '../data/store';
 import { Item, Container } from '../styles/styles'
@@ -31,7 +29,7 @@ export default function ReactionItem(props) {
   const [reactionState, setReactionState] = useState({});
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
   const [durationTimerDelay, setDurationTimerDelay] = useState(null);
-  const [saveGameTimerDelay] = useState(5000);
+  const [saveGameTimerDelay] = useState(30000);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const context = useContext(GameContext);
@@ -257,7 +255,7 @@ export default function ReactionItem(props) {
     saveGame();
   }
 
-  useInterval(burnEnergy.bind(this), reactionTimerDelay);
+  useInterval(burnEnergy.bind(), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(this), durationTimerDelay);
   useInterval(saveGame.bind(this), saveGameTimerDelay);
 
@@ -267,7 +265,7 @@ export default function ReactionItem(props) {
         <React.Fragment>
           {(isLoading) ? <CircularProgress color="secondary" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
-              <div className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
+              <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
                 <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
                 <span className="duration">{duration}</span>
                 <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
@@ -282,17 +280,13 @@ export default function ReactionItem(props) {
                     })
                     .interpolate(x => `scale(${x})`)
                 }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
-                  <PointTarget onPoint={() => chargeReaction()}>
-                    <div>
-                      {reactionState.extinguished ?
-                        <React.Fragment>
-                          <h4 className="game-over">GAME OVER</h4>
-                          <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
-                        </React.Fragment>
-                        : ''}
-                      <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${propReaction.id}`} data-tip="Hive" />
-                    </div>
-                  </PointTarget>
+                  {reactionState.extinguished ?
+                    <React.Fragment>
+                      <h4 className="game-over">GAME OVER</h4>
+                      <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
+                    </React.Fragment>
+                    : ''}
+                  <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
                 </animated.div>
                 <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
                   {transitions.map(({ item, key, props }) => (

@@ -28,11 +28,45 @@ img {
 
 .title {
     text-align: center;
-    margin: 15px 0 0 0 !important
+    margin: 20px 0 0 0 !important
 }
 
 .hidden {
     display: none !important;
+}
+
+
+/* CSS Hack to hide selection side effects in browser */
+
+// https://stackoverflow.com/questions/16432909/remove-blue-highlight-over-html-image-when-clicked
+
+/*IE9*/
+
+*::selection {
+    background-color: transparent;
+}
+
+*::-moz-selection {
+    background-color: transparent;
+}
+
+* {
+    -webkit-user-select: none;
+    -moz-user-select: -moz-none;
+    /*IE10*/
+    -ms-user-select: none;
+    user-select: none;
+    /*You just need this if you are only concerned with android and not desktop browsers.*/
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+input[type="text"],
+textarea,
+[contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 
