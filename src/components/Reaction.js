@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
 import { useTransition, useSpring, useChain, config, animated } from 'react-spring'
 import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
@@ -41,8 +41,9 @@ export default function ReactionItem(props) {
     config: { duration: 50 }
   })
 
+  const storeItems = useMemo(() => store, []);
   const transRef = useRef();
-  const transitions = useTransition(openDrawer ? store : [], item => item.name, {
+  const transitions = useTransition(openDrawer ? storeItems : [], item => item.name, {
     ref: transRef,
     unique: true,
     trail: 400 / store.length,
@@ -256,8 +257,8 @@ export default function ReactionItem(props) {
   }
 
   useInterval(burnEnergy.bind(), reactionTimerDelay);
-  useInterval(updateDurationLabel.bind(this), durationTimerDelay);
-  useInterval(saveGame.bind(this), saveGameTimerDelay);
+  useInterval(updateDurationLabel.bind(), durationTimerDelay);
+  useInterval(saveGame.bind(), saveGameTimerDelay);
 
   return (
     <GameContext.Consumer>
