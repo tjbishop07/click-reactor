@@ -29,7 +29,7 @@ export default function ReactionItem(props) {
   const [reactionState, setReactionState] = useState({});
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
   const [durationTimerDelay, setDurationTimerDelay] = useState(null);
-  const [saveGameTimerDelay] = useState(30000);
+  const [saveGameTimerDelay] = useState(60000);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const context = useContext(GameContext);
@@ -68,11 +68,13 @@ export default function ReactionItem(props) {
     setClickCount(propReaction.clicks);
     setTimeout(() => {
       setIsLoading(false);
+      context.updateActivityLog({ body: 'Hello! This is a test log item with a ton of text to see how it renders in UI' })
     }, 1000);
     setDurationTimerDelay(100);
   }, []);
 
   const saveGame = () => {
+    context.updateActivityLog({ body: 'Game Saved!' })
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
   }
 

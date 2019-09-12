@@ -1,0 +1,57 @@
+.activity-log-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 375px;
+    padding: 0;
+    margin: 10px 0 0 10px;
+    ul {
+        counter-reset: index;
+        padding: 0;
+    }
+    /* List element */
+    li {
+        counter-increment: index;
+        display: flex;
+        padding: 6px 0;
+        box-sizing: border-box;
+        opacity: .5;
+        margin-left: 10px;
+        font-size: .9rem;
+    }
+    p {
+        margin: 0;
+        padding: 0;
+        align-self: flex-start;
+        text-align: left;
+    }
+    span {
+        margin: 0 0 0 10px;
+        padding: 0;
+        font-size: .7rem;
+        color: #000000;
+        opacity: .5;
+        min-width: 100px;
+        text-align: right;
+        align-self: flex-end;
+    }
+    /* Element counter */
+    li::before {
+        content: counters(index, ".", decimal-leading-zero);
+        font-size: .8rem;
+        text-align: left;
+        font-weight: bold;
+        min-width: 25px;
+        -webkit-font-feature-settings: "tnum";
+        font-feature-settings: "tnum";
+        font-variant-numeric: tabular-nums;
+        align-self: flex-start;
+        background-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
+        background-attachment: fixed;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    li+li {
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}

@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
-import '../styles/activity-log.scss';
+import { useListVals } from 'react-firebase-hooks/database';
+import * as firebase from 'firebase';
+import Moment from 'react-moment';
+import "../styles/activity-log.scss";
 
 export default function ActivityLog() {
 
-  const { user, initializing } = useAuth();
+  const { user } = useAuth();
+  const [activityLog, loadingActivityLog] = useListVals(firebase.database().ref(`gameStates/${user.uid}/activityLog`), { keyField: 'id' });
+  const [activityLogSummary, setActivityLogSummary] = useState([]);
 
   useEffect(() => {
-    setShowLogin(!user);
-  }, [initializing]);
+    setActivityLogSummary(activityLog.reverse().splice(0, 10));
+  }, [activityLog.length])
 
-  return (
-    <GameContext.Consumer>
-      {context => (
-        <Fragment>
-
-        </Fragment>
-      )}
-    </GameContext.Consumer>
-  );
+  if (loadingActivityLog) {
+    return (
+      <React.Fragment>
+        <h4>Loading...</h4>
+      </React.Fragment>)
+  } else {
+    return (
+      <ul className="activity-log-container">
+        {
+          activityLogSummary.map(item => (
+            <li key={item.id}>
+              <p>{item.body}<span><Moment fromNow>{item.timestamp}</Moment></span></p>
+            </li>
+          ))
+        }
+      </ul>
+    )
+  }
 }

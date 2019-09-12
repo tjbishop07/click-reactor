@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import GameContext from "./context";
 import { databaseRef } from '../config/firebase';
 import { useAuth } from './auth';
+import * as firebase from 'firebase';
 
 export default function Provider(props) {
     const { user } = useAuth();
     const [state, setState] = useState({
+        activityLog: [],
         fullName: '',
-        score: -1 // NOTE: Important that -1 is set otherwise state/Firebase will just update each other
+        score: -1,
     });
 
     useEffect(() => {
@@ -27,9 +29,9 @@ export default function Provider(props) {
         updateGameStateScore();
     }, [state.score]);
 
-    async function updateGameStateScore() {
+    function updateGameStateScore() {
         if (state.score > 0) {
-            await databaseRef.child(`gameStates/${user.uid}/score`).set(state.score);
+            databaseRef.child(`gameStates/${user.uid}/score`).set(state.score);
         }
     }
 
@@ -37,9 +39,9 @@ export default function Provider(props) {
         updateGameStateFullName();
     }, [state.fullName]);
 
-    async function updateGameStateFullName() {
+    function updateGameStateFullName() {
         if (state.fullName) {
-            await databaseRef.child(`gameStates/${user.uid}/fullName`).set(state.fullName);
+            databaseRef.child(`gameStates/${user.uid}/fullName`).set(state.fullName);
         }
     }
 
@@ -47,14 +49,20 @@ export default function Provider(props) {
         <GameContext.Provider
             value={{
                 data: state,
-                updateIsLoggedIn: (status) => {
-                    setState({ ...state, isLoggedIn: status });
-                },
                 updateFullName: (newName) => {
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {
                     setState({ ...state, score: (state.score + newScore) });
+                },
+                updateActivityLog: (newActivityLogItem) => {
+                    newActivityLogItem.timestamp = firebase.database.ServerValue.TIMESTAMP;
+                    let tempActivityLog = state.activityLog;
+                    if (!tempActivityLog) {
+                        tempActivityLog = [];
+                    }
+                    tempActivityLog.push(newActivityLogItem);
+                    databaseRef.child(`gameStates/${user.uid}/activityLog`).set(tempActivityLog);
                 }
             }}
         >
