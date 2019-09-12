@@ -22,15 +22,17 @@ export default function ActivityLog() {
       </React.Fragment>)
   } else {
     return (
-      <ul className="activity-log-container">
-        {
-          activityLogSummary.map(item => (
-            <li key={item.id}>
-              <p>{item.body}<span><Moment fromNow>{item.timestamp}</Moment></span></p>
-            </li>
-          ))
-        }
-      </ul>
+      <div className={`augment-container-log ${activityLogSummary.length === 0 ? 'hidden' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
+        <ul className="activity-log-container">
+          {
+            activityLogSummary.map(item => (
+              <li key={item.id}>
+                <p>{item.body}<span><Moment fromNow>{item.timestamp}</Moment></span></p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
     )
   }
 }

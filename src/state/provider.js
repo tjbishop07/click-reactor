@@ -30,7 +30,7 @@ export default function Provider(props) {
     }, [state.score]);
 
     function updateGameStateScore() {
-        if (state.score > 0) {
+        if (state.score > 0 && user) {
             databaseRef.child(`gameStates/${user.uid}/score`).set(state.score);
         }
     }
@@ -40,8 +40,20 @@ export default function Provider(props) {
     }, [state.fullName]);
 
     function updateGameStateFullName() {
-        if (state.fullName) {
+        if (state.fullName && user) {
             databaseRef.child(`gameStates/${user.uid}/fullName`).set(state.fullName);
+        }
+    }
+
+    if (state.activityLog) {
+        useEffect(() => {
+            updateGameStateActivityLog();
+        }, [state.activityLog.length]);
+    }
+
+    function updateGameStateActivityLog() {
+        if (state.activityLog && user) {
+            databaseRef.child(`gameStates/${user.uid}/activityLog`).set(state.activityLog);
         }
     }
 
@@ -53,7 +65,7 @@ export default function Provider(props) {
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {
-                    setState({ ...state, score: (state.score + newScore) });
+                    setState({ ...state, score: ((state.score ? state.score : 0) + newScore) });
                 },
                 updateActivityLog: (newActivityLogItem) => {
                     newActivityLogItem.timestamp = firebase.database.ServerValue.TIMESTAMP;
@@ -62,7 +74,7 @@ export default function Provider(props) {
                         tempActivityLog = [];
                     }
                     tempActivityLog.push(newActivityLogItem);
-                    databaseRef.child(`gameStates/${user.uid}/activityLog`).set(tempActivityLog);
+                    setState({ ...state, activityLog: tempActivityLog });
                 }
             }}
         >

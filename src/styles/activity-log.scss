@@ -1,9 +1,21 @@
+.augment-container-log {
+    --aug-tr: 15px;
+    --aug-bl: 15px;
+    --aug-br-width: 10px;
+    --aug-br-height: 10%;
+    --aug-border: 15px;
+    --aug-border-bg: rgba(0, 0, 0, .1);
+    --aug-border-fallback-color: #ffffff;
+    z-index: 1;
+}
+
 .activity-log-container {
     display: flex;
     flex-direction: column;
     max-width: 375px;
-    padding: 0;
-    margin: 10px 0 0 10px;
+    padding: 20px;
+    margin: 10px 0 0 0;
+    background: rgba(0, 0, 0, 0.2);
     ul {
         counter-reset: index;
         padding: 0;
@@ -52,6 +64,6 @@
         -webkit-text-fill-color: transparent;
     }
     li+li {
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        border-top: 1px dashed rgba(255, 255, 255, 0.2);
     }
 }

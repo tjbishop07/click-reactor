@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useListVals } from 'react-firebase-hooks/database';
 import { databaseRef } from '../config/firebase';
 import Reaction from './Reaction';
@@ -11,9 +11,11 @@ import * as firebase from 'firebase';
 import { useSnackbar } from 'notistack';
 import "../styles/reactor.scss";
 import ActivityLog from './ActivityLog';
+import GameContext from "../state/context";
 
 export default function Reactor() {
 
+  const context = useContext(GameContext);
   const { user } = useAuth();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [reactors, loadingReactors] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
@@ -43,6 +45,10 @@ export default function Reactor() {
         energySources: [],
         deleted: false
       });
+      context.updateActivityLog({ body: `Well look at that. You figured out the button, arn't you special? Now, please say your name...` });
+      setTimeout(() => {
+        context.updateActivityLog({ body: `Just kidding, I can't hear you. I'm just going to call you Dave. Good luck... Dave.` });
+      }, 10000);
     } else {
       showMessage('You cannot create more reactions at this time.', 'error');
     }
@@ -75,7 +81,7 @@ export default function Reactor() {
             </React.Fragment>
           }
         </Container>
-        {user ? fab : ''}
+        {reactors.length === 0 ? fab : ''}
       </React.Fragment>
     );
   } else {

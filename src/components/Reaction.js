@@ -20,8 +20,10 @@ import { Item, Container } from '../styles/styles'
 export default function ReactionItem(props) {
 
   const { propReaction } = props;
-  const [state, toggle] = useState(true)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { user } = useAuth();
+  const context = useContext(GameContext);
+  const [state, toggle] = useState(true)
   const [openDrawer, setOpenDrawer] = useState(false);
   const [duration, setDuration] = useState('');
   const [clickBuffer, setClickBuffer] = useState(0);
@@ -31,8 +33,6 @@ export default function ReactionItem(props) {
   const [durationTimerDelay, setDurationTimerDelay] = useState(null);
   const [saveGameTimerDelay] = useState(60000);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
-  const context = useContext(GameContext);
 
   // Spring JS Configs
   const { x } = useSpring({
@@ -68,13 +68,15 @@ export default function ReactionItem(props) {
     setClickCount(propReaction.clicks);
     setTimeout(() => {
       setIsLoading(false);
-      context.updateActivityLog({ body: 'Hello! This is a test log item with a ton of text to see how it renders in UI' })
     }, 1000);
     setDurationTimerDelay(100);
   }, []);
 
   const saveGame = () => {
-    context.updateActivityLog({ body: 'Game Saved!' })
+    if (!context.data.score) {
+      context.updateScore(0);
+    }
+    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` })
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
   }
 
@@ -154,6 +156,7 @@ export default function ReactionItem(props) {
       extinguishedAt: firebase.database.ServerValue.TIMESTAMP
     };
     setReactionState(reactionUpdates);
+    context.updateActivityLog({ body: `Reaction extinguised. Sad day.` })
   };
 
   const chargeReaction = () => {
@@ -176,7 +179,7 @@ export default function ReactionItem(props) {
         setReactionState(reactionUpdates);
         context.updateScore(reactionState.clicks * 10);
         setDurationTimerDelay(100);
-        showMessage('Reaction started! Now keep it going...', 'success');
+        context.updateActivityLog({ body: `Oh sweet! You started a reaction. Now keep it going...` })
       }
     } else {
       if (!reactionUpdates.extinguished) {
@@ -224,7 +227,7 @@ export default function ReactionItem(props) {
     }
     const reactionUpdates = {
       ...reactionState,
-      cps: reactionState.cps + energySource.cps,
+      cps: reactionState.cps + energySource.baseCPS,
       clicks: parseFloat(clickCount - cost).toFixed(2)
     };
     if (!reactionUpdates.energySources) {
@@ -235,6 +238,7 @@ export default function ReactionItem(props) {
     setClickCount(reactionUpdates.clicks);
     showMessage('Purchase complete!', 'success');
     setOpenDrawer(false);
+    context.updateActivityLog({ body: `${energySource.name} purchased for $${cost}` })
   }
 
   const calculateCost = (id, basePrice) => {
@@ -293,7 +297,7 @@ export default function ReactionItem(props) {
                 </animated.div>
                 <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
                   {transitions.map(({ item, key, props }) => (
-                    <Item onClick={() => purchaseItem({ id: item.id, cps: item.baseCPS, basePrice: item.basePrice })} key={key} style={{ ...props, background: item.css }}>
+                    <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
                       <h4>{item.name}</h4>
                       <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
                       <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
@@ -303,7 +307,7 @@ export default function ReactionItem(props) {
                   ))}
                 </Container>
               </div>
-              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
+              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''} ${!reactionState.reactionStarted ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
                 <BatteryChargingFullIcon />
               </Fab>
             </div>
