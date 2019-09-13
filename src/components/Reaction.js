@@ -28,11 +28,12 @@ export default function ReactionItem(props) {
   const [duration, setDuration] = useState('');
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
-  const [reactionState, setReactionState] = useState({});
+  const [reactionState, setReactionState] = useState(null);
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
-  const [durationTimerDelay, setDurationTimerDelay] = useState(null);
+  const [durationTimerDelay] = useState(100);
   const [saveGameTimerDelay] = useState(60000);
   const [isLoading, setIsLoading] = useState(true);
+  const [reactionStartDateTime, setReactionStartDateTime] = useState(null);
 
   // Spring JS Configs
   const { x } = useSpring({
@@ -69,60 +70,67 @@ export default function ReactionItem(props) {
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    setDurationTimerDelay(100);
   }, []);
+
+  const getReactionStartTimestamp = () => {
+    // NOTE: This check is required since we use the ServerValue.TIMESTAMP for Firebase. 
+    //       When initially set, it's and object so we need this to work around that.
+    return (typeof reactionState.reactionStartedAt === 'object' ?
+      reactionStartDateTime :
+      new Date(reactionState.reactionStartedAt));
+  }
 
   const saveGame = () => {
     if (!context.data.score) {
       context.updateScore(0);
     }
-    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` })
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
+    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` })
   }
 
   const updateDurationLabel = () => {
-    if (reactionState
-      && reactionState.reactionStartedAt
-      && reactionState.reactionStartedAt > 0) {
-      var nowDate = new Date();
-      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
-      var diff = nowDate.getTime() - reactionStartedAt.getTime();
 
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-
-      var hours = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hours * (1000 * 60 * 60);
-
-      var mins = Math.floor(diff / (1000 * 60));
-      diff -= mins * (1000 * 60);
-
-      var seconds = Math.floor(diff / (1000));
-      diff -= seconds * (1000);
-
-      var milliSeconds = Math.floor(diff / (1000000));
-      diff -= milliSeconds * (1000000);
-
-      setDuration((days < 10 ? `0${days}` : days) + ":" +
-        (hours < 10 ? `0${hours}` : hours) + ":" +
-        (mins < 10 ? `0${mins}` : mins) + ":" +
-        (seconds < 10 ? `0${seconds}` : seconds) + ":" +
-        diff.toString().substr(0, 2));
+    if (!reactionState.reactionStarted) {
+      setDuration('--:--:--:--:--');
+      return;
     }
+
+    var nowDate = new Date();
+    var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
+
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    diff -= days * (1000 * 60 * 60 * 24);
+
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+
+    var mins = Math.floor(diff / (1000 * 60));
+    diff -= mins * (1000 * 60);
+
+    var seconds = Math.floor(diff / (1000));
+    diff -= seconds * (1000);
+
+    var milliSeconds = Math.floor(diff / (1000000));
+    diff -= milliSeconds * (1000000);
+
+    setDuration((days < 10 ? `0${days}` : days) + ":" +
+      (hours < 10 ? `0${hours}` : hours) + ":" +
+      (mins < 10 ? `0${mins}` : mins) + ":" +
+      (seconds < 10 ? `0${seconds}` : seconds) + ":" +
+      diff.toString().substr(0, 2));
+
   }
 
   const burnEnergy = () => {
     if (reactionState
-      && reactionState.reactionStarted
-      && reactionState.reactionStartedAt > 0) {
+      && reactionState.reactionStarted) {
 
       const reactionUpdates = {
         ...reactionState
       };
 
       var nowDate = new Date();
-      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
-      var duration = nowDate.getTime() - reactionStartedAt.getTime();
+      var duration = nowDate.getTime() - getReactionStartTimestamp();
       var durationMinutes = Math.floor(duration / (1000 * 60));
 
       const diff = Math.random() * durationMinutes;
@@ -146,11 +154,11 @@ export default function ReactionItem(props) {
 
   const killReaction = () => {
     setReactionTimerDelay(null);
-    setDurationTimerDelay(null);
     const reactionUpdates = {
       ...reactionState,
       energy: 0,
       cps: 0,
+      reactionStarted: false,
       extinguished: true,
       title: 'Extinguished',
       extinguishedAt: firebase.database.ServerValue.TIMESTAMP
@@ -170,26 +178,29 @@ export default function ReactionItem(props) {
       reactionUpdates.clicks = parseFloat((parseFloat(reactionState.clicks) || 0) + 1).toFixed(2);
       reactionUpdates.energy = newCompletedCalulcation;
       setClickCount(reactionUpdates.clicks);
-      setReactionState(reactionUpdates);
       context.updateScore(1);
       if (reactionUpdates.energy >= 100) {
         reactionUpdates.energy = 100;
         reactionUpdates.reactionStarted = true;
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
+        setReactionStartDateTime(new Date());
         setReactionState(reactionUpdates);
         context.updateScore(reactionState.clicks * 10);
-        setDurationTimerDelay(100);
         context.updateActivityLog({ body: `Oh sweet! You started a reaction. Now keep it going...` })
+
+        setTimeout(() => {
+          saveGame();
+        }, 5000);
       }
     } else {
       if (!reactionUpdates.extinguished) {
         const diff = Math.random() * 2;
         const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
         reactionUpdates.energy = newCompletedCalulcation;
-        setReactionState(reactionUpdates);
         calculateClicks();
       }
     }
+    setReactionState(reactionUpdates);
   };
 
   const calculateClicks = () => {

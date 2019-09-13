@@ -81,7 +81,7 @@ export default function Reactor() {
             </React.Fragment>
           }
         </Container>
-        {reactors.length === 0 ? fab : ''}
+        {reactors.filter(r => !r.deleted).length === 0 ? fab : ''}
       </React.Fragment>
     );
   } else {

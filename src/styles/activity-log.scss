@@ -7,12 +7,12 @@
     --aug-border-bg: rgba(0, 0, 0, .1);
     --aug-border-fallback-color: #ffffff;
     z-index: 1;
+    max-width: 410px;
 }
 
 .activity-log-container {
     display: flex;
     flex-direction: column;
-    max-width: 375px;
     padding: 20px;
     margin: 10px 0 0 0;
     background: rgba(0, 0, 0, 0.2);
