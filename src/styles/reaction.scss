@@ -50,12 +50,6 @@
     }
 }
 
-@media screen and (min-width: 1366px) {
-    .reaction-container {
-        background-position-x: -15px
-    }
-}
-
 .reaction-graphic {
     position: relative;
     width: 100%;
@@ -65,6 +59,8 @@
 
 .hive {
     width: 100px;
+    // font-size: 75px;
+    // cursor: pointer;
 }
 
 .hive:active {
@@ -193,7 +189,6 @@
     margin: 10px 0 0 10px;
     padding: 0;
     font-size: 1.4rem;
-    text-shadow: 0 0 2px #000000
 }
 
 .reaction-store p {
@@ -201,4 +196,21 @@
     padding: 0;
     opacity: .6;
     font-size: .9rem;
+}
+
+.store-icon {
+    fill: rgba(255, 255, 255, .3) !important;
+    position: absolute;
+    right: 10px;
+    top: -5px;
+}
+
+.click-count-fade {
+    background: #000000;
+    color: #ffffff;
+    width: 100px;
+    height: 20px;
+    position: absolute;
+    left: 0;
+    top: 200px;
 }

@@ -1,51 +1,39 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
 import { useTransition, useSpring, useChain, config, animated } from 'react-spring'
 import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
-import dna from '../img/dna.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
-import Grid from '@material-ui/core/Grid';
-import { makeStyles } from '@material-ui/core/styles';
-import Badge from '@material-ui/core/Badge';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
-import PointTarget from 'react-point';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
 import '../styles/reaction.scss';
 import store from '../data/store';
-import { Item, Global, Container } from '../styles/styles'
+import { Item, Container } from '../styles/styles'
 
 // TODO: This component is too big? Need to see if we car break it down
 export default function ReactionItem(props) {
 
   const { propReaction } = props;
-  const [state, toggle] = useState(true)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { user } = useAuth();
+  const context = useContext(GameContext);
+  const [state, toggle] = useState(true)
   const [openDrawer, setOpenDrawer] = useState(false);
   const [duration, setDuration] = useState('');
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
-  const [reactionState, setReactionState] = useState({});
+  const [reactionState, setReactionState] = useState(null);
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
-  const [durationTimerDelay, setDurationTimerDelay] = useState(null);
-  const [saveGameTimerDelay] = useState(10000);
+  const [durationTimerDelay] = useState(100);
+  const [saveGameTimerDelay] = useState(60000);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
-  const context = useContext(GameContext);
-
-  const [stickCount, setStickCount] = useState(0);
+  const [reactionStartDateTime, setReactionStartDateTime] = useState(null);
 
   // Spring JS Configs
   const { x } = useSpring({
@@ -54,8 +42,9 @@ export default function ReactionItem(props) {
     config: { duration: 50 }
   })
 
+  const storeItems = useMemo(() => store, []);
   const transRef = useRef();
-  const transitions = useTransition(openDrawer ? store : [], item => item.name, {
+  const transitions = useTransition(openDrawer ? storeItems : [], item => item.name, {
     ref: transRef,
     unique: true,
     trail: 400 / store.length,
@@ -67,7 +56,7 @@ export default function ReactionItem(props) {
   const springRef = useRef()
   const { size, opacity, ...rest } = useSpring({
     ref: springRef,
-    config: config.stiff,
+    config: config.gentle,
     from: { size: '0%' },
     to: { size: openDrawer ? '100%' : '0%' }
   })
@@ -81,70 +70,67 @@ export default function ReactionItem(props) {
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-    setDurationTimerDelay(100);
   }, []);
 
-  // propReaction (from parent) effect
-  useEffect(() => {
-    setReactionState(propReaction);
-    if (reactionState && reactionState.energySources) {
-      let purchasedItemResults = reactionState.energySources.filter(source => source.type === 'sticks');
-      if (!purchasedItemResults) {
-        setStickCount(0);
-      } else {
-        setStickCount(purchasedItemResults.length);
-      }
-    }
-  }, [propReaction]);
+  const getReactionStartTimestamp = () => {
+    // NOTE: This check is required since we use the ServerValue.TIMESTAMP for Firebase. 
+    //       When initially set, it's and object so we need this to work around that.
+    return (typeof reactionState.reactionStartedAt === 'object' ?
+      reactionStartDateTime :
+      new Date(reactionState.reactionStartedAt));
+  }
 
   const saveGame = () => {
+    if (!context.data.score) {
+      context.updateScore(0);
+    }
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
+    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` })
   }
 
   const updateDurationLabel = () => {
-    // TODO: reactionState.reactionStartedAt is still the TIMESTAMP object, not a number from the db
-    if (reactionState
-      && reactionState.reactionStartedAt
-      && reactionState.reactionStartedAt > 0) {
-      var nowDate = new Date();
-      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
-      var diff = nowDate.getTime() - reactionStartedAt.getTime();
 
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-
-      var hours = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hours * (1000 * 60 * 60);
-
-      var mins = Math.floor(diff / (1000 * 60));
-      diff -= mins * (1000 * 60);
-
-      var seconds = Math.floor(diff / (1000));
-      diff -= seconds * (1000);
-
-      var milliSeconds = Math.floor(diff / (1000000));
-      diff -= milliSeconds * (1000000);
-
-      setDuration((days < 10 ? `0${days}` : days) + ":" +
-        (hours < 10 ? `0${hours}` : hours) + ":" +
-        (mins < 10 ? `0${mins}` : mins) + ":" +
-        (seconds < 10 ? `0${seconds}` : seconds) + ":" +
-        diff.toString().substr(0, 2));
+    if (!reactionState.reactionStarted) {
+      setDuration('--:--:--:--:--');
+      return;
     }
+
+    var nowDate = new Date();
+    var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
+
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    diff -= days * (1000 * 60 * 60 * 24);
+
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+
+    var mins = Math.floor(diff / (1000 * 60));
+    diff -= mins * (1000 * 60);
+
+    var seconds = Math.floor(diff / (1000));
+    diff -= seconds * (1000);
+
+    var milliSeconds = Math.floor(diff / (1000000));
+    diff -= milliSeconds * (1000000);
+
+    setDuration((days < 10 ? `0${days}` : days) + ":" +
+      (hours < 10 ? `0${hours}` : hours) + ":" +
+      (mins < 10 ? `0${mins}` : mins) + ":" +
+      (seconds < 10 ? `0${seconds}` : seconds) + ":" +
+      diff.toString().substr(0, 2));
+
   }
 
   const burnEnergy = () => {
     if (reactionState
-      && reactionState.reactionStarted
-      && reactionState.reactionStartedAt > 0) {
+      && reactionState.reactionStarted) {
 
       const reactionUpdates = {
         ...reactionState
       };
 
       var nowDate = new Date();
-      var reactionStartedAt = new Date(reactionState.reactionStartedAt);
-      var duration = nowDate.getTime() - reactionStartedAt.getTime();
+      var duration = nowDate.getTime() - getReactionStartTimestamp();
       var durationMinutes = Math.floor(duration / (1000 * 60));
 
       const diff = Math.random() * durationMinutes;
@@ -168,16 +154,17 @@ export default function ReactionItem(props) {
 
   const killReaction = () => {
     setReactionTimerDelay(null);
-    setDurationTimerDelay(null);
     const reactionUpdates = {
       ...reactionState,
       energy: 0,
       cps: 0,
+      reactionStarted: false,
       extinguished: true,
       title: 'Extinguished',
       extinguishedAt: firebase.database.ServerValue.TIMESTAMP
     };
     setReactionState(reactionUpdates);
+    context.updateActivityLog({ body: `Reaction extinguised. Sad day.` })
   };
 
   const chargeReaction = () => {
@@ -191,26 +178,29 @@ export default function ReactionItem(props) {
       reactionUpdates.clicks = parseFloat((parseFloat(reactionState.clicks) || 0) + 1).toFixed(2);
       reactionUpdates.energy = newCompletedCalulcation;
       setClickCount(reactionUpdates.clicks);
-      setReactionState(reactionUpdates);
       context.updateScore(1);
       if (reactionUpdates.energy >= 100) {
         reactionUpdates.energy = 100;
         reactionUpdates.reactionStarted = true;
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
+        setReactionStartDateTime(new Date());
         setReactionState(reactionUpdates);
         context.updateScore(reactionState.clicks * 10);
-        setDurationTimerDelay(100);
-        showMessage('Reaction started! Now keep it going...', 'success');
+        context.updateActivityLog({ body: `Oh sweet! You started a reaction. Now keep it going...` })
+
+        setTimeout(() => {
+          saveGame();
+        }, 5000);
       }
     } else {
       if (!reactionUpdates.extinguished) {
         const diff = Math.random() * 2;
         const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
         reactionUpdates.energy = newCompletedCalulcation;
-        setReactionState(reactionUpdates);
         calculateClicks();
       }
     }
+    setReactionState(reactionUpdates);
   };
 
   const calculateClicks = () => {
@@ -248,7 +238,7 @@ export default function ReactionItem(props) {
     }
     const reactionUpdates = {
       ...reactionState,
-      cps: reactionState.cps + energySource.cps,
+      cps: reactionState.cps + energySource.baseCPS,
       clicks: parseFloat(clickCount - cost).toFixed(2)
     };
     if (!reactionUpdates.energySources) {
@@ -259,11 +249,12 @@ export default function ReactionItem(props) {
     setClickCount(reactionUpdates.clicks);
     showMessage('Purchase complete!', 'success');
     setOpenDrawer(false);
+    context.updateActivityLog({ body: `${energySource.name} purchased for $${cost}` })
   }
 
   const calculateCost = (id, basePrice) => {
     if (reactionState && reactionState.energySources) {
-      let purchasedItemResults = reactionState.energySources.filter(source => source.id === id);
+      const purchasedItemResults = reactionState.energySources.filter(source => source.id === id);
       if (purchasedItemResults.length === 0) {
         return parseFloat(basePrice).toFixed(2);
       } else {
@@ -282,32 +273,17 @@ export default function ReactionItem(props) {
     saveGame();
   }
 
-  useInterval(burnEnergy.bind(this), reactionTimerDelay);
-  useInterval(updateDurationLabel.bind(this), durationTimerDelay);
-  useInterval(saveGame.bind(this), saveGameTimerDelay);
-
-  const useStyles = makeStyles({
-    root: {
-      flexGrow: 1,
-      paddingTop: 40
-    },
-    card: {
-      maxWidth: 345,
-      height: 350
-    },
-    media: {
-      height: 140,
-    },
-  });
-  const classes = useStyles();
+  useInterval(burnEnergy.bind(), reactionTimerDelay);
+  useInterval(updateDurationLabel.bind(), durationTimerDelay);
+  useInterval(saveGame.bind(), saveGameTimerDelay);
 
   return (
     <GameContext.Consumer>
       {context => (
-        <div>
+        <React.Fragment>
           {(isLoading) ? <CircularProgress color="secondary" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
-              <div className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
+              <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
                 <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
                 <span className="duration">{duration}</span>
                 <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
@@ -322,34 +298,32 @@ export default function ReactionItem(props) {
                     })
                     .interpolate(x => `scale(${x})`)
                 }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
-                  <PointTarget onPoint={() => chargeReaction()}>
-                    <div>
-                      {reactionState.extinguished ?
-                        <React.Fragment>
-                          <h4 className="game-over">GAME OVER</h4>
-                          <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
-                        </React.Fragment>
-                        : ''}
-                      <img src={reactionState.reactionStarted ? dna : hive} className="hive" alt="hive" data-for={`reactionTip${propReaction.id}`} data-tip="Hive" />
-                    </div>
-                  </PointTarget>
+                  {reactionState.extinguished ?
+                    <React.Fragment>
+                      <h4 className="game-over">GAME OVER</h4>
+                      <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
+                    </React.Fragment>
+                    : ''}
+                  <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
                 </animated.div>
                 <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
                   {transitions.map(({ item, key, props }) => (
-                    <Item onClick={() => purchaseItem({ id: item.id, cps: item.baseCPS, basePrice: item.basePrice })} key={key} style={{ ...props, background: item.css }}>
+                    <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
                       <h4>{item.name}</h4>
                       <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
                       <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
+                      {item.icon ? <svg viewBox="0 0 23 23" width="100px" height="100px" className="store-icon" xmlns="http://www.w3.org/2000/svg"><path d={item.icon} /></svg>
+                        : ''}
                     </Item>
                   ))}
                 </Container>
               </div>
-              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
+              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''} ${!reactionState.reactionStarted ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
                 <BatteryChargingFullIcon />
               </Fab>
             </div>
           }
-        </div>
+        </React.Fragment>
       )
       }
     </GameContext.Consumer >

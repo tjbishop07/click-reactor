@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useListVals } from 'react-firebase-hooks/database';
 import { databaseRef } from '../config/firebase';
 import Reaction from './Reaction';
@@ -10,12 +10,15 @@ import Button from '@material-ui/core/Button';
 import * as firebase from 'firebase';
 import { useSnackbar } from 'notistack';
 import "../styles/reactor.scss";
+import ActivityLog from './ActivityLog';
+import GameContext from "../state/context";
 
 export default function Reactor() {
 
+  const context = useContext(GameContext);
   const { user } = useAuth();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [values, loading] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
+  const [reactors, loadingReactors] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
 
   const showMessage = (message, variant) => {
     enqueueSnackbar(message,
@@ -29,7 +32,7 @@ export default function Reactor() {
   }
 
   const addReactionItem = () => {
-    if (values.filter(r => !r.deleted).length < 1) {
+    if (reactors.filter(r => !r.deleted).length < 1) {
       databaseRef.child(`userReactors/${user.uid}`).push().set({
         clicks: 0,
         energy: 0,
@@ -42,35 +45,43 @@ export default function Reactor() {
         energySources: [],
         deleted: false
       });
+      context.updateActivityLog({ body: `Well look at that. You figured out the button, arn't you special? Now, please say your name...` });
+      setTimeout(() => {
+        context.updateActivityLog({ body: `Just kidding, I can't hear you. I'm just going to call you Dave. Good luck... Dave.` });
+      }, 10000);
     } else {
       showMessage('You cannot create more reactions at this time.', 'error');
     }
   }
 
+  const activityLog = <ActivityLog></ActivityLog>;
   const fab = <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
     <AddIcon />
   </Fab>;
 
-  if (values) {
+  if (reactors) {
     return (
       <React.Fragment>
         <Container maxWidth="lg">
-          <div className={`reactor-down ${values.filter(r => !r.deleted).length > 0 ? 'hidden' : ''}`}>
+          <div className={`reactor-down ${reactors.filter(r => !r.deleted).length > 0 ? 'hidden' : ''}`}>
             <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
             <h5> - Nikola Tesla</h5>
           </div>
-          {loading ?
+          {loadingReactors ?
             <React.Fragment>
               <h4>Loading...</h4>
             </React.Fragment> :
-            <div className="game-session-list-container">
-              {values.filter(r => !r.deleted).map(r => (
-                <Reaction key={r.id} propReaction={r} />
-              ))}
-            </div>
+            <React.Fragment>
+              <div className="game-session-list-container">
+                {reactors.filter(r => !r.deleted).map(r => (
+                  <Reaction key={r.id} propReaction={r} />
+                ))}
+              </div>
+              {user ? activityLog : ''}
+            </React.Fragment>
           }
         </Container>
-        {user ? fab : ''}
+        {reactors.filter(r => !r.deleted).length === 0 ? fab : ''}
       </React.Fragment>
     );
   } else {

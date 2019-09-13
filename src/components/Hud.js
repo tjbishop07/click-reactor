@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import Grid from '@material-ui/core/Grid';
@@ -18,26 +18,24 @@ export default function HUD() {
   return (
     <GameContext.Consumer>
       {context => (
-        <Fragment>
-          <div>
-            <div className="hud-container">
-              <Grid container spacing={3}>
-                <Grid item xs={4}>
-                  <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
-                </Grid>
-                <Grid item xs={4}>
-                  <Typography className="title" variant="h4">
-                    <span>☢</span>
-                  </Typography>
-                </Grid>
-                <Grid item xs={4}>
-                  <h4 className="username" onClick={() => { setShowLogin(!showLogin); }}>PLAYER: {context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')}</h4>
-                </Grid>
+        <React.Fragment>
+          <div className="hud-container">
+            <Grid container spacing={3}>
+              <Grid item xs={4}>
+                <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
               </Grid>
-            </div>
+              <Grid item xs={4}>
+                <Typography className="title" variant="h1">
+                  C/R
+                  </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <h4 className="username" onClick={() => { setShowLogin(!showLogin); }}>PLAYER: {context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')}</h4>
+              </Grid>
+            </Grid>
           </div>
           {!user ? <Login /> : ''}
-        </Fragment>
+        </React.Fragment>
       )}
     </GameContext.Consumer>
   );
