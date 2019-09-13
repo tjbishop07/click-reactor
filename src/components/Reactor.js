@@ -77,7 +77,8 @@ export default function Reactor() {
                   <Reaction key={r.id} propReaction={r} />
                 ))}
               </div>
-              {user ? activityLog : ''}
+              {/* {user ? activityLog : ''} */}
+              {reactors.filter(r => !r.deleted).length > 0 ? activityLog : ''}
             </React.Fragment>
           }
         </Container>

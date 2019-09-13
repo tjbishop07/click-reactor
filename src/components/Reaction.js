@@ -5,7 +5,6 @@ import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
 import hive from '../img/hive.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
 import GameContext from "../state/context";
@@ -281,7 +280,7 @@ export default function ReactionItem(props) {
     <GameContext.Consumer>
       {context => (
         <React.Fragment>
-          {(isLoading) ? <CircularProgress color="secondary" /> :
+          {(isLoading) ? <LinearProgress color="secondary" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
               <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
                 <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
