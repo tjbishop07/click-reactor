@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
-import Provider from "./state/Provider";
+import Provider from "./state/provider";
 import Reactor from './components/Reactor';
 import HUD from "./components/Hud";
 import Settings from "./components/Settings";
@@ -13,6 +13,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
+import MonitizationMessage from './components/Monitization';
 import { SnackbarProvider } from 'notistack';
 import './styles/style.scss';
 
@@ -65,6 +66,7 @@ export default function App() {
           </Fab> */}
           <HUD />
           {user ? <Reactor /> : ''}
+          <MonitizationMessage></MonitizationMessage>
         </div>
         <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
           <AppBar className={classes.appBar}>
