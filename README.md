@@ -1,6 +1,6 @@
 <h1 align="center">&#9762; Welcome to Click Reactors &#9762;</h1>
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0 (BETA)-blue.svg?cacheSeconds=2592000&style=plastic" />&nbsp;
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.1 (BETA)-blue.svg?cacheSeconds=2592000&style=plastic" />&nbsp;
   <img alt="Website" src="https://img.shields.io/website/https/www.clickreactors.com?style=plastic" />&nbsp;
   <img alt="Discord" src="https://img.shields.io/discord/616340249072762881?style=plastic" />
 </p>
@@ -24,10 +24,10 @@ npm run start
 ```
 
 ## In the works
-- [ ] Game Over Process
-- [ ] Leaderboard
-- [ ] Performance Enhancements
-- [ ] Mobile Optimization (Larger screens are first priority)
+- [x] Game Over Process
+- [ ] Leaderboard (Logan?)
+- [x] Performance Enhancements (always improving)
+- [x] Mobile Optimization (Larger screens are first priority)
 
 ## 🤝 Contributing
 
