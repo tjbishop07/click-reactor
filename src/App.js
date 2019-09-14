@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
-import Provider from "./state/Provider";
+import Provider from "./state/provider";
 import Reactor from './components/Reactor';
 import HUD from "./components/Hud";
 import Settings from "./components/Settings";
