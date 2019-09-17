@@ -140,7 +140,7 @@
 }
 
 .extinguished {
-    background: linear-gradient(rgb(212, 21, 21), rgb(49, 2, 2));
+    background: #000000;
 }
 
 .extinguished .hive {
@@ -155,6 +155,11 @@
     background: $primaryColor !important;
 }
 
+.progress-bar-loading {
+    width: 150px;
+    margin: 25px auto;
+}
+
 .reactionTip {
     min-width: 250px;
     text-align: center;
@@ -162,19 +167,15 @@
 
 .skully {
     position: absolute;
-    left: 37%;
-    top: 20%;
-    font-size: 5rem;
+    left: 50%;
+    top: 5%;
+    font-size: 40px;
+    margin-left: -25px;
 }
 
-.MuiDrawer-paper {
-    padding: 20px;
-    background: rgba(0, 0, 0, .7) !important;
-}
-
-.game-over {
-    text-align: center;
-    text-shadow: 1px 1px 1px #000;
+.newGame {
+    padding: 20px !important;
+    margin-top: 70px !important;
 }
 
 .reaction-store {

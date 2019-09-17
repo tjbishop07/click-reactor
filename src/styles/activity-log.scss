@@ -20,7 +20,6 @@
         counter-reset: index;
         padding: 0;
     }
-    /* List element */
     li {
         counter-increment: index;
         display: flex;
@@ -28,7 +27,7 @@
         box-sizing: border-box;
         opacity: .5;
         margin-left: 10px;
-        font-size: .9rem;
+        font-size: .8rem;
     }
     p {
         margin: 0;

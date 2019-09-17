@@ -62,17 +62,33 @@ export default function ReactionItem(props) {
 
   useChain(openDrawer ? [springRef, transRef] : [transRef, springRef], [0, openDrawer ? 0.1 : 0.6])
 
-  // Initial load effect
   useEffect(() => {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    setIsLoading(false);
   }, []);
 
+  // Hook into props
+  useEffect(() => {
+    if (propReaction) {
+      setReactionState(propReaction);
+      setClickCount(propReaction.clicks);
+      return () => (propReaction);
+    }
+  }, [propReaction.energy]);
+
+  const deleteReaction = () => {
+    setIsLoading(true);
+    const reactionUpdates = {
+      ...reactionState,
+      deleted: true
+    };
+    setReactionState(reactionUpdates);
+    saveGame();
+  }
+
   const getReactionStartTimestamp = () => {
-    // NOTE: This check is required since we use the ServerValue.TIMESTAMP for Firebase. 
+    // NOTE: This check is required since we use the ServerValue. TIMESTAMP for Firebase. 
     //       When initially set, it's and object so we need this to work around that.
     return (typeof reactionState.reactionStartedAt === 'object' ?
       reactionStartDateTime :
@@ -84,7 +100,8 @@ export default function ReactionItem(props) {
       context.updateScore(0);
     }
     databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
-    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` })
+    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` });
+    setIsLoading(false);
   }
 
   const updateDurationLabel = () => {
@@ -157,6 +174,7 @@ export default function ReactionItem(props) {
       ...reactionState,
       energy: 0,
       cps: 0,
+      // deleted: true,
       reactionStarted: false,
       extinguished: true,
       title: 'Extinguished',
@@ -168,13 +186,11 @@ export default function ReactionItem(props) {
 
   const chargeReaction = () => {
     toggle(!state);
-    const reactionUpdates = {
-      ...reactionState
-    };
+    let reactionUpdates = { ...reactionState };
     if (!reactionUpdates.reactionStarted) {
       const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
-      reactionUpdates.clicks = parseFloat((parseFloat(reactionState.clicks) || 0) + 1).toFixed(2);
+      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
+      reactionUpdates.clicks = parseFloat((parseFloat(reactionUpdates.clicks) || 0) + 1).toFixed(2);
       reactionUpdates.energy = newCompletedCalulcation;
       setClickCount(reactionUpdates.clicks);
       context.updateScore(1);
@@ -183,13 +199,8 @@ export default function ReactionItem(props) {
         reactionUpdates.reactionStarted = true;
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
         setReactionStartDateTime(new Date());
-        setReactionState(reactionUpdates);
         context.updateScore(reactionState.clicks * 10);
-        context.updateActivityLog({ body: `Oh sweet! You started a reaction. Now keep it going...` })
-
-        setTimeout(() => {
-          saveGame();
-        }, 5000);
+        context.updateActivityLog({ body: `Oh sweet! You started a reaction. Now keep it going...` });
       }
     } else {
       if (!reactionUpdates.extinguished) {
@@ -263,15 +274,6 @@ export default function ReactionItem(props) {
     return 0;
   }
 
-  const deleteReaction = () => {
-    const reactionUpdates = {
-      ...reactionState,
-      deleted: true
-    };
-    setReactionState(reactionUpdates);
-    saveGame();
-  }
-
   useInterval(burnEnergy.bind(), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(), durationTimerDelay);
   useInterval(saveGame.bind(), saveGameTimerDelay);
@@ -280,7 +282,7 @@ export default function ReactionItem(props) {
     <GameContext.Consumer>
       {context => (
         <React.Fragment>
-          {(isLoading) ? <LinearProgress color="secondary" /> :
+          {(isLoading) ? <LinearProgress color="secondary" className="progress-bar-loading" /> :
             <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
               <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
                 <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
@@ -299,8 +301,8 @@ export default function ReactionItem(props) {
                 }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
                   {reactionState.extinguished ?
                     <React.Fragment>
-                      <h4 className="game-over">GAME OVER</h4>
                       <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
+                      <Button className="newGame" color="primary" variant="outlined" onClick={() => deleteReaction()}>Continue...</Button>
                     </React.Fragment>
                     : ''}
                   <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
