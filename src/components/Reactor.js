@@ -58,7 +58,7 @@ export default function Reactor() {
   if (reactors) {
     return (
       <React.Fragment>
-        <Container maxWidth="lg">
+        <Container>
           <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
             <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
             <h5> - Nikola Tesla</h5>

@@ -1,87 +1,162 @@
 import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
+import { SnackbarProvider } from 'notistack';
 import Provider from "./state/provider";
 import Reactor from './components/Reactor';
 import HUD from "./components/Hud";
-import Settings from "./components/Settings";
-import Dialog from '@material-ui/core/Dialog';
-import Slide from '@material-ui/core/Slide';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import CloseIcon from '@material-ui/icons/Close';
-import Container from '@material-ui/core/Container';
-import { SnackbarProvider } from 'notistack';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Divider from '@material-ui/core/Divider';
+import Drawer from '@material-ui/core/Drawer';
+import Hidden from '@material-ui/core/Hidden';
+import InboxIcon from '@material-ui/icons/MoveToInbox';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import MailIcon from '@material-ui/icons/Mail';
+import MenuIcon from '@material-ui/icons/Menu';
 import './styles/style.scss';
 
+const drawerWidth = 240;
+
 const useStyles = makeStyles(theme => ({
-  appBar: {
-    position: 'relative',
-  },
-  title: {
-    marginLeft: theme.spacing(2),
-    flex: 1,
-  },
-  container: {
+  root: {
     display: 'flex',
-    flexWrap: 'wrap',
   },
-  textField: {
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    width: '100%'
+  drawer: {
+    [theme.breakpoints.up('sm')]: {
+      width: drawerWidth,
+      flexShrink: 0,
+    },
   },
-  dense: {
-    marginTop: 19,
+  appBar: {
+    marginLeft: drawerWidth,
+    [theme.breakpoints.up('sm')]: {
+      width: `calc(100% - ${drawerWidth}px)`,
+    }
   },
-  menu: {
-    width: 200,
+  menuButton: {
+    marginRight: theme.spacing(2),
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
+    },
+  },
+  toolbar: theme.mixins.toolbar,
+  drawerPaper: {
+    width: drawerWidth,
+    backgroundColor: 'rgba(0, 0, 0, .75)',
+    color: '#ffffff'
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
   },
 }));
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+export default function App(props) {
 
-export default function App() {
-
+  const { container } = props;
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
   const classes = useStyles();
-  function handleClose() {
-    setOpen(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
   }
 
+  const drawer = (
+    <React.Fragment>
+      <Typography variant="h2" noWrap>
+        C/R
+      </Typography>
+      <div className={classes.toolbar} />
+      <Divider />
+      <List>
+        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+          <ListItem button key={text}>
+            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
+            <ListItemText primary={text} />
+          </ListItem>
+        ))}
+      </List>
+      <Divider />
+      <List>
+        {['All mail', 'Trash', 'Spam'].map((text, index) => (
+          <ListItem button key={text}>
+            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
+            <ListItemText primary={text} />
+          </ListItem>
+        ))}
+      </List>
+    </React.Fragment>
+  );
+
   return (
-    <Provider>
-      <SnackbarProvider
-        maxSnack={1}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
-        <div className="App">
-          {/* <Fab aria-label="Settings" className="fab-settings-reaction" color="primary" onClick={() => setOpen(true)}>
-            <SettingsIcon />
-          </Fab> */}
-          <HUD />
-          {user ? <Reactor /> : ''}
-        </div>
-        <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
-          <AppBar className={classes.appBar}>
-            <Toolbar>
-              <IconButton edge="start" color="inherit" aria-label="close" onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-              <Typography variant="h6" className={classes.title}>
-                Settings
-            </Typography>
-            </Toolbar>
-          </AppBar>
-          <Container maxWidth="lg">
-            <Settings />
-          </Container>
-        </Dialog>
-      </SnackbarProvider>
-    </Provider >
-  )
+    <div className={classes.root}>
+      <CssBaseline />
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            className={classes.menuButton}
+          >
+            <MenuIcon />
+          </IconButton>
+          {/* <HUD /> */}
+        </Toolbar>
+      </AppBar>
+      <nav className={classes.drawer} aria-label="mailbox folders">
+        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+        <Hidden smUp implementation="css">
+          <Drawer
+            container={container}
+            variant="temporary"
+            anchor={'left'}
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            ModalProps={{
+              keepMounted: true, // Better open performance on mobile.
+            }}
+          >
+            {drawer}
+          </Drawer>
+        </Hidden>
+        <Hidden xsDown implementation="css">
+          <Drawer
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            variant="permanent"
+            open
+          >
+            {drawer}
+          </Drawer>
+        </Hidden>
+      </nav>
+      <main className={classes.content}>
+        <div className={classes.toolbar} />
+        <Provider>
+          <SnackbarProvider
+            maxSnack={1}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
+            <div className="App">
+              {user ? <Reactor /> : ''}
+            </div>
+          </SnackbarProvider>
+        </Provider >
+      </main>
+    </div>
+  );
+
 }

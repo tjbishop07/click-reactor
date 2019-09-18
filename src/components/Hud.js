@@ -15,6 +15,12 @@ export default function HUD() {
     setShowLogin(!user);
   }, [initializing]);
 
+  // return (
+  //   <GameContext.Consumer>
+  //     {context => (<h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>)}
+  //   </GameContext.Consumer >
+  // );
+
   return (
     <GameContext.Consumer>
       {context => (

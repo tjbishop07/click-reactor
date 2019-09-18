@@ -15,14 +15,17 @@
 }
 
 .reactor-down {
-    max-width: 410px;
+    color: #270a36;
+    max-width: 100%;
     text-align: center;
-    text-shadow: 1px 1px 1px rgb(121, 108, 108);
+    text-shadow: 1px 1px 1px rgba(121, 108, 108, .6);
     margin-top: 100px;
-    opacity: .7;
+    font-size: 1.3rem;
 }
 
 .game-session-list-container {
-    max-height: 400px;
     overflow-y: scroll;
+    display: flex;
+    flex-direction: row;
+    align-content: space-between;
 }
