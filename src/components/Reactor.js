@@ -32,26 +32,22 @@ export default function Reactor() {
   }
 
   const addReactionItem = () => {
-    if (reactors.filter(r => !r.deleted).length < 1) {
-      databaseRef.child(`userReactors/${user.uid}`).push().set({
-        clicks: 0,
-        energy: 0,
-        reactionStarted: false,
-        reactionStartedAt: 0,
-        extinguished: false,
-        extinguishedAt: 0,
-        gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
-        cps: 0,
-        energySources: [],
-        deleted: false
-      });
-      context.updateActivityLog({ body: `Well look at that. You figured out the button, arn't you special? Now, please say your name...` });
-      setTimeout(() => {
-        context.updateActivityLog({ body: `Just kidding, I can't hear you. I'm just going to call you Dave. Good luck... Dave.` });
-      }, 10000);
-    } else {
-      showMessage('You cannot create more reactions at this time.', 'error');
-    }
+    // if (reactors.filter(r => !r.extinguished).length < 1) {
+    databaseRef.child(`userReactors/${user.uid}`).push().set({
+      clicks: 0,
+      energy: 0,
+      reactionStarted: false,
+      reactionStartedAt: 0,
+      extinguished: false,
+      extinguishedAt: 0,
+      gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
+      cps: 0,
+      energySources: [],
+    });
+    context.updateActivityLog({ body: `New reaction started. Start clicking to trigger...` });
+    // } else {
+    //   showMessage('You cannot create more reactions at this time.', 'error');
+    // }
   }
 
   const activityLog = <ActivityLog></ActivityLog>;
@@ -63,26 +59,22 @@ export default function Reactor() {
     return (
       <React.Fragment>
         <Container maxWidth="lg">
-          <div className={`reactor-down ${reactors.filter(r => !r.deleted).length > 0 ? 'hidden' : ''}`}>
+          <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
             <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
             <h5> - Nikola Tesla</h5>
           </div>
-          {loadingReactors ?
-            <React.Fragment>
-              <h4>Loading...</h4>
-            </React.Fragment> :
+          {loadingReactors ? '' :
             <React.Fragment>
               <div className="game-session-list-container">
-                {reactors.filter(r => !r.deleted).map(r => (
+                {reactors.reverse().map(r => (
                   <Reaction key={r.id} propReaction={r} />
                 ))}
               </div>
-              {/* {user ? activityLog : ''} */}
-              {reactors.filter(r => !r.deleted).length > 0 ? activityLog : ''}
+              {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''}
             </React.Fragment>
           }
         </Container>
-        {reactors.filter(r => !r.deleted).length === 0 ? fab : ''}
+        {user ? fab : ''}
       </React.Fragment>
     );
   } else {

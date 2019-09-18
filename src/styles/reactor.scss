@@ -21,3 +21,8 @@
     margin-top: 100px;
     opacity: .7;
 }
+
+.game-session-list-container {
+    max-height: 400px;
+    overflow-y: scroll;
+}

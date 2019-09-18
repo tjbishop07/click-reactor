@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
-import { useTransition, useSpring, useChain, config, animated } from 'react-spring'
+import { useTransition, useSpring, useChain, config } from 'react-spring'
 import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
 import * as firebase from 'firebase';
@@ -29,17 +29,10 @@ export default function ReactionItem(props) {
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState(null);
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
-  const [durationTimerDelay] = useState(100);
-  const [saveGameTimerDelay] = useState(60000);
+  const [durationTimerDelay, setDurationTimerDelay] = useState(100);
+  const [saveGameTimerDelay, setSaveGameTimerDelay] = useState(60000);
   const [isLoading, setIsLoading] = useState(true);
   const [reactionStartDateTime, setReactionStartDateTime] = useState(null);
-
-  // Spring JS Configs
-  const { x } = useSpring({
-    from: { x: 0 },
-    x: state ? 1 : 0,
-    config: { duration: 50 }
-  })
 
   const storeItems = useMemo(() => store, []);
   const transRef = useRef();
@@ -66,6 +59,11 @@ export default function ReactionItem(props) {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
     setIsLoading(false);
+    if (propReaction.extinguished) {
+      setReactionTimerDelay(null);
+      setDurationTimerDelay(null);
+      setSaveGameTimerDelay(null);
+    }
   }, []);
 
   // Hook into props
@@ -76,16 +74,6 @@ export default function ReactionItem(props) {
       return () => (propReaction);
     }
   }, [propReaction.energy]);
-
-  const deleteReaction = () => {
-    setIsLoading(true);
-    const reactionUpdates = {
-      ...reactionState,
-      deleted: true
-    };
-    setReactionState(reactionUpdates);
-    saveGame();
-  }
 
   const getReactionStartTimestamp = () => {
     // NOTE: This check is required since we use the ServerValue. TIMESTAMP for Firebase. 
@@ -170,18 +158,19 @@ export default function ReactionItem(props) {
 
   const killReaction = () => {
     setReactionTimerDelay(null);
+    setDurationTimerDelay(null);
+    // setSaveGameTimerDelay(null);
     const reactionUpdates = {
       ...reactionState,
       energy: 0,
       cps: 0,
-      // deleted: true,
       reactionStarted: false,
       extinguished: true,
       title: 'Extinguished',
       extinguishedAt: firebase.database.ServerValue.TIMESTAMP
     };
     setReactionState(reactionUpdates);
-    context.updateActivityLog({ body: `Reaction extinguised. Sad day.` })
+    context.updateActivityLog({ body: `Reaction extinguised. Sad day.` });
   };
 
   const chargeReaction = () => {
@@ -200,7 +189,8 @@ export default function ReactionItem(props) {
         reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
         setReactionStartDateTime(new Date());
         context.updateScore(reactionState.clicks * 10);
-        context.updateActivityLog({ body: `Oh sweet! You started a reaction. Now keep it going...` });
+        context.updateActivityLog({ body: `Oh sweet! You started a reaction. It will slowly burn out unless you keep it going. Try exploring energy sources to throw into the reactor.` });
+        setDurationTimerDelay(100);
       }
     } else {
       if (!reactionUpdates.extinguished) {
@@ -282,31 +272,22 @@ export default function ReactionItem(props) {
     <GameContext.Consumer>
       {context => (
         <React.Fragment>
-          {(isLoading) ? <LinearProgress color="secondary" className="progress-bar-loading" /> :
-            <div className="augment-container" augmented-ui="tr-clip bl-clip br-clip-y exe">
-              <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
+          {(isLoading) ? <span>...</span> :
+            <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
+              <div id="reaction" className={`reaction-container`} >
                 <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
                 <span className="duration">{duration}</span>
                 <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
                 <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
                 <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
-                <animated.div style={{
-                  opacity: x.interpolate({ range: [0, 1], output: [0.7, 1] }),
-                  transform: x
-                    .interpolate({
-                      range: [0, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1],
-                      output: [1, 0.97, 0.9, 1.1, 0.9, 1.1, 1.03, 1]
-                    })
-                    .interpolate(x => `scale(${x})`)
-                }} className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
+                <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
                   {reactionState.extinguished ?
                     <React.Fragment>
-                      <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => deleteReaction()}>☠</span>
-                      <Button className="newGame" color="primary" variant="outlined" onClick={() => deleteReaction()}>Continue...</Button>
+                      <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => console.log('boo')}>☠</span>
                     </React.Fragment>
                     : ''}
                   <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
-                </animated.div>
+                </div>
                 <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
                   {transitions.map(({ item, key, props }) => (
                     <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
