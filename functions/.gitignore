@@ -1,1 +1,16 @@
-node_modules/
+.idea
+.npm
+.tmp
+.vscode/
+coverage
+docgen/html
+firebase-functions-*.tgz
+integration_test/.firebaserc
+integration_test/*.log
+integration_test/functions/firebase-functions.tgz
+integration_test/functions/package.json
+lib
+node_modules
+npm-debug.log
+typings
+yarn.lock
