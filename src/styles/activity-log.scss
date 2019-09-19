@@ -1,35 +1,40 @@
 .augment-container-log {
+    --aug-tl: 15px;
+    --aug-tl-width: 10px;
+    --aug-tl-height: 5%;
     --aug-tr: 15px;
-    --aug-bl: 15px;
-    --aug-br-width: 10px;
-    --aug-br-height: 10%;
     --aug-border: 15px;
-    --aug-border-bg: rgba(0, 0, 0, .1);
-    --aug-border-fallback-color: #ffffff;
-    z-index: 1;
-    max-width: 410px;
+    --aug-border-bg: rgba(0, 0, 0, 1);
+    --aug-border-fallback-color: #9e7777;
+    z-index: 5;
+    position: fixed;
+    bottom: -390px;
+    right: 10px;
+    width: 400px;
+    opacity: 1;
 }
 
 .activity-log-container {
-    display: flex;
-    flex-direction: column;
+    z-index: 5;
     padding: 20px;
     margin: 10px 0 0 0;
-    background: rgba(0, 0, 0, 0.2);
-    ul {
+    background: rgba(0, 0, 0, 0.8);
+    color: #ffffff ul {
         counter-reset: index;
         padding: 0;
     }
     li {
+        color: #ffffff;
         counter-increment: index;
         display: flex;
-        padding: 6px 0;
+        padding: 10px 0;
         box-sizing: border-box;
         opacity: .5;
         margin-left: 10px;
         font-size: .8rem;
     }
     p {
+        color: #ffffff;
         margin: 0;
         padding: 0;
         align-self: flex-start;
@@ -39,7 +44,7 @@
         margin: 0 0 0 10px;
         padding: 0;
         font-size: .7rem;
-        color: #000000;
+        color: #ffffff;
         opacity: .5;
         min-width: 100px;
         text-align: right;
@@ -56,11 +61,12 @@
         font-feature-settings: "tnum";
         font-variant-numeric: tabular-nums;
         align-self: flex-start;
-        background-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
-        background-attachment: fixed;
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        opacity: .25;
+        // background-image: linear-gradient(to bottom, rgb(129, 55, 226), rgba(0, 0, 0, 0));
+        // background-attachment: fixed;
+        // background-clip: text;
+        // -webkit-background-clip: text;
+        // -webkit-text-fill-color: transparent;
     }
     li+li {
         border-top: 1px dashed rgba(255, 255, 255, 0.2);

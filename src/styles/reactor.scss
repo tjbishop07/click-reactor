@@ -28,6 +28,9 @@
     overflow-y: scroll;
     display: flex;
     flex-direction: row;
-    align-content: space-between;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    padding-bottom: 200px;
 }

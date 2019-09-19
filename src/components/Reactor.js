@@ -10,7 +10,6 @@ import Button from '@material-ui/core/Button';
 import * as firebase from 'firebase';
 import { useSnackbar } from 'notistack';
 import "../styles/reactor.scss";
-import ActivityLog from './ActivityLog';
 import GameContext from "../state/context";
 
 export default function Reactor() {
@@ -50,7 +49,6 @@ export default function Reactor() {
     // }
   }
 
-  const activityLog = <ActivityLog></ActivityLog>;
   const fab = <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
     <AddIcon />
   </Fab>;
@@ -69,7 +67,7 @@ export default function Reactor() {
                 <Reaction key={r.id} propReaction={r} />
               ))}
             </div>
-            {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''}
+            {/* {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''} */}
           </React.Fragment>
         }
         {/* {user ? fab : ''} */}

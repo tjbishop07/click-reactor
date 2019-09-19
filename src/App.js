@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
 import { SnackbarProvider } from 'notistack';
 import Provider from "./state/provider";
@@ -13,7 +13,6 @@ import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
-import Hidden from '@material-ui/core/Hidden';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -21,12 +20,12 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MailIcon from '@material-ui/icons/Mail';
 import MenuIcon from '@material-ui/icons/Menu';
+import AssignmentIcon from '@material-ui/icons/Assignment';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import SearchIcon from '@material-ui/icons/Search';
-import MoreIcon from '@material-ui/icons/MoreVert';
 import './styles/style.scss';
 import { Container } from '@material-ui/core';
+import ActivityLog from './components/ActivityLog';
 
 const drawerWidth = 240;
 
@@ -70,10 +69,15 @@ export default function App(props) {
   const { container } = props;
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [activityLogOpen, setActivityLogOpen] = React.useState(false);
   const classes = useStyles();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  }
+
+  const handleActivityLogToggle = () => {
+    setActivityLogOpen(!activityLogOpen);
   }
 
   const addReactionItem = () => {
@@ -125,6 +129,8 @@ export default function App(props) {
   return (
     <div className={classes.root}>
       <CssBaseline />
+      {(user) ? <ActivityLog isOpen={activityLogOpen}></ActivityLog> : ''}
+
       {/* <AppBar position="fixed" className={classes.appBar}>
         <Toolbar> */}
       {/* <IconButton
@@ -190,11 +196,8 @@ export default function App(props) {
             <AddIcon />
           </Fab>
           <div className={classes.grow} />
-          <IconButton color="inherit">
-            <SearchIcon />
-          </IconButton>
-          <IconButton edge="end" color="inherit">
-            <MoreIcon />
+          <IconButton color="inherit" onClick={() => handleActivityLogToggle()}>
+            <AssignmentIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
