@@ -24,8 +24,10 @@
 }
 
 .game-session-list-container {
+    overflow-x: hidden;
     overflow-y: scroll;
     display: flex;
     flex-direction: row;
     align-content: space-between;
+    flex-wrap: wrap;
 }

@@ -58,23 +58,21 @@ export default function Reactor() {
   if (reactors) {
     return (
       <React.Fragment>
-        <Container>
-          <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
-            <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
-            <h5> - Nikola Tesla</h5>
-          </div>
-          {loadingReactors ? '' :
-            <React.Fragment>
-              <div className="game-session-list-container">
-                {reactors.reverse().map(r => (
-                  <Reaction key={r.id} propReaction={r} />
-                ))}
-              </div>
-              {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''}
-            </React.Fragment>
-          }
-        </Container>
-        {user ? fab : ''}
+        <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
+          <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
+          <h5> - Nikola Tesla</h5>
+        </div>
+        {loadingReactors ? '' :
+          <React.Fragment>
+            <div className="game-session-list-container">
+              {reactors.reverse().map(r => (
+                <Reaction key={r.id} propReaction={r} />
+              ))}
+            </div>
+            {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''}
+          </React.Fragment>
+        }
+        {/* {user ? fab : ''} */}
       </React.Fragment>
     );
   } else {

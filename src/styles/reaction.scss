@@ -9,19 +9,18 @@
     --aug-border-fallback-color: #ffffff;
     padding: 20px;
     z-index: 1;
-    margin: 20px;
+    margin: 10px;
 }
 
 .reaction-container {
     color: white;
-    background: #000 url('../img/bg-reactor.png');
-    background-repeat: no-repeat;
-    background-size: cover !important;
+    background: #000 url('../img/bg-reactor.png') no-repeat center center fixed;
+    background-size: cover;
     padding: 35px !important;
     cursor: pointer !important;
     position: relative;
     width: 300px;
-    height: 15vh;
+    height: 175px;
     z-index: 2;
     box-shadow: inset 0 0 25px rgba(0, 0, 0, .4);
     overflow: hidden
@@ -79,7 +78,7 @@
 .fab-reaction {
     opacity: 1;
     position: absolute !important;
-    right: 5px;
+    right: -20px;
     top: 40%;
     z-index: 3
 }
