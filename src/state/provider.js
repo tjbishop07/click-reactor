@@ -9,7 +9,7 @@ export default function Provider(props) {
     const [state, setState] = useState({
         activityLog: [],
         fullName: '',
-        score: -1,
+        score: -1
     });
 
     useEffect(() => {

@@ -50,6 +50,7 @@ export default function Reactor() {
   }
 
   const saveGame = () => {
+    // TODO: Not saving individual reactor data
     if (!context.data.score) {
       context.updateScore(0);
     }

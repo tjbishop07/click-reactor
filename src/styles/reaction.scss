@@ -58,8 +58,12 @@
 
 .hive {
     width: 100px;
-    // font-size: 75px;
-    // cursor: pointer;
+    cursor: pointer;
+    opacity: .2
+}
+
+.hive:hover {
+    opacity: 1;
 }
 
 .hive:active {

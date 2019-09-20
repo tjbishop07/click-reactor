@@ -1,11 +1,13 @@
 .hud-container {
     z-index: 5;
     position: fixed;
-    top: 30px;
-    left: 30px;
-    opacity: .6;
+    top: 0;
+    left: 0;
     color: #ffffff;
-    font-size: .9rem;
+    font-size: .7rem;
+    background: rgba(0, 0, 0, .5);
+    padding: 10px;
+    width: 100%;
 }
 
 .hud-container .username {
