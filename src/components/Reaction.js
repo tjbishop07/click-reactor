@@ -266,7 +266,9 @@ export default function ReactionItem(props) {
 
   useInterval(burnEnergy.bind(), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(), durationTimerDelay);
-  useInterval(saveGame.bind(), saveGameTimerDelay);
+
+  // TODO: This needs to be a global timer
+  // useInterval(saveGame.bind(), saveGameTimerDelay);
 
   return (
     <GameContext.Consumer>

@@ -5,12 +5,12 @@ import Reaction from './Reaction';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { useAuth } from '../state/auth';
-import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import * as firebase from 'firebase';
 import { useSnackbar } from 'notistack';
 import "../styles/reactor.scss";
 import GameContext from "../state/context";
+import useInterval from '../hooks/useInterval';
 
 export default function Reactor() {
 
@@ -49,31 +49,40 @@ export default function Reactor() {
     // }
   }
 
+  const saveGame = () => {
+    if (!context.data.score) {
+      context.updateScore(0);
+    }
+    databaseRef.child(`userReactors/${user.uid}/`).set(reactors);
+    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` });
+  }
+
+  useInterval(saveGame.bind(), 60000);
+
+
   const fab = <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
     <AddIcon />
   </Fab>;
 
-  if (reactors) {
-    return (
-      <React.Fragment>
-        <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
-          <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
-          <h5> - Nikola Tesla</h5>
-        </div>
-        {loadingReactors ? '' :
-          <React.Fragment>
-            <div className="game-session-list-container">
-              {reactors.reverse().map(r => (
-                <Reaction key={r.id} propReaction={r} />
-              ))}
-            </div>
-            {/* {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''} */}
-          </React.Fragment>
-        }
-        {/* {user ? fab : ''} */}
-      </React.Fragment>
-    );
-  } else {
-    return (<React.Fragment>Loading...{user ? fab : ''}</React.Fragment>)
-  }
+
+  return (
+
+    <React.Fragment>
+
+      <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
+        <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
+        <h5> - Nikola Tesla</h5>
+      </div>
+        <React.Fragment>
+          <div className="game-session-list-container">
+            {reactors.reverse().map(r => (
+              <Reaction key={r.id} propReaction={r} />
+            ))}
+          </div>
+          {/* {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''} */}
+        </React.Fragment>
+      {/* {user ? fab : ''} */}
+    </React.Fragment>
+  );
+
 }

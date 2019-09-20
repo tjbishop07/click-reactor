@@ -26,6 +26,7 @@ import AddIcon from '@material-ui/icons/Add';
 import './styles/style.scss';
 import { Container } from '@material-ui/core';
 import ActivityLog from './components/ActivityLog';
+import HUD from './components/Hud';
 
 const drawerWidth = 240;
 
@@ -60,7 +61,7 @@ const useStyles = makeStyles(theme => ({
     top: -30,
     left: 0,
     right: 0,
-    margin: '0 auto',
+    margin: '0 auto'
   },
 }));
 
@@ -82,17 +83,19 @@ export default function App(props) {
 
   const addReactionItem = () => {
     // if (reactors.filter(r => !r.extinguished).length < 1) {
-    databaseRef.child(`userReactors/${user.uid}`).push().set({
-      clicks: 0,
-      energy: 0,
-      reactionStarted: false,
-      reactionStartedAt: 0,
-      extinguished: false,
-      extinguishedAt: 0,
-      gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
-      cps: 0,
-      energySources: [],
-    });
+    if (user) {
+      databaseRef.child(`userReactors/${user.uid}`).push().set({
+        clicks: 0,
+        energy: 0,
+        reactionStarted: false,
+        reactionStartedAt: 0,
+        extinguished: false,
+        extinguishedAt: 0,
+        gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
+        cps: 0,
+        energySources: [],
+      });
+    }
     // } else {
     //   showMessage('You cannot create more reactions at this time.', 'error');
     // }
@@ -141,7 +144,6 @@ export default function App(props) {
         className={classes.menuButton}>
         <MenuIcon />
       </IconButton> */}
-      {/* <HUD /> */}
       {/* </Toolbar>
       </AppBar> */}
       <nav className={classes.drawer}>
@@ -182,6 +184,7 @@ export default function App(props) {
             maxSnack={1}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
             <Container>
+              <HUD />
               {user ? <Reactor /> : ''}
             </Container>
           </SnackbarProvider>
