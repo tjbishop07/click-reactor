@@ -4,6 +4,7 @@ import { useAuth } from '../state/auth';
 import Grid from '@material-ui/core/Grid';
 import Avatar from 'react-avatar';
 import '../styles/hud.scss';
+import logo from '../img/logo-transparent.png';
 
 export default function HUD() {
 
@@ -18,9 +19,12 @@ export default function HUD() {
     <GameContext.Consumer>
       {context => (
         <div className="hud-container">
-          <Grid container spacing={4}>
+          <Grid container spacing={3}>
             <Grid item>
-              <Avatar size="40" name={context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')} />
+              <img src={logo} alt="Click Reactors" className="logo" />
+            </Grid>
+            <Grid item>
+              <Avatar size="35" className="avatar" name={context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')} />
             </Grid>
             <Grid item>
               <h4 className="username" onClick={() => { setShowLogin(!showLogin); }}>PLAYER: {context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')}</h4>

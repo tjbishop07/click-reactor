@@ -25,6 +25,7 @@ import { Container } from '@material-ui/core';
 import ActivityLog from './components/ActivityLog';
 import HUD from './components/Hud';
 import Login from './components/Login';
+import logo from './img/logo-transparent.png';
 
 const drawerWidth = 240;
 
@@ -100,9 +101,7 @@ export default function App(props) {
   const drawer = (
     <React.Fragment>
       <div className={classes.toolbar}>
-        <Typography variant="h1" noWrap className={`logo`}>
-          Click Reactors
-      </Typography>
+        <img src={logo} alt="Click Reactors" className="logo" />
       </div>
       <Divider />
       <List>

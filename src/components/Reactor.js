@@ -31,7 +31,6 @@ export default function Reactor() {
   }
 
   const addReactionItem = () => {
-    // if (reactors.filter(r => !r.extinguished).length < 1) {
     databaseRef.child(`userReactors/${user.uid}`).push().set({
       clicks: 0,
       energy: 0,
@@ -44,13 +43,10 @@ export default function Reactor() {
       energySources: [],
     });
     context.updateActivityLog({ body: `New reaction started. Start clicking to trigger...` });
-    // } else {
-    //   showMessage('You cannot create more reactions at this time.', 'error');
-    // }
+    showMessage('New reaction started. Start clicking to trigger...', 'success');
   }
 
   const saveGame = () => {
-    // TODO: Not saving individual reactor data
     if (!context.data.score) {
       context.updateScore(0);
     }
@@ -59,30 +55,13 @@ export default function Reactor() {
   }
 
   useInterval(saveGame.bind(), 60000);
-
-
-  const fab = <Fab aria-label="Add" className="fab-add-reaction" color="primary" onClick={() => addReactionItem()}>
-    <AddIcon />
-  </Fab>;
-
-
   return (
-
     <React.Fragment>
-
-      <div className={`reactor-down ${reactors.filter(r => !r.extinguished).length > 0 ? 'hidden' : ''}`}>
-        <h4>"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</h4>
-        <h5> - Nikola Tesla</h5>
+      <div className="game-session-list-container">
+        {reactors.reverse().map(r => (
+          <Reaction key={r.id} propReaction={r} />
+        ))}
       </div>
-        <React.Fragment>
-          <div className="game-session-list-container">
-            {reactors.reverse().map(r => (
-              <Reaction key={r.id} propReaction={r} />
-            ))}
-          </div>
-          {/* {reactors.filter(r => !r.extinguished).length > 0 ? activityLog : ''} */}
-        </React.Fragment>
-      {/* {user ? fab : ''} */}
     </React.Fragment>
   );
 
