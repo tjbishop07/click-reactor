@@ -64,11 +64,21 @@ export default function ReactionItem(props) {
     }
   }, []);
 
+  useEffect(() => {
+    if (reactionState) {
+      updateDurationLabel();
+      if (propReaction.clicks > reactionState.clicks) {
+        setClickCount(propReaction.clicks);
+        calculateClicks();
+      }
+    }
+  }, [reactionState]);
+
   // Hook into props
   useEffect(() => {
     if (propReaction) {
       setReactionState(propReaction);
-      setClickCount(propReaction.clicks);
+      // setClickCount(propReaction.clicks);
       return () => (propReaction);
     }
   }, [propReaction.energy]);
@@ -82,9 +92,6 @@ export default function ReactionItem(props) {
   }
 
   const saveGame = () => {
-    // if (!context.data.score) {
-    //   context.updateScore(0);
-    // }
     if (reactionState.id) {
       databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
     }
@@ -92,34 +99,42 @@ export default function ReactionItem(props) {
 
   const updateDurationLabel = () => {
 
-    if (!reactionState.reactionStarted) {
-      setDuration('--:--:--:--:--');
-      return;
+    if (reactionState) {
+
+      if (!reactionState.reactionStarted && !reactionState.extinguished) {
+        setDuration('--:--:--:--:--');
+        return;
+      }
+
+      var nowDate = new Date();
+      if (reactionState.extinguished) {
+        nowDate = new Date(reactionState.extinguishedAt);
+      }
+
+      var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
+
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+
+      var hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+
+      var mins = Math.floor(diff / (1000 * 60));
+      diff -= mins * (1000 * 60);
+
+      var seconds = Math.floor(diff / (1000));
+      diff -= seconds * (1000);
+
+      var milliSeconds = Math.floor(diff / (1000000));
+      diff -= milliSeconds * (1000000);
+
+      setDuration((days < 10 ? `0${days}` : days) + ":" +
+        (hours < 10 ? `0${hours}` : hours) + ":" +
+        (mins < 10 ? `0${mins}` : mins) + ":" +
+        (seconds < 10 ? `0${seconds}` : seconds) + ":" +
+        diff.toString().substr(0, 2));
+
     }
-
-    var nowDate = new Date();
-    var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
-
-    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    diff -= days * (1000 * 60 * 60 * 24);
-
-    var hours = Math.floor(diff / (1000 * 60 * 60));
-    diff -= hours * (1000 * 60 * 60);
-
-    var mins = Math.floor(diff / (1000 * 60));
-    diff -= mins * (1000 * 60);
-
-    var seconds = Math.floor(diff / (1000));
-    diff -= seconds * (1000);
-
-    var milliSeconds = Math.floor(diff / (1000000));
-    diff -= milliSeconds * (1000000);
-
-    setDuration((days < 10 ? `0${days}` : days) + ":" +
-      (hours < 10 ? `0${hours}` : hours) + ":" +
-      (mins < 10 ? `0${mins}` : mins) + ":" +
-      (seconds < 10 ? `0${seconds}` : seconds) + ":" +
-      diff.toString().substr(0, 2));
 
   }
 
@@ -204,7 +219,7 @@ export default function ReactionItem(props) {
     const reactionUpdates = {
       ...reactionState
     };
-    let totalClickCount = Math.min((reactionUpdates.cps / 10) + 1, 100);
+    let totalClickCount = Math.min((reactionUpdates.cps), 100);
     context.updateScore(1);
     setClickBuffer(totalClickCount + parseFloat(clickBuffer));
     totalClickCount = totalClickCount + parseFloat(clickCount);
