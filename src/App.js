@@ -93,6 +93,7 @@ export default function App(props) {
         extinguishedAt: 0,
         gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
         cps: 0,
+        id: null,
         energySources: [],
       });
     }
@@ -149,7 +150,7 @@ export default function App(props) {
         <Provider>
           <SnackbarProvider
             maxSnack={1}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
             <Container>
               <HUD />
               {user ? <Reactor /> : <Login />}

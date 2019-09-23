@@ -82,10 +82,12 @@ export default function ReactionItem(props) {
   }
 
   const saveGame = () => {
-    if (!context.data.score) {
-      context.updateScore(0);
+    // if (!context.data.score) {
+    //   context.updateScore(0);
+    // }
+    if (reactionState.id) {
+      databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
     }
-    databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
   }
 
   const updateDurationLabel = () => {

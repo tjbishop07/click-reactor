@@ -30,36 +30,27 @@ export default function Reactor() {
       });
   }
 
-  const addReactionItem = () => {
-    databaseRef.child(`userReactors/${user.uid}`).push().set({
-      clicks: 0,
-      energy: 0,
-      reactionStarted: false,
-      reactionStartedAt: 0,
-      extinguished: false,
-      extinguishedAt: 0,
-      gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
-      cps: 0,
-      energySources: [],
-    });
-    context.updateActivityLog({ body: `New reaction started. Start clicking to trigger...` });
-    showMessage('New reaction started. Start clicking to trigger...', 'success');
-  }
-
   const saveGame = () => {
     if (!context.data.score) {
       context.updateScore(0);
     }
-    databaseRef.child(`userReactors/${user.uid}/`).set(reactors);
+    // TODO: This is saving the ID right?
+    console.log('save game reactors', reactors);
+    reactors.forEach(reactor => {
+      if (reactor.id) {
+        databaseRef.child(`userReactors/${user.uid}/${reactor.id}`).set(reactor);
+      }
+    });
     context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` });
   }
 
   useInterval(saveGame.bind(), 60000);
+
   return (
     <React.Fragment>
       <div className="game-session-list-container">
         {reactors.reverse().map(r => (
-          <Reaction key={r.id} propReaction={r} />
+          <Reaction key={`reactor-${r.id}`} propReaction={r} />
         ))}
       </div>
     </React.Fragment>
