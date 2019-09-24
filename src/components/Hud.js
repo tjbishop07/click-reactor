@@ -30,14 +30,6 @@ export default function HUD() {
               <h4 className="username" onClick={() => { setShowLogin(!showLogin); }}>PLAYER: {context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')}</h4>
               <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
             </Grid>
-            <Grid item>
-              {(showLogin && !user) ? '' :
-                <React.Fragment>
-                  <h4 className="username">REACTORS: 0</h4>
-                  <h4 className="score">AVG. HALFLIFE: --:--:--:--:--</h4>
-                </React.Fragment>
-              }
-            </Grid>
             <Grid>
             </Grid>
           </Grid>

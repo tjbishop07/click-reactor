@@ -78,7 +78,7 @@ export default function ReactionItem(props) {
   useEffect(() => {
     if (propReaction) {
       setReactionState(propReaction);
-      // setClickCount(propReaction.clicks);
+      setClickCount(propReaction.clicks);
       return () => (propReaction);
     }
   }, [propReaction.energy]);

@@ -34,7 +34,7 @@ export default function ActivityLog(props) {
           {
             trailAnimation.map(({ opacity }, index) => (
               <animated.li style={{ opacity }}
-                key={activityLogSummary[index].timestamp}>
+                key={index}>
                 {activityLogSummary[index].body}<span><Moment fromNow>{activityLogSummary[index].timestamp}</Moment></span>
               </animated.li>
             ))
