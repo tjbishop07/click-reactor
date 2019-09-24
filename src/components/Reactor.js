@@ -23,7 +23,7 @@ export default function Reactor() {
         databaseRef.child(`userReactors/${user.uid}/${reactor.id}`).set(reactor);
       }
     });
-    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` });
+    context.updateActivityLog({ body: `Game Saved. Score: ${context.data.score}` });
   }
 
   useInterval(saveGame.bind(), 60000);
