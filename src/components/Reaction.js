@@ -39,17 +39,17 @@ export default function ReactionItem(props) {
     ref: transRef,
     unique: true,
     trail: 400 / store.length,
-    from: { opacity: 0 },
-    enter: { opacity: 1 },
-    leave: { opacity: 0 }
+    from: { opacity: 0, marginTop: '-250px' },
+    enter: { opacity: 1, marginTop: '0' },
+    leave: { opacity: 0, marginTop: '0' }
   })
 
   const springRef = useRef()
   const { size, opacity, ...rest } = useSpring({
     ref: springRef,
     config: config.gentle,
-    from: { size: '0%' },
-    to: { size: openDrawer ? '100%' : '0%' }
+    from: { marginTop: '-250px' },
+    to: { marginTop: openDrawer ? '0' : '-250px' }
   })
 
   useChain(openDrawer ? [springRef, transRef] : [transRef, springRef], [0, openDrawer ? 0.1 : 0.6])
@@ -301,7 +301,7 @@ export default function ReactionItem(props) {
                 : ''}
               <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
             </div>
-            <Container style={{ ...rest }} className="reaction-store">
+            <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
               {transitions.map(({ item, key, props }) => (
                 <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
                   <h4>{item.name}</h4>
