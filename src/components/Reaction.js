@@ -39,9 +39,9 @@ export default function ReactionItem(props) {
     ref: transRef,
     unique: true,
     trail: 400 / store.length,
-    from: { opacity: 0, transform: 'scale(0)' },
-    enter: { opacity: 1, transform: 'scale(1)' },
-    leave: { opacity: 0, transform: 'scale(0)' }
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 }
   })
 
   const springRef = useRef()
@@ -301,7 +301,7 @@ export default function ReactionItem(props) {
                 : ''}
               <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
             </div>
-            <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
+            <Container style={{ ...rest }} className="reaction-store">
               {transitions.map(({ item, key, props }) => (
                 <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
                   <h4>{item.name}</h4>
