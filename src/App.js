@@ -9,16 +9,12 @@ import * as firebase from 'firebase';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import MailIcon from '@material-ui/icons/Mail';
 import MenuIcon from '@material-ui/icons/Menu';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Fab from '@material-ui/core/Fab';
@@ -26,6 +22,9 @@ import AddIcon from '@material-ui/icons/Add';
 import './styles/style.scss';
 import { Container } from '@material-ui/core';
 import ActivityLog from './components/ActivityLog';
+import HUD from './components/Hud';
+import Login from './components/Login';
+import logo from './img/logo-transparent.png';
 
 const drawerWidth = 240;
 
@@ -52,7 +51,9 @@ const useStyles = makeStyles(theme => ({
   },
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
+    color: '#ffffff',
     width: drawerWidth,
+    background: 'none'
   },
   fabButton: {
     position: 'absolute',
@@ -60,7 +61,7 @@ const useStyles = makeStyles(theme => ({
     top: -30,
     left: 0,
     right: 0,
-    margin: '0 auto',
+    margin: '0 auto'
   },
 }));
 
@@ -81,35 +82,31 @@ export default function App(props) {
   }
 
   const addReactionItem = () => {
-    // if (reactors.filter(r => !r.extinguished).length < 1) {
-    databaseRef.child(`userReactors/${user.uid}`).push().set({
-      clicks: 0,
-      energy: 0,
-      reactionStarted: false,
-      reactionStartedAt: 0,
-      extinguished: false,
-      extinguishedAt: 0,
-      gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
-      cps: 0,
-      energySources: [],
-    });
-    // } else {
-    //   showMessage('You cannot create more reactions at this time.', 'error');
-    // }
+    if (user) {
+      databaseRef.child(`userReactors/${user.uid}`).push().set({
+        clicks: 0,
+        energy: 0,
+        reactionStarted: false,
+        reactionStartedAt: 0,
+        extinguished: false,
+        extinguishedAt: 0,
+        gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
+        cps: 0,
+        id: null,
+        energySources: [],
+      });
+    }
   }
 
   const drawer = (
     <React.Fragment>
       <div className={classes.toolbar}>
-        <Typography variant="h1" noWrap className={`logo`}>
-          C/R
-      </Typography>
+        <img src={logo} alt="Click Reactors" className="logo" />
       </div>
       <Divider />
       <List>
         {['Settings'].map((text, index) => (
           <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
             <ListItemText primary={text} />
           </ListItem>
         ))}
@@ -118,7 +115,6 @@ export default function App(props) {
       <List>
         {['About'].map((text, index) => (
           <ListItem button key={text}>
-            <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
             <ListItemText primary={text} />
           </ListItem>
         ))}
@@ -130,31 +126,16 @@ export default function App(props) {
     <div className={classes.root}>
       <CssBaseline />
       {(user) ? <ActivityLog isOpen={activityLogOpen}></ActivityLog> : ''}
-
-      {/* <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar> */}
-      {/* <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="start"
-        onClick={handleDrawerToggle}
-        className={classes.menuButton}>
-        <MenuIcon />
-      </IconButton> */}
-      {/* <HUD /> */}
-      {/* </Toolbar>
-      </AppBar> */}
-      <nav className={classes.drawer}>
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-        {/* <Hidden smUp implementation="css"> */}
+      <nav className="sidebar">
         <Drawer
+          style={{ background: 'none' }}
           container={container}
           variant="temporary"
           anchor={'left'}
           open={mobileOpen}
           onClose={handleDrawerToggle}
           classes={{
-            paper: classes.drawerPaper,
+            paper: 'sidebar',
           }}
           ModalProps={{
             keepMounted: true, // Better open performance on mobile.
@@ -162,27 +143,16 @@ export default function App(props) {
         >
           {drawer}
         </Drawer>
-        {/* </Hidden> */}
-        {/* <Hidden xsDown implementation="css">
-          <Drawer
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            variant="permanent"
-            open
-          >
-            {drawer}
-          </Drawer>
-        </Hidden> */}
       </nav>
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <Provider>
           <SnackbarProvider
             maxSnack={1}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
             <Container>
-              {user ? <Reactor /> : ''}
+              <HUD />
+              {user ? <Reactor /> : <Login />}
             </Container>
           </SnackbarProvider>
         </Provider >
@@ -192,13 +162,17 @@ export default function App(props) {
           <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={handleDrawerToggle}>
             <MenuIcon />
           </IconButton>
-          <Fab color="secondary" aria-label="add" className={classes.fabButton} onClick={() => addReactionItem()}>
-            <AddIcon />
-          </Fab>
+          {user ?
+            <Fab color="secondary" aria-label="add" className={classes.fabButton} onClick={() => addReactionItem()}>
+              <AddIcon />
+            </Fab>
+            : ''}
           <div className={classes.grow} />
-          <IconButton color="inherit" onClick={() => handleActivityLogToggle()}>
-            <AssignmentIcon />
-          </IconButton>
+          {user ?
+            <IconButton color="inherit" onClick={() => handleActivityLogToggle()}>
+              <AssignmentIcon />
+            </IconButton>
+            : ''}
         </Toolbar>
       </AppBar>
     </div >

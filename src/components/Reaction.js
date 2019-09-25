@@ -30,7 +30,6 @@ export default function ReactionItem(props) {
   const [reactionState, setReactionState] = useState(null);
   const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
   const [durationTimerDelay, setDurationTimerDelay] = useState(100);
-  const [saveGameTimerDelay, setSaveGameTimerDelay] = useState(60000);
   const [isLoading, setIsLoading] = useState(true);
   const [reactionStartDateTime, setReactionStartDateTime] = useState(null);
 
@@ -40,17 +39,17 @@ export default function ReactionItem(props) {
     ref: transRef,
     unique: true,
     trail: 400 / store.length,
-    from: { opacity: 0, transform: 'scale(0)' },
-    enter: { opacity: 1, transform: 'scale(1)' },
-    leave: { opacity: 0, transform: 'scale(0)' }
+    from: { opacity: 0, marginTop: '-250px' },
+    enter: { opacity: 1, marginTop: '0' },
+    leave: { opacity: 0, marginTop: '0' }
   })
 
   const springRef = useRef()
   const { size, opacity, ...rest } = useSpring({
     ref: springRef,
     config: config.gentle,
-    from: { size: '0%' },
-    to: { size: openDrawer ? '100%' : '0%' }
+    from: { marginTop: '-250px' },
+    to: { marginTop: openDrawer ? '0' : '-250px' }
   })
 
   useChain(openDrawer ? [springRef, transRef] : [transRef, springRef], [0, openDrawer ? 0.1 : 0.6])
@@ -62,9 +61,18 @@ export default function ReactionItem(props) {
     if (propReaction.extinguished) {
       setReactionTimerDelay(null);
       setDurationTimerDelay(null);
-      setSaveGameTimerDelay(null);
     }
   }, []);
+
+  useEffect(() => {
+    if (reactionState) {
+      updateDurationLabel();
+      if (propReaction.clicks > reactionState.clicks) {
+        setClickCount(propReaction.clicks);
+        calculateClicks();
+      }
+    }
+  }, [reactionState]);
 
   // Hook into props
   useEffect(() => {
@@ -84,44 +92,49 @@ export default function ReactionItem(props) {
   }
 
   const saveGame = () => {
-    if (!context.data.score) {
-      context.updateScore(0);
+    if (reactionState.id) {
+      databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
     }
-    databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
-    context.updateActivityLog({ body: `Game Saved. Your score is ${context.data.score}` });
-    setIsLoading(false);
   }
 
   const updateDurationLabel = () => {
 
-    if (!reactionState.reactionStarted) {
-      setDuration('--:--:--:--:--');
-      return;
+    if (reactionState) {
+
+      if (!reactionState.reactionStarted && !reactionState.extinguished) {
+        setDuration('--:--:--:--:--');
+        return;
+      }
+
+      var nowDate = new Date();
+      if (reactionState.extinguished) {
+        nowDate = new Date(reactionState.extinguishedAt);
+      }
+
+      var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
+
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+
+      var hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+
+      var mins = Math.floor(diff / (1000 * 60));
+      diff -= mins * (1000 * 60);
+
+      var seconds = Math.floor(diff / (1000));
+      diff -= seconds * (1000);
+
+      var milliSeconds = Math.floor(diff / (1000000));
+      diff -= milliSeconds * (1000000);
+
+      setDuration((days < 10 ? `0${days}` : days) + ":" +
+        (hours < 10 ? `0${hours}` : hours) + ":" +
+        (mins < 10 ? `0${mins}` : mins) + ":" +
+        (seconds < 10 ? `0${seconds}` : seconds) + ":" +
+        diff.toString().substr(0, 2));
+
     }
-
-    var nowDate = new Date();
-    var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
-
-    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    diff -= days * (1000 * 60 * 60 * 24);
-
-    var hours = Math.floor(diff / (1000 * 60 * 60));
-    diff -= hours * (1000 * 60 * 60);
-
-    var mins = Math.floor(diff / (1000 * 60));
-    diff -= mins * (1000 * 60);
-
-    var seconds = Math.floor(diff / (1000));
-    diff -= seconds * (1000);
-
-    var milliSeconds = Math.floor(diff / (1000000));
-    diff -= milliSeconds * (1000000);
-
-    setDuration((days < 10 ? `0${days}` : days) + ":" +
-      (hours < 10 ? `0${hours}` : hours) + ":" +
-      (mins < 10 ? `0${mins}` : mins) + ":" +
-      (seconds < 10 ? `0${seconds}` : seconds) + ":" +
-      diff.toString().substr(0, 2));
 
   }
 
@@ -159,7 +172,6 @@ export default function ReactionItem(props) {
   const killReaction = () => {
     setReactionTimerDelay(null);
     setDurationTimerDelay(null);
-    // setSaveGameTimerDelay(null);
     const reactionUpdates = {
       ...reactionState,
       energy: 0,
@@ -207,7 +219,7 @@ export default function ReactionItem(props) {
     const reactionUpdates = {
       ...reactionState
     };
-    let totalClickCount = Math.min((reactionUpdates.cps / 10) + 1, 100);
+    let totalClickCount = Math.min((reactionUpdates.cps), 100);
     context.updateScore(1);
     setClickBuffer(totalClickCount + parseFloat(clickBuffer));
     totalClickCount = totalClickCount + parseFloat(clickCount);
@@ -266,49 +278,48 @@ export default function ReactionItem(props) {
 
   useInterval(burnEnergy.bind(), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(), durationTimerDelay);
-  useInterval(saveGame.bind(), saveGameTimerDelay);
+
+  // TODO: This needs to be a global timer maybe? Add to context?
+  useInterval(saveGame.bind(), 1000);
 
   return (
-    <GameContext.Consumer>
-      {context => (
-        <React.Fragment>
-          {(isLoading) ? <span>...</span> :
-            <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
-              <div id="reaction" className={`reaction-container`} >
-                <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
-                <span className="duration">{duration}</span>
-                <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
-                <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
-                <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
-                <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
-                  {reactionState.extinguished ?
-                    <React.Fragment>
-                      <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => console.log('boo')}>☠</span>
-                    </React.Fragment>
-                    : ''}
-                  <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
-                </div>
-                <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
-                  {transitions.map(({ item, key, props }) => (
-                    <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
-                      <h4>{item.name}</h4>
-                      <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
-                      <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
-                      {item.icon ? <svg viewBox="0 0 23 23" width="100px" height="100px" className="store-icon" xmlns="http://www.w3.org/2000/svg"><path d={item.icon} /></svg>
-                        : ''}
-                    </Item>
-                  ))}
-                </Container>
-              </div>
-              <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''} ${!reactionState.reactionStarted ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
-                <BatteryChargingFullIcon />
-              </Fab>
+
+    <React.Fragment>
+      {(isLoading) ? <span>...</span> :
+        <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
+          <div id="reaction" className={`reaction-container`} >
+            <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
+            <span className="duration">{duration}</span>
+            <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
+            <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
+            <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
+            <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
+              {reactionState.extinguished ?
+                <React.Fragment>
+                  <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => console.log('boo')}>☠</span>
+                </React.Fragment>
+                : ''}
+              <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
             </div>
-          }
-        </React.Fragment>
-      )
+            <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
+              {transitions.map(({ item, key, props }) => (
+                <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
+                  <h4>{item.name}</h4>
+                  <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
+                  <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
+                  {item.icon ? <svg viewBox="0 0 23 23" width="100px" height="100px" className="store-icon" xmlns="http://www.w3.org/2000/svg"><path d={item.icon} /></svg>
+                    : ''}
+                </Item>
+              ))}
+            </Container>
+          </div>
+          <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''} ${!reactionState.reactionStarted ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
+            <BatteryChargingFullIcon />
+          </Fab>
+        </div>
       }
-    </GameContext.Consumer >
+    </React.Fragment>
+
 
   );
 

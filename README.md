@@ -29,13 +29,12 @@ npm run start
 - [x] Performance Enhancements (always improving)
 - [x] Mobile Optimization (Larger screens are first priority)
 
-## 🤝 Contributing
-
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/tjbishop07/click-reactor/issues).
-
-## Show your support
-
-Give a ⭐️ if this project helped you!
+## Contributing
+1. Fork it!
+2. Create your feature branch: `git checkout -b my-new-feature`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin my-new-feature`
+5. Submit a pull request :D
 
 
 

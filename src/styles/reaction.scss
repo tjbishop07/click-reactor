@@ -58,8 +58,12 @@
 
 .hive {
     width: 100px;
-    // font-size: 75px;
-    // cursor: pointer;
+    cursor: pointer;
+    opacity: .2
+}
+
+.hive:hover {
+    opacity: 1;
 }
 
 .hive:active {
@@ -77,9 +81,9 @@
 .fab-reaction {
     opacity: 1;
     position: absolute !important;
-    right: -20px;
+    right: 5px;
     top: 40%;
-    z-index: 3
+    z-index: 3;
 }
 
 .charged img.app-logo {

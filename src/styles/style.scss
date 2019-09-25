@@ -2,11 +2,8 @@
 @import '../theme/default.scss';
 body {
     background: #ad5389;
-    /* fallback for old browsers */
     background: -webkit-linear-gradient(to bottom, #3c1053, #ad5389);
-    /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(to bottom, #3c1053, #ad5389);
-    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -15,7 +12,7 @@ body {
     color: white;
     font-family: 'Lexend Deca', sans-serif;
     margin: 0;
-    padding: 0
+    padding: 30px 0;
 }
 
 img {
@@ -38,14 +35,9 @@ h1.title {
     display: none !important;
 }
 
-.logo {
-    font-size: 1.5rem !important;
-    margin-top: 20px !important;
-    margin-left: 20px !important;
-}
-
 .sidebar {
-    background-color: #000000;
+    background: #000 url('../img/bg-mountains.jpg') no-repeat;
+    width: 240px;
 }
 
 
