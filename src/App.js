@@ -25,9 +25,8 @@ import ActivityLog from './components/ActivityLog';
 import HUD from './components/Hud';
 import Login from './components/Login';
 import logo from './img/logo-transparent.png';
-import { useList } from 'react-firebase-hooks/database';
+import { useListVals } from 'react-firebase-hooks/database';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -76,22 +75,10 @@ export default function App(props) {
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [activityLogOpen, setActivityLogOpen] = React.useState(false);
-  const [reactors, loadingReactors] = useList(firebase.database().ref(`userReactors`));
+  const [gameStates, loadingGamestates] = useListVals(
+    firebase.database().ref(`gameStates`).orderByChild(`score`).limitToLast(25)
+  );
   const classes = useStyles();
-
-  useEffect(() => {
-    if (reactors && reactors.length) {
-      reactors.forEach(r => {
-        const reactions = r.val();
-        if (reactions && reactions.length) {
-          reactions.forEach(reaction => {
-            console.log('reaction', reaction);
-          });
-        }
-      });
-      console.log('reactors all users', reactors[0].val());
-    }
-  }, [loadingReactors]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -198,14 +185,18 @@ export default function App(props) {
     <div className={classes.root}>
       <CssBaseline />
 
-      {loadingReactors ? <LinearProgress style={{ flexGrow: 1 }} /> : null}
-      <div className="reactors-bg-container">
-        {reactors.map((r, index) => (
-          <span key={index} className="bg-reaction-item">
-            {r.numChildren()}
-          </span>
-        ))}
-      </div>
+      {loadingGamestates ? <LinearProgress style={{ flexGrow: 1 }} /> : null}
+
+      <ul className="reactors-bg-container">
+        {
+          gameStates.reverse().map((r, index) => (
+            <li key={index}>
+              {r.fullName ? r.fullName : 'Anonymous'} &nbsp;&nbsp;
+            <strong>{r.score.toLocaleString()}</strong>
+            </li>
+          ))
+        }
+      </ul>
 
       {(user) ? <ActivityLog isOpen={activityLogOpen}></ActivityLog> : ''}
       <nav className="sidebar">
@@ -257,9 +248,6 @@ export default function App(props) {
                 onChange={() => handleActivityLogToggle()}
                 value="activityLog"
               />
-              {/* <IconButton color={activityLogOpen ? 'secondary' : 'inherit'} onClick={() => handleActivityLogToggle()}>
-                <AssignmentIcon />
-              </IconButton> */}
             </React.Fragment>
             : null}
         </Toolbar>
