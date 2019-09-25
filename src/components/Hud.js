@@ -28,7 +28,7 @@ export default function HUD() {
             </Grid>
             <Grid item>
               <h4 className="username" onClick={() => { setShowLogin(!showLogin); }}>PLAYER: {context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')}</h4>
-              <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
+              <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score.toLocaleString()}</h4>
             </Grid>
             <Grid>
             </Grid>
