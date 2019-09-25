@@ -245,7 +245,7 @@ export default function ReactionItem(props) {
   const purchaseItem = (energySource) => {
     const cost = calculateCost(energySource.id, energySource.basePrice);
     if (parseFloat(cost) > parseFloat(clickCount)) {
-      showMessage('You do not have enough cash for this item', 'error');
+      showMessage('You do not have enough cash for this item.', 'error');
       return;
     }
     const reactionUpdates = {
@@ -259,7 +259,6 @@ export default function ReactionItem(props) {
     reactionUpdates.energySources.push(energySource);
     setReactionState(reactionUpdates);
     setClickCount(reactionUpdates.clicks);
-    showMessage('Purchase complete!', 'success');
     context.updateActivityLog({ body: `${energySource.name} purchased for $${cost}` })
   }
 
