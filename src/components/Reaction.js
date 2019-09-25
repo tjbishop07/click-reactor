@@ -284,10 +284,10 @@ export default function ReactionItem(props) {
       {(isLoading) ? <span>...</span> :
         <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
           <div id="reaction" className={`reaction-container`} >
-            <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
+            {!reactionState.extinguished ? <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span> : ''}
             <span className="duration">{duration}</span>
-            <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
-            <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
+            {!reactionState.extinguished ? <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span> : ''}
+            {!reactionState.extinguished ? <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span> : ''}
             <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
             <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
               {reactionState.extinguished ?
