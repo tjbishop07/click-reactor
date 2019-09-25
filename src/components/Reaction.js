@@ -260,7 +260,6 @@ export default function ReactionItem(props) {
     setReactionState(reactionUpdates);
     setClickCount(reactionUpdates.clicks);
     showMessage('Purchase complete!', 'success');
-    setOpenDrawer(false);
     context.updateActivityLog({ body: `${energySource.name} purchased for $${cost}` })
   }
 
