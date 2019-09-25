@@ -169,7 +169,7 @@ export default function App(props) {
             : ''}
           <div className={classes.grow} />
           {user ?
-            <IconButton color="inherit" onClick={() => handleActivityLogToggle()}>
+            <IconButton color={activityLogOpen ? 'secondary' : 'inherit'} onClick={() => handleActivityLogToggle()}>
               <AssignmentIcon />
             </IconButton>
             : ''}
