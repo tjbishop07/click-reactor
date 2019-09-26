@@ -74,22 +74,16 @@ textarea,
     user-select: text;
 }
 
-.reactors-bg-container {
+.leaderboard-container {
     display: flex;
     position: fixed;
-    left: 0;
+    left: -20px;
     top: 73px;
     z-index: -2;
     flex-direction: column;
 }
 
-.bg-reaction-item {
-    color: rgba(255, 255, 255, .2);
-    display: flex;
-    padding: 5px 0 0 0;
-}
-
-.reactors-bg-container {
+.leaderboard-container {
     color: #ffffff;
     ul {
         counter-reset: index;
@@ -138,6 +132,15 @@ textarea,
     // }
 }
 
+@media screen and (max-width: 414px) {
+    .leaderboard-container {
+        display: none
+    }
+}
+
+.leaderboard-you {
+    background-color: #ff0000 !important;
+}
 
 /* CSS Hack to show outlines for DOM elements on page. Remove for PROD */
 

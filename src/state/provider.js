@@ -9,7 +9,7 @@ export default function Provider(props) {
     const { user } = useAuth();
     const [state, setState] = useState({
         activityLog: [],
-        fullName: null,
+        fullName: 'Anonymous',
         score: 0
     });
 

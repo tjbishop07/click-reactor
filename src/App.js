@@ -28,7 +28,6 @@ import { useListVals } from 'react-firebase-hooks/database';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
-import Avatar from 'react-avatar';
 
 // TODO: Cleanup!
 
@@ -187,18 +186,18 @@ export default function App(props) {
     <div className={classes.root}>
       <CssBaseline />
 
-      {loadingGamestates ? <LinearProgress style={{ flexGrow: 1 }} /> : null}
-
-      <ul className="reactors-bg-container">
-        {
-          gameStates.reverse().map((r, index) => (
-            <li key={index}>
-              {r.fullName ? r.fullName : 'Anonymous'} &nbsp;&nbsp;
-            <strong>{r.score.toLocaleString()}</strong>
-            </li>
-          ))
-        }
-      </ul>
+      {loadingGamestates ? <LinearProgress style={{ flexGrow: 1 }} /> :
+        <ul className="leaderboard-container">
+          {
+            (gameStates && gameStates.length) ? gameStates.reverse().map((r, index) => (
+              <li key={index}>
+                  <strong>{r.score.toLocaleString()}</strong> &nbsp;&nbsp;
+                {r.fullName ? r.fullName : 'Anonymous'}
+              </li>
+            ))
+              : null
+          }
+      </ul>}
 
       {(user) ? <ActivityLog isOpen={activityLogOpen}></ActivityLog> : ''}
       <nav className="sidebar">

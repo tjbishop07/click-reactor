@@ -7,6 +7,7 @@ import * as firebase from 'firebase';
 import "../styles/reactor.scss";
 import GameContext from "../state/context";
 import useInterval from '../hooks/useInterval';
+import { Container } from '@material-ui/core';
 
 export default function Reactor() {
 
@@ -30,11 +31,11 @@ export default function Reactor() {
 
   return (
     <React.Fragment>
-      <div className="game-session-list-container">
+      <Container maxWidth="md" className="game-session-list-container">
         {reactors.reverse().map(r => (
           <Reaction key={r.id} propReaction={r} />
         ))}
-      </div>
+      </Container>
     </React.Fragment>
   );
 
