@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
 import { SnackbarProvider } from 'notistack';
@@ -16,7 +16,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuIcon from '@material-ui/icons/Menu';
-import AssignmentIcon from '@material-ui/icons/Assignment';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import './styles/style.scss';
@@ -29,6 +28,9 @@ import { useListVals } from 'react-firebase-hooks/database';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
+import Avatar from 'react-avatar';
+
+// TODO: Cleanup!
 
 const drawerWidth = 240;
 
