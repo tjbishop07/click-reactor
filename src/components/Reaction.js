@@ -245,7 +245,7 @@ export default function ReactionItem(props) {
   const purchaseItem = (energySource) => {
     const cost = calculateCost(energySource.id, energySource.basePrice);
     if (parseFloat(cost) > parseFloat(clickCount)) {
-      showMessage('You do not have enough cash for this item', 'error');
+      showMessage('You do not have enough cash for this item.', 'error');
       return;
     }
     const reactionUpdates = {
@@ -259,8 +259,6 @@ export default function ReactionItem(props) {
     reactionUpdates.energySources.push(energySource);
     setReactionState(reactionUpdates);
     setClickCount(reactionUpdates.clicks);
-    showMessage('Purchase complete!', 'success');
-    setOpenDrawer(false);
     context.updateActivityLog({ body: `${energySource.name} purchased for $${cost}` })
   }
 
@@ -278,8 +276,6 @@ export default function ReactionItem(props) {
 
   useInterval(burnEnergy.bind(), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(), durationTimerDelay);
-
-  // TODO: This needs to be a global timer maybe? Add to context?
   useInterval(saveGame.bind(), 1000);
 
   return (
@@ -288,10 +284,10 @@ export default function ReactionItem(props) {
       {(isLoading) ? <span>...</span> :
         <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
           <div id="reaction" className={`reaction-container`} >
-            <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span>
+            {!reactionState.extinguished ? <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span> : ''}
             <span className="duration">{duration}</span>
-            <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span>
-            <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span>
+            {!reactionState.extinguished ? <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span> : ''}
+            {!reactionState.extinguished ? <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span> : ''}
             <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
             <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
               {reactionState.extinguished ?

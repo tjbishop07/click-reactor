@@ -24,13 +24,12 @@
 }
 
 .game-session-list-container {
-    overflow-x: hidden;
-    overflow-y: scroll;
+    overflow: hidden;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    align-content: center;
+    justify-content: flex-end;
+    align-items: flex-end;
+    align-content: flex-end;
     padding-bottom: 200px;
 }

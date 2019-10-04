@@ -4,7 +4,7 @@ import { databaseRef } from '../config/firebase';
 import { useAuth } from './auth';
 import * as firebase from 'firebase';
 
-export default function Provider(props) {
+export default function Provider(props) {   
 
     const { user } = useAuth();
     const [state, setState] = useState({
@@ -13,13 +13,13 @@ export default function Provider(props) {
         score: 0
     });
 
-    useState(() => {
-        setState({
-            activityLog: [],
-            fullName: 'Anonymous',
-            score: 0
-        });
-    }, [])
+        // useState(() => {
+        //     setState({
+        //         activityLog: [],
+        //         fullName: 'Anonymous',
+        //         score: 0
+        //     });
+        // }, [])
 
     useEffect(() => {
         let unsubscribe;
@@ -27,7 +27,11 @@ export default function Provider(props) {
             unsubscribe = databaseRef.child(`gameStates/${user.uid}`)
                 .on('value', snapshot => {
                     if (snapshot.val()) {
-                        const newState = { ...state, score: snapshot.val().score };
+                        const newState = { 
+                            ...state, 
+                            score: snapshot.val().score,
+                            fullName: snapshot.val().fullName
+                        };
                         setState(newState);
                     }
                 });
@@ -72,6 +76,7 @@ export default function Provider(props) {
             value={{
                 data: state,
                 updateFullName: (newName) => {
+                    console.log('update full name', newName);
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {
