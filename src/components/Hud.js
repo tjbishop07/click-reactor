@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import GameContext from "../state/context";
 import { useAuth } from '../state/auth';
 import Grid from '@material-ui/core/Grid';
@@ -18,7 +18,7 @@ export default function HUD() {
 
   const context = useContext(GameContext);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { user, initializing } = useAuth();
+  const { user } = useAuth();
   const [nameModalOpen, setNameModalOpen] = React.useState(false);
   const [fullName, setFullName] = React.useState(null);
 
@@ -29,7 +29,7 @@ export default function HUD() {
   }, [context.data.fullName]);
 
   const handleInputChange = e => {
-    const { name, value } = e.target
+    const { value } = e.target
     setFullName(value);
   }
 
@@ -64,7 +64,7 @@ export default function HUD() {
           <Avatar size="35" className="avatar" name={context.data.fullName ? context.data.fullName : (user ? (user.displayName ? user.displayName : `Anonymous`) : 'N/A')} />
         </Grid>
         <Grid item>
-          { !user ? 'Welcome to Click Reactors.' : <h4 className="username" onClick={() => { setNameModalOpen(true); }}>PLAYER: {fullName}</h4> }
+          {!user ? 'Welcome to Click Reactors.' : <h4 className="username" onClick={() => { setNameModalOpen(true); }}>PLAYER: {fullName}</h4>}
           <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
         </Grid>
         <Grid>

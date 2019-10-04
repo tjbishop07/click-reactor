@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import './styles/style.scss';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
 import { SnackbarProvider } from 'notistack';
@@ -15,10 +16,8 @@ import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import MenuIcon from '@material-ui/icons/Menu';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import './styles/style.scss';
 import { Container } from '@material-ui/core';
 import ActivityLog from './components/ActivityLog';
 import HUD from './components/Hud';
@@ -28,11 +27,13 @@ import { useListVals } from 'react-firebase-hooks/database';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
-
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import AboutModal from './components/AboutModal';
 // TODO: Cleanup!
 
 const drawerWidth = 240;
-
 const useStyles = makeStyles(theme => ({
   text: {
     padding: theme.spacing(2, 2, 0),
@@ -72,13 +73,27 @@ const useStyles = makeStyles(theme => ({
 
 export default function App(props) {
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = event => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setAboutModalOpen(false);
+  };
+
   const { container } = props;
   const { user } = useAuth();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [activityLogOpen, setActivityLogOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activityLogOpen, setActivityLogOpen] = useState(false);
+  const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [gameStates, loadingGamestates] = useListVals(
     firebase.database().ref(`gameStates`).orderByChild(`score`).limitToLast(25)
   );
+
   const classes = useStyles();
 
   const handleDrawerToggle = () => {
@@ -182,22 +197,29 @@ export default function App(props) {
     );
   });
 
+  const openAboutModal = () => {
+    // NOTE: This is a hack. First click will work on first try. 
+    //       Anything after, the use will need to "double click" to toggle the flag correctly
+    setAboutModalOpen(!aboutModalOpen);
+  };
+
   return (
     <div className={classes.root}>
       <CssBaseline />
+      <AboutModal isOpen={aboutModalOpen}></AboutModal>
 
       {loadingGamestates ? <LinearProgress style={{ flexGrow: 1 }} /> :
         <ul className="leaderboard-container">
           {
             (gameStates && gameStates.length) ? gameStates.reverse().map((r, index) => (
               <li key={index}>
-                  <strong>{r.score.toLocaleString()}</strong> &nbsp;&nbsp;
+                <strong>{r.score.toLocaleString()}</strong> &nbsp;&nbsp;
                 {r.fullName ? r.fullName : 'Anonymous'}
               </li>
             ))
               : null
           }
-      </ul>}
+        </ul>}
 
       {(user) ? <ActivityLog isOpen={activityLogOpen}></ActivityLog> : ''}
       <nav className="sidebar">
@@ -233,8 +255,14 @@ export default function App(props) {
       </main>
       <AppBar position="fixed" color="primary" className={classes.appBar}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={handleDrawerToggle}>
-            <MenuIcon />
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="more"
+            aria-controls="long-menu"
+            onClick={openAboutModal}
+          >
+            <MoreVertIcon />
           </IconButton>
           {user ?
             <Fab color="secondary" aria-label="add" className={classes.fabButton} onClick={() => addReactionItem()}>
