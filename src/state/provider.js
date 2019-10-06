@@ -2,24 +2,16 @@ import React, { useState, useEffect } from "react";
 import GameContext from "./context";
 import { databaseRef } from '../config/firebase';
 import { useAuth } from './auth';
-import * as firebase from 'firebase';
 
-export default function Provider(props) {   
+export default function Provider(props) {
 
     const { user } = useAuth();
     const [state, setState] = useState({
         activityLog: [],
         fullName: 'Anonymous',
-        score: 0
+        score: 0,
+        rewards: []
     });
-
-        // useState(() => {
-        //     setState({
-        //         activityLog: [],
-        //         fullName: 'Anonymous',
-        //         score: 0
-        //     });
-        // }, [])
 
     useEffect(() => {
         let unsubscribe;
@@ -27,8 +19,8 @@ export default function Provider(props) {
             unsubscribe = databaseRef.child(`gameStates/${user.uid}`)
                 .on('value', snapshot => {
                     if (snapshot.val()) {
-                        const newState = { 
-                            ...state, 
+                        const newState = {
+                            ...state,
                             score: snapshot.val().score,
                             fullName: snapshot.val().fullName
                         };
@@ -71,19 +63,30 @@ export default function Provider(props) {
         }
     }
 
+    if (state.rewards) {
+        useEffect(() => {
+            updateGameStateRewards();
+        }, [state.rewards.length]);
+    }
+
+    function updateGameStateRewards() {
+        if (state.activityLog && user) {
+            databaseRef.child(`gameStates/${user.uid}/rewards`).set(state.rewards);
+        }
+    }
+
     return (
         <GameContext.Provider
             value={{
                 data: state,
                 updateFullName: (newName) => {
-                    console.log('update full name', newName);
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {
                     setState({ ...state, score: ((state.score ? state.score : 0) + newScore) });
                 },
                 updateActivityLog: (newActivityLogItem) => {
-                    newActivityLogItem.timestamp = firebase.database.ServerValue.TIMESTAMP;
+                    newActivityLogItem.timestamp = new Date().getTime();
                     let tempActivityLog = state.activityLog;
                     if (!tempActivityLog) {
                         tempActivityLog = [];

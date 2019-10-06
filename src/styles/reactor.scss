@@ -24,6 +24,7 @@
 }
 
 .game-session-list-container {
+    margin-top: 400px !important;
     overflow: hidden;
     display: flex;
     flex-direction: row;
@@ -31,5 +32,4 @@
     justify-content: flex-end;
     align-items: flex-end;
     align-content: flex-end;
-    padding-bottom: 200px;
 }

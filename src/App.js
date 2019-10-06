@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './styles/style.scss';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from './state/auth';
@@ -28,8 +28,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import AboutModal from './components/AboutModal';
 // TODO: Cleanup!
 
@@ -73,18 +71,6 @@ const useStyles = makeStyles(theme => ({
 
 export default function App(props) {
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-
-  const handleClick = event => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-    setAboutModalOpen(false);
-  };
-
   const { container } = props;
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -110,10 +96,10 @@ export default function App(props) {
         clicks: 0,
         energy: 0,
         reactionStarted: false,
-        reactionStartedAt: 0,
+        reactionStartedAt: new Date().getTime(),
         extinguished: false,
-        extinguishedAt: 0,
-        gameStartedAt: firebase.database.ServerValue.TIMESTAMP,
+        extinguishedAt: new Date().getTime(),
+        gameStartedAt: new Date().getTime(),
         cps: 0,
         id: null,
         energySources: [],
