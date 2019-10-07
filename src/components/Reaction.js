@@ -67,24 +67,24 @@ export default function ReactionItem(props) {
     }, 2000);
   }, []);
 
-  useEffect(() => {
-    if (reactionState) {
-      //updateDurationLabel();
-      if (propReaction.clicks > reactionState.clicks) {
-        setClickCount(propReaction.clicks);
-        calculateClicks();
-      }
-    }
-  }, [reactionState]);
+  // useEffect(() => {
+  //   if (reactionState) {
+  //     //updateDurationLabel();
+  //     if (propReaction.clicks > reactionState.clicks) {
+  //       setClickCount(propReaction.clicks);
+  //       calculateClicks();
+  //     }
+  //   }
+  // }, [reactionState]);
 
   // Hook into props
-  // useEffect(() => {
-  //   if (propReaction) {
-  //     setReactionState(propReaction);
-  //     setClickCount(propReaction.clicks);
-  //     return () => (propReaction);
-  //   }
-  // }, [propReaction.energy]);
+  useEffect(() => {
+    if (propReaction) {
+      // setReactionState(propReaction);
+      setClickCount(propReaction.clicks);
+      return () => (propReaction);
+    }
+  }, [propReaction.energy]);
 
   const getReactionStartTimestamp = () => {
     // NOTE: This check is required since we use the ServerValue. TIMESTAMP for Firebase. 
