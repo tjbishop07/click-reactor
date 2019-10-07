@@ -68,16 +68,6 @@ export default function ReactionItem(props) {
     }, 2000);
   }, []);
 
-  // useEffect(() => {
-  //   if (reactionState) {
-  //     //updateDurationLabel();
-  //     if (propReaction.clicks > reactionState.clicks) {
-  //       setClickCount(propReaction.clicks);
-  //       calculateClicks();
-  //     }
-  //   }
-  // }, [reactionState]);
-
   // Hook into props
   useEffect(() => {
     if (propReaction) {
@@ -293,6 +283,11 @@ export default function ReactionItem(props) {
   }
 
   const generateStar = () => {
+
+    if (!reactionState.reactionStarted) {
+      return null;
+    }
+
     const min = 1;
     const max = 100;
     const rand = min + Math.random() * (max - min);
