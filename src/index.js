@@ -18,8 +18,6 @@ serviceWorker.register({
 
 function onUpdateHandler(registration) {
 
-    // Make sure that any new version of a service worker will take over the page 
-    // and become activated immediately.
     const waitingServiceWorker = registration.waiting;
     if (waitingServiceWorker) {
         waitingServiceWorker.postMessage({ type: "SKIP_WAITING" });
@@ -35,6 +33,5 @@ function onUpdateHandler(registration) {
         window.location.reload(true);
     });
 
-    console.log('ON UPDATE LINK', link);
     document.querySelector('body').appendChild(link);
 }

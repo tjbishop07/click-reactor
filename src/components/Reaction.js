@@ -335,7 +335,7 @@ export default function ReactionItem(props) {
   return (
 
     <React.Fragment>
-      {(isLoading) ? <span style={{ color: '#ffffff' }}>|||</span> :
+      {(isLoading) ? <span style={{ color: '#ffffff' }}>Loading...</span> :
         <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
           <div id="reaction" className={`reaction-container`} >
 
