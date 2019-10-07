@@ -31,7 +31,7 @@ export default function Reactor() {
 
   return (
     <React.Fragment>
-      <Container maxWidth="lg" className="game-session-list-container">
+      <Container maxWidth="md" className="game-session-list-container">
         {reactors.reverse().map(r => (
           <Reaction key={r.id} propReaction={r} />
         ))}
