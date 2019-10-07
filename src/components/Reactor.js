@@ -13,7 +13,7 @@ export default function Reactor() {
 
   const context = useContext(GameContext);
   const { user } = useAuth();
-  const [reactors] = useListVals(firebase.database().ref(`userReactors/${user.uid}`).limitToLast(3), { keyField: 'id' });
+  const [reactors] = useListVals(firebase.database().ref(`userReactors/${user.uid}`), { keyField: 'id' });
 
   const saveGame = () => {
     if (!context.data.score) {
@@ -32,7 +32,7 @@ export default function Reactor() {
   return (
     <React.Fragment>
       <Container maxWidth="md" className="game-session-list-container">
-        {reactors.reverse().map(r => (
+        {reactors.map(r => (
           <Reaction key={r.id} propReaction={r} />
         ))}
       </Container>
