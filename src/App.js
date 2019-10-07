@@ -208,37 +208,16 @@ export default function App(props) {
         </ul>}
 
       {(user) ? <ActivityLog isOpen={activityLogOpen}></ActivityLog> : ''}
-      <nav className="sidebar">
-        <Drawer
-          style={{ background: 'none' }}
-          container={container}
-          variant="temporary"
-          anchor={'left'}
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          classes={{
-            paper: 'sidebar',
-          }}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-        >
-          {drawer}
-        </Drawer>
-      </nav>
-      <main className={classes.content}>
-        <div className={classes.toolbar} />
-        <Provider>
-          <SnackbarProvider
-            maxSnack={1}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-            <Container>
-              <HUD />
-              {user ? <Reactor /> : <Login />}
-            </Container>
-          </SnackbarProvider>
-        </Provider >
-      </main>
+      <Provider>
+        <SnackbarProvider
+          maxSnack={1}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+          <Container>
+            <HUD />
+            {user ? <Reactor /> : <Login />}
+          </Container>
+        </SnackbarProvider>
+      </Provider >
       <AppBar position="fixed" color="primary" className={classes.appBar}>
         <Toolbar>
           <IconButton
