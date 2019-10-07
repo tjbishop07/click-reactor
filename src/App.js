@@ -11,18 +11,12 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import Divider from '@material-ui/core/Divider';
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { Container } from '@material-ui/core';
 import ActivityLog from './components/ActivityLog';
 import HUD from './components/Hud';
 import Login from './components/Login';
-import logo from './img/logo-transparent.png';
 import { useListVals } from 'react-firebase-hooks/database';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Switch from '@material-ui/core/Switch';
@@ -71,9 +65,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function App(props) {
 
-  const { container } = props;
   const { user } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [activityLogOpen, setActivityLogOpen] = useState(false);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [gameStates, loadingGamestates] = useListVals(
@@ -81,10 +73,6 @@ export default function App(props) {
   );
 
   const classes = useStyles();
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  }
 
   const handleActivityLogToggle = () => {
     setActivityLogOpen(!activityLogOpen);
@@ -106,30 +94,6 @@ export default function App(props) {
       });
     }
   }
-
-  const drawer = (
-    <React.Fragment>
-      <div className={classes.toolbar}>
-        <img src={logo} alt="Click Reactors" className="logo" />
-      </div>
-      <Divider />
-      <List>
-        {['Settings'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['About'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-    </React.Fragment>
-  );
 
   const LogSwitch = withStyles(theme => ({
     root: {
