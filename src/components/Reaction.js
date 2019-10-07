@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { useTransition, useSpring, useChain, config } from 'react-spring'
 import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
@@ -95,14 +96,13 @@ export default function ReactionItem(props) {
   }
 
   const saveGame = () => {
-    // const starReward = generateStar();
-    // console.log('save game, gen star: ' + new Date(), starReward);
-    // if (starReward) {
-    //   ReactDOM.render(
-    //     starReward,
-    //     document.getElementById('reaction')
-    //   );
-    // }
+    const starReward = generateStar();
+    if (starReward) {
+      ReactDOM.render(
+        starReward,
+        document.getElementById('reaction')
+      );
+    }
     if (reactionState.id) {
       databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
     }
@@ -297,10 +297,33 @@ export default function ReactionItem(props) {
     const max = 100;
     const rand = min + Math.random() * (max - min);
     let result = null;
-    if (rand < 3) {
-      //result = <i className="olive react icon" style={{ position: 'absolute', top: '30px', left: '10px' }}></i>;
-      // TODO: Don't create element here, append to global list
-      //result = React.createElement('i', { className: "olive react icon", style: { position: 'absolute', top: '30px', left: '10px' } }, '');
+    if (rand <= 5) {
+
+      // TODO: I think these should add to the score somehow.
+      //       Maybe just a fixed value for now. I quark = 100points?
+      context.updateActivityLog({ body: `Quark found! Not sure what that means yet...` });
+      let newRewardList = [];
+      if (!reactionState.rewards) {
+        newRewardList = [{
+          type: 'star',
+          amount: 1.5
+        }];
+      } else {
+        newRewardList = reactionState.rewards;
+        newRewardList.push({
+          type: 'star',
+          amount: 1.5
+        });
+      }
+
+      const reactionUpdates = {
+        ...reactionState,
+        rewards: newRewardList
+      };
+
+      setReactionState(reactionUpdates);
+      saveGame();
+
     }
     return result;
   }
@@ -316,9 +339,23 @@ export default function ReactionItem(props) {
         <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
           <div id="reaction" className={`reaction-container`} >
 
-
-            {/* <i className="olive react icon" style={{ position: 'absolute', top: '30px', left: '10px' }}></i> */}
-
+            {
+              reactionState.rewards ?
+                <div style={
+                  {
+                    position: 'absolute',
+                    top: '25px',
+                    left: '10px',
+                    color: '#000000',
+                    width: '200px',
+                    height: '200px',
+                    opacity: '.6'
+                  }}>
+                  {(reactionState.rewards.map((r, index) => (
+                    <i className="olive react icon" key={index}></i>
+                  )))}
+                </div> : null
+            }
 
             {!reactionState.extinguished ? <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span> : ''}
             <span className="duration">{duration}</span>
