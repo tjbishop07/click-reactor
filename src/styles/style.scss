@@ -12,7 +12,6 @@ body {
     color: white;
     font-family: 'Lexend Deca', sans-serif;
     margin: 0;
-    padding: 30px 0;
 }
 
 img {
@@ -77,7 +76,7 @@ textarea,
 .leaderboard-container {
     display: flex;
     position: fixed;
-    left: -20px;
+    left: -13px;
     top: 73px;
     z-index: -2;
     flex-direction: column;
@@ -141,6 +140,7 @@ textarea,
 .leaderboard-you {
     background-color: #ff0000 !important;
 }
+
 
 /* CSS Hack to show outlines for DOM elements on page. Remove for PROD */
 

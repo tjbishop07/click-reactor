@@ -1,26 +1,5 @@
 import { animated } from 'react-spring'
-import styled, { createGlobalStyle } from 'styled-components'
-
-const Global = createGlobalStyle`
-  * {
-    box-sizing: border-box;
-  }
-
-  html,
-  body,
-  #root {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    user-select: none;
-    padding: 20px;
-    // display: flex;
-    // align-items: center;
-    // justify-content: center;
-  }
-`
+import styled from 'styled-components'
 
 const Container = styled(animated.div)`
   position: absolute;
@@ -48,4 +27,4 @@ const Item = styled(animated.div)`
   overflow: hidden;
 `
 
-export { Global, Container, Item }
+export { Container, Item }

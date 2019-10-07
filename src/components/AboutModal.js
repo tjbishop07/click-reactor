@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, Modal, Image, Grid, Divider } from 'semantic-ui-react'
+import { Button, Modal, Image, Divider } from 'semantic-ui-react'
 import logo from '../img/logo-transparent.png';
 
 export default function AboutModal(props) {

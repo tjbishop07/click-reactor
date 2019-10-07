@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { useTransition, useSpring, useChain, config } from 'react-spring'
 import useInterval from '../hooks/useInterval';
 import { databaseRef } from '../config/firebase';
-import * as firebase from 'firebase';
-import hive from '../img/hive.svg';
+import hive from '../img/hive-animated.svg';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Fab from '@material-ui/core/Fab';
 import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
@@ -28,8 +28,9 @@ export default function ReactionItem(props) {
   const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState(null);
-  const [reactionTimerDelay, setReactionTimerDelay] = useState(1000);
-  const [durationTimerDelay, setDurationTimerDelay] = useState(100);
+  const [reactionTimerDelay, setReactionTimerDelay] = useState(null);
+  const [durationTimerDelay, setDurationTimerDelay] = useState(null);
+  const [saveTimerDelay, setSaveTimerDelay] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reactionStartDateTime, setReactionStartDateTime] = useState(null);
 
@@ -57,27 +58,30 @@ export default function ReactionItem(props) {
   useEffect(() => {
     setReactionState(propReaction);
     setClickCount(propReaction.clicks);
-    setIsLoading(false);
-    if (propReaction.extinguished) {
-      setReactionTimerDelay(null);
-      setDurationTimerDelay(null);
+    if (propReaction && !propReaction.extinguished) {
+      setSaveTimerDelay(5000);
+      setDurationTimerDelay(100);
+      setReactionTimerDelay(1000);
     }
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
   }, []);
 
-  useEffect(() => {
-    if (reactionState) {
-      updateDurationLabel();
-      if (propReaction.clicks > reactionState.clicks) {
-        setClickCount(propReaction.clicks);
-        calculateClicks();
-      }
-    }
-  }, [reactionState]);
+  // useEffect(() => {
+  //   if (reactionState) {
+  //     //updateDurationLabel();
+  //     if (propReaction.clicks > reactionState.clicks) {
+  //       setClickCount(propReaction.clicks);
+  //       calculateClicks();
+  //     }
+  //   }
+  // }, [reactionState]);
 
   // Hook into props
   useEffect(() => {
     if (propReaction) {
-      setReactionState(propReaction);
+      // setReactionState(propReaction);
       setClickCount(propReaction.clicks);
       return () => (propReaction);
     }
@@ -92,6 +96,13 @@ export default function ReactionItem(props) {
   }
 
   const saveGame = () => {
+    const starReward = generateStar();
+    if (starReward) {
+      ReactDOM.render(
+        starReward,
+        document.getElementById('reaction')
+      );
+    }
     if (reactionState.id) {
       databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
     }
@@ -106,26 +117,26 @@ export default function ReactionItem(props) {
         return;
       }
 
-      var nowDate = new Date();
+      let nowDate = new Date();
       if (reactionState.extinguished) {
         nowDate = new Date(reactionState.extinguishedAt);
       }
 
-      var diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
+      let diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
 
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      let days = Math.floor(diff / (1000 * 60 * 60 * 24));
       diff -= days * (1000 * 60 * 60 * 24);
 
-      var hours = Math.floor(diff / (1000 * 60 * 60));
+      let hours = Math.floor(diff / (1000 * 60 * 60));
       diff -= hours * (1000 * 60 * 60);
 
-      var mins = Math.floor(diff / (1000 * 60));
+      let mins = Math.floor(diff / (1000 * 60));
       diff -= mins * (1000 * 60);
 
-      var seconds = Math.floor(diff / (1000));
+      let seconds = Math.floor(diff / (1000));
       diff -= seconds * (1000);
 
-      var milliSeconds = Math.floor(diff / (1000000));
+      let milliSeconds = Math.floor(diff / (1000000));
       diff -= milliSeconds * (1000000);
 
       setDuration((days < 10 ? `0${days}` : days) + ":" +
@@ -154,10 +165,6 @@ export default function ReactionItem(props) {
       let newEnergyCalculation = Math.min(reactionState.energy - diff, 100);
       newEnergyCalculation = Math.min(newEnergyCalculation + (reactionState.cps * 2), 100);
 
-      if (reactionState.cps > 0) {
-        calculateClicks();
-      }
-
       if (newEnergyCalculation <= 0) {
         killReaction();
         return;
@@ -166,23 +173,33 @@ export default function ReactionItem(props) {
         reactionUpdates.reactionStarted = true;
         setReactionState(reactionUpdates);
       }
+
+      if (reactionState.cps > 0) {
+        calculateClicks();
+      }
+
     }
   }
 
   const killReaction = () => {
+    // NOTE: Times HAVE to be killed first. Do not move. Seems smelly. Good point for future refactor.
     setReactionTimerDelay(null);
     setDurationTimerDelay(null);
+    setSaveTimerDelay(null);
+    // ------------------------------------
     const reactionUpdates = {
       ...reactionState,
       energy: 0,
       cps: 0,
-      reactionStarted: false,
       extinguished: true,
       title: 'Extinguished',
-      extinguishedAt: firebase.database.ServerValue.TIMESTAMP
+      extinguishedAt: new Date().getTime()
     };
     setReactionState(reactionUpdates);
     context.updateActivityLog({ body: `Reaction extinguised. Sad day.` });
+    setTimeout(() => {
+      saveGame();
+    }, 1000);
   };
 
   const chargeReaction = () => {
@@ -198,11 +215,12 @@ export default function ReactionItem(props) {
       if (reactionUpdates.energy >= 100) {
         reactionUpdates.energy = 100;
         reactionUpdates.reactionStarted = true;
-        reactionUpdates.reactionStartedAt = firebase.database.ServerValue.TIMESTAMP;
+        reactionUpdates.reactionStartedAt = new Date().getTime();
         setReactionStartDateTime(new Date());
         context.updateScore(reactionState.clicks * 10);
         context.updateActivityLog({ body: `Oh sweet! You started a reaction. It will slowly burn out unless you keep it going. Try exploring energy sources to throw into the reactor.` });
         setDurationTimerDelay(100);
+        saveGame();
       }
     } else {
       if (!reactionUpdates.extinguished) {
@@ -274,9 +292,45 @@ export default function ReactionItem(props) {
     return 0;
   }
 
+  const generateStar = () => {
+    const min = 1;
+    const max = 100;
+    const rand = min + Math.random() * (max - min);
+    let result = null;
+    if (rand <= 5) {
+
+      // TODO: I think these should add to the score somehow.
+      //       Maybe just a fixed value for now. I quark = 100points?
+      context.updateActivityLog({ body: `Quark found! Not sure what that means yet...` });
+      let newRewardList = [];
+      if (!reactionState.rewards) {
+        newRewardList = [{
+          type: 'star',
+          amount: 1.5
+        }];
+      } else {
+        newRewardList = reactionState.rewards;
+        newRewardList.push({
+          type: 'star',
+          amount: 1.5
+        });
+      }
+
+      const reactionUpdates = {
+        ...reactionState,
+        rewards: newRewardList
+      };
+
+      setReactionState(reactionUpdates);
+      saveGame();
+
+    }
+    return result;
+  }
+
   useInterval(burnEnergy.bind(), reactionTimerDelay);
   useInterval(updateDurationLabel.bind(), durationTimerDelay);
-  useInterval(saveGame.bind(), 1000);
+  useInterval(saveGame.bind(), saveTimerDelay);
 
   return (
 
@@ -284,6 +338,25 @@ export default function ReactionItem(props) {
       {(isLoading) ? <span>...</span> :
         <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
           <div id="reaction" className={`reaction-container`} >
+
+            {
+              reactionState.rewards ?
+                <div style={
+                  {
+                    position: 'absolute',
+                    top: '25px',
+                    left: '10px',
+                    color: '#000000',
+                    width: '200px',
+                    height: '200px',
+                    opacity: '.6'
+                  }}>
+                  {(reactionState.rewards.map((r, index) => (
+                    <i className="olive react icon" key={index}></i>
+                  )))}
+                </div> : null
+            }
+
             {!reactionState.extinguished ? <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span> : ''}
             <span className="duration">{duration}</span>
             {!reactionState.extinguished ? <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span> : ''}
