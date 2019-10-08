@@ -11,12 +11,13 @@
     color: #f6f6f6;
     display: block;
     font: bold 16px/40px sans-serif;
-    height: 40px;
+    height: 60px;
     position: absolute;
     text-align: center;
     text-decoration: none;
-    top: -45px;
+    top: -65px;
     width: 100%;
+    padding-top: 10px;
     -webkit-animation: alert 1s ease forwards;
     -moz-animation: alert 1s ease forwards;
     -ms-animation: alert 1s ease forwards;
@@ -24,40 +25,9 @@
     animation: alert 1s ease forwards;
 }
 
-.update-notification:hover:after {
-    background: hsla(0, 0%, 0%, .8);
-    border-radius: 3px;
-    color: #f6f6f6;
-    content: 'Click to dismiss';
-    font: bold 12px/30px sans-serif;
-    height: 30px;
-    left: 50%;
-    margin-left: -60px;
-    position: absolute;
-    text-align: center;
-    top: 50px;
-    width: 120px;
+.update-notification:hover {
+    color: #ffffff
 }
-
-.update-notification:hover:before {
-    border-bottom: 10px solid hsla(0, 0%, 0%, .8);
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    content: '';
-    height: 0;
-    left: 50%;
-    margin-left: -10px;
-    position: absolute;
-    top: 40px;
-    width: 0;
-}
-
-.update-notification:target {
-    display: none;
-}
-
-
-/* Animation */
 
 @-webkit-keyframes alert {
     0% {

@@ -26,7 +26,7 @@ function onUpdateHandler(registration) {
     const link = document.createElement("a");
     link.classList.add("update-notification");
     link.setAttribute("href", "#");
-    link.innerHTML = "Update is available. Click here to install.";
+    link.innerHTML = "An update is available. Click here to install...";
 
     link.addEventListener("click", e => {
         e.preventDefault();

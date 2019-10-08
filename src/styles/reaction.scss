@@ -14,7 +14,7 @@
 
 .reaction-container {
     color: white;
-    background: #000 url('../img/bg-reactor.png') no-repeat center center fixed;
+    background: rgba(0, 0, 0, .8) url('../img/bg-reactor-active.svg');
     padding: 35px !important;
     cursor: pointer !important;
     position: relative;
@@ -47,6 +47,14 @@
     .reaction-container {
         background-position-x: -37px
     }
+}
+
+.extinguished {
+    background: #1f1f1f;
+}
+
+.extinguished .hive {
+    display: none !important;
 }
 
 .reaction-graphic {
@@ -140,14 +148,6 @@
     bottom: 10px;
     text-shadow: 1px 1px 1px #000;
     opacity: .7;
-}
-
-.extinguished {
-    opacity: .5;
-}
-
-.extinguished .hive {
-    display: none !important;
 }
 
 .progress-bar {

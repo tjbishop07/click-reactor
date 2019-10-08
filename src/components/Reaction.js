@@ -231,12 +231,12 @@ export default function ReactionItem(props) {
     context.updateScore(1);
     setClickBuffer(totalClickCount + parseFloat(clickBuffer));
     totalClickCount = totalClickCount + parseFloat(clickCount);
-    if (clickBuffer > 2) {
-      setClickBuffer(0);
+    // if (clickBuffer > 2) {
+    //   setClickBuffer(0);
       setClickCount(totalClickCount.toFixed(2));
       reactionUpdates.clicks = parseFloat(totalClickCount.toFixed(2));
       setReactionState(reactionUpdates);
-    }
+    // }
   }
 
   const showMessage = (message, variant) => {
@@ -330,9 +330,9 @@ export default function ReactionItem(props) {
   return (
 
     <React.Fragment>
-      {(isLoading) ? <span style={{ color: '#ffffff' }}>Loading...</span> :
-        <div className={`augment-container ${reactionState.extinguished ? 'extinguished' : ''}`} augmented-ui="tr-clip bl-clip br-clip-y exe">
-          <div id="reaction" className={`reaction-container`} >
+      {(isLoading) ? '' :
+        <div className={`augment-container`} augmented-ui="tr-clip bl-clip br-clip-y exe">
+          <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
 
             {
               reactionState.rewards ?
@@ -358,11 +358,11 @@ export default function ReactionItem(props) {
             {!reactionState.extinguished ? <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span> : ''}
             <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
             <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
-              {reactionState.extinguished ?
+              {/* {reactionState.extinguished ?
                 <React.Fragment>
                   <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => console.log('boo')}>☠</span>
                 </React.Fragment>
-                : ''}
+                : ''} */}
               <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
             </div>
             <Container style={{ ...rest, width: size, height: size }} className="reaction-store">

@@ -31,7 +31,7 @@ export default function AboutModal(props) {
         <div style={{ textAlign: 'center' }}>
           <Image src={logo} alt="Click Reactors" style={{ margin: '0 auto' }} />
           <h2>Click Reactors (C/R)</h2>
-          <Divider horizontal style={{ color: '#ffffff', marginTop: '40px' }}>v. 1.00 (Beta)</Divider>
+          <Divider horizontal style={{ color: '#ffffff', marginTop: '40px' }}>v. 1.02 (Beta)</Divider>
           <p>Developed By: Tom Bishop (tjbishop@gmail.com)</p>
           <Button
             onClick={() => handleUrl('https://github.com/tjbishop07/click-reactor')}
@@ -39,6 +39,14 @@ export default function AboutModal(props) {
             labelPosition='right'
             icon='github'
             content='Source Code'
+          /><br />
+          <Button
+            style={{ marginTop: '20px' }}
+            onClick={() => { window.location.reload(); }}
+            primary
+            labelPosition='right'
+            icon='refresh'
+            content='Check for new version'
           />
         </div>
       </Modal.Content>
