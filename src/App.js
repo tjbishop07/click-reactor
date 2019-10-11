@@ -23,6 +23,8 @@ import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import AboutModal from './components/AboutModal';
+import ReactionButton from './components/ReactionButton';
+
 // TODO: Cleanup!
 
 const drawerWidth = 240;
@@ -156,6 +158,7 @@ export default function App(props) {
   return (
     <div className={classes.root}>
       <CssBaseline />
+
       <AboutModal isOpen={aboutModalOpen}></AboutModal>
 
       {loadingGamestates ? <LinearProgress style={{ flexGrow: 1 }} /> :
@@ -176,10 +179,8 @@ export default function App(props) {
         <SnackbarProvider
           maxSnack={1}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-          <Container>
-            <HUD />
-            {user ? <Reactor /> : <Login />}
-          </Container>
+          <HUD />
+          {user ? <ReactionButton></ReactionButton> : <Login />}
         </SnackbarProvider>
       </Provider >
       <AppBar position="fixed" color="primary" className={classes.appBar}>
@@ -193,11 +194,11 @@ export default function App(props) {
           >
             <MoreVertIcon />
           </IconButton>
-          {user ?
+          {/* {user ?
             <Fab color="secondary" aria-label="add" className={classes.fabButton} onClick={() => addReactionItem()}>
               <AddIcon />
             </Fab>
-            : null}
+            : null} */}
           <div className={classes.grow} />
           {user ?
             <React.Fragment>

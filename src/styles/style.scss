@@ -75,6 +75,7 @@ textarea,
 
 .leaderboard-container {
     color: #ffffff;
+    z-index: 1;
     ul {
         counter-reset: index;
         padding: 0;

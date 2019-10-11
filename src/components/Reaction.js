@@ -14,6 +14,7 @@ import Button from '@material-ui/core/Button';
 import '../styles/reaction.scss';
 import store from '../data/store';
 import { Item, Container } from '../styles/styles'
+import ReactionButton from './ReactionButton';
 
 // TODO: This component is too big? Need to see if we car break it down
 export default function ReactionItem(props) {
@@ -25,7 +26,6 @@ export default function ReactionItem(props) {
   const [state, toggle] = useState(true)
   const [openDrawer, setOpenDrawer] = useState(false);
   const [duration, setDuration] = useState('');
-  const [clickBuffer, setClickBuffer] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [reactionState, setReactionState] = useState(null);
   const [reactionTimerDelay, setReactionTimerDelay] = useState(null);
@@ -229,14 +229,10 @@ export default function ReactionItem(props) {
     };
     let totalClickCount = Math.min((reactionUpdates.cps), 100);
     context.updateScore(1);
-    setClickBuffer(totalClickCount + parseFloat(clickBuffer));
     totalClickCount = totalClickCount + parseFloat(clickCount);
-    // if (clickBuffer > 2) {
-    //   setClickBuffer(0);
-      setClickCount(totalClickCount.toFixed(2));
-      reactionUpdates.clicks = parseFloat(totalClickCount.toFixed(2));
-      setReactionState(reactionUpdates);
-    // }
+    setClickCount(totalClickCount.toFixed(2));
+    reactionUpdates.clicks = parseFloat(totalClickCount.toFixed(2));
+    setReactionState(reactionUpdates);
   }
 
   const showMessage = (message, variant) => {
@@ -331,40 +327,38 @@ export default function ReactionItem(props) {
 
     <React.Fragment>
       {(isLoading) ? '' :
-        <div className={`augment-container`} augmented-ui="tr-clip bl-clip br-clip-y exe">
+        <div>
           <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
 
-            {
+            <ReactionButton></ReactionButton>
+
+            {/* {
               reactionState.rewards ?
+
                 <div style={
                   {
                     position: 'absolute',
-                    top: '25px',
+                    top: '10px',
                     left: '10px',
                     color: '#000000',
-                    width: '200px',
+                    width: '100%',
                     height: '200px',
-                    opacity: '.6'
+                    opacity: '.3'
                   }}>
                   {(reactionState.rewards.map((r, index) => (
                     <i className="olive react icon" key={index}></i>
                   )))}
                 </div> : null
-            }
+            } */}
 
             {!reactionState.extinguished ? <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span> : ''}
             <span className="duration">{duration}</span>
             {!reactionState.extinguished ? <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span> : ''}
-            {!reactionState.extinguished ? <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span> : ''}
+            {/* {!reactionState.extinguished ? <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span> : ''} */}
             <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
-            <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
-              {/* {reactionState.extinguished ?
-                <React.Fragment>
-                  <span className={reactionState.extinguished ? 'skully' : 'hidden'} onClick={() => console.log('boo')}>☠</span>
-                </React.Fragment>
-                : ''} */}
+            {/* <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
               <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
-            </div>
+            </div> */}
             <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
               {transitions.map(({ item, key, props }) => (
                 <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
