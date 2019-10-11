@@ -1,9 +1,11 @@
 // Inspired by a Pen from Akimitsu Hamamuro (https://codepen.io/akm2/pen/rHIsa)
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
+import GameContext from "../state/context";
 import * as dat from 'dat.gui';
 
 export default function ReactionButton() {
 
+    const context = useContext(GameContext);
 
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -182,8 +184,7 @@ export default function ReactionButton() {
         render: function (ctx) {
             if (this.destroyed) return;
 
-            var particles = this._targets.particles,
-                i, len;
+            var particles = this._targets.particles, i, len;
 
             for (i = 0, len = particles.length; i < len; i++) {
                 particles[i].addSpeed(Vector.sub(this, particles[i]).normalize().scale(this.gravity));
@@ -195,7 +196,13 @@ export default function ReactionButton() {
 
             if (this._collapsing) {
                 this.radius *= 0.75;
-                if (this.currentRadius < 1) this.destroyed = true;
+                if (this.currentRadius < 1) {
+                    this.destroyed = true;
+                    ctx.font = "30px Arial";
+                    ctx.fillText("Sweet!", ctx.clientX, ctx.clientY);
+                    console.log('poof');
+                    context.updateActivityLog({ body: `Reaction triggered. Particles acquired: ${particles.length}` });
+                }
                 this._draw(ctx);
                 const p = new Particle(
                     Math.floor(Math.random() * window.innerWidth - 1 * 2) + 1 + 1,
@@ -213,49 +220,41 @@ export default function ReactionButton() {
 
             for (i = 0, len = gravities.length; i < len; i++) {
                 g = gravities[i];
-
                 if (g === this || g.destroyed) continue;
-
                 if (
                     (this.currentRadius >= g.radius || this.dragging) &&
                     this.distanceTo(g) < (this.currentRadius + g.radius) * 0.85
                 ) {
                     g.destroyed = true;
                     this.gravity += g.gravity;
-
                     absorp = Vector.sub(g, this).scale(g.radius / this.radius * 0.5);
                     this.addSpeed(absorp);
-
                     garea = g.radius * g.radius * Math.PI;
                     this.currentRadius = Math.sqrt((area + garea * 3) / Math.PI);
                     this.radius = Math.sqrt((area + garea) / Math.PI);
                 }
-
                 g.addSpeed(Vector.sub(this, g).normalize().scale(this.gravity));
             }
 
-            if (GravityPoint.interferenceToPoint && !this.dragging)
+            if (GravityPoint.interferenceToPoint && !this.dragging) {
                 this.add(this._speed);
+            }
 
             this._speed = new Vector();
-
             if (this.currentRadius > GravityPoint.RADIUS_LIMIT) this.collapse();
-
             this._draw(ctx);
         },
 
         _draw: function (ctx) {
             var grd, r;
-
             ctx.save();
-
-            // grd = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, this.radius * 5);
-            // grd.addColorStop(0, 'rgba(0, 0, 0, 0.1)');
-            // grd.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            // ctx.beginPath();
-            // ctx.arc(this.x, this.y, this.radius * 5, 0, Math.PI * 2, false);
-            // ctx.fillStyle = grd;
-            // ctx.fill();
+            grd = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, this.radius * 25);
+            grd.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            grd.addColorStop(1, 'rgba(255, 255, 255, .1)');
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 5, 0, Math.PI * 2, false);
+            ctx.fillStyle = grd;
+            ctx.fill();
             r = Math.random() * this.currentRadius * 0.7 + this.currentRadius * 0.3;
             grd = ctx.createRadialGradient(this.x, this.y, r, this.x, this.y, this.currentRadius);
             grd.addColorStop(0, '#3c1053');
@@ -271,7 +270,6 @@ export default function ReactionButton() {
     function Particle(x, y, radius) {
         Vector.call(this, x, y);
         this.radius = radius;
-
         this._latest = new Vector();
         this._speed = new Vector();
     }
@@ -286,7 +284,6 @@ export default function ReactionButton() {
         },
         update: function () {
             if (this._speed.length() > 12) this._speed.normalize().scale(12);
-
             this._latest.set(this);
             this.add(this._speed);
         }
@@ -294,8 +291,7 @@ export default function ReactionButton() {
 
     useEffect(() => {
 
-        var BACKGROUND_COLOR = 'rgba(0, 0, 0, 1)',
-            PARTICLE_RADIUS = 1,
+        var PARTICLE_RADIUS = 1,
             G_POINT_RADIUS = 10;
 
         var canvas, context,
@@ -314,19 +310,15 @@ export default function ReactionButton() {
             bufferCvs.height = screenHeight;
             context = canvas.getContext('2d');
             bufferCtx = bufferCvs.getContext('2d');
-
             var cx = canvas.width * 0.5,
                 cy = canvas.height * 0.5;
-
             grad = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
             grad.addColorStop(0, '#ad5389');
             grad.addColorStop(1, '#3c1053');
-
         }
 
         function mouseMove(e) {
             mouse.set(e.clientX, e.clientY);
-
             var i, g, hit = false;
             for (i = gravities.length - 1; i >= 0; i--) {
                 g = gravities[i];
@@ -335,7 +327,6 @@ export default function ReactionButton() {
                 else
                     g.isMouseOver = false;
             }
-
             canvas.style.cursor = hit ? 'pointer' : 'default';
         }
 
@@ -361,10 +352,17 @@ export default function ReactionButton() {
             }
         }
 
+        function click(e) {
+            context.updateScore(1);
+        }
+
         function doubleClick(e) {
             for (var i = gravities.length - 1; i >= 0; i--) {
                 if (gravities[i].isMouseOver) {
-                    gravities[i].collapse();
+                    gravities.push(new GravityPoint(e.clientX, e.clientY, G_POINT_RADIUS, {
+                        particles: particles,
+                        gravities: gravities
+                    }));
                     break;
                 }
             }
@@ -438,14 +436,14 @@ export default function ReactionButton() {
 
             bufferCtx.save();
             bufferCtx.globalCompositeOperation = 'destination-out';
-            bufferCtx.globalAlpha = 0.1;
+            bufferCtx.globalAlpha = 0.2; // NOTE: Turn this number down/up to create longer/shorter tails
             bufferCtx.fillRect(0, 0, screenWidth, screenHeight);
             bufferCtx.restore();
 
             len = particles.length;
             bufferCtx.save();
-            bufferCtx.fillStyle = 'rgba(255,255,255,0.8)';
-            bufferCtx.lineCap = bufferCtx.lineJoin = 'round';
+            bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+            bufferCtx.lineCap = 'round';
             bufferCtx.lineWidth = PARTICLE_RADIUS * 2;
             bufferCtx.beginPath();
             for (i = 0; i < len; i++) {
@@ -454,7 +452,9 @@ export default function ReactionButton() {
                 bufferCtx.moveTo(p.x, p.y);
                 bufferCtx.lineTo(p._latest.x, p._latest.y);
             }
-            // bufferCtx.stroke();
+            bufferCtx.stroke();
+            bufferCtx.save();
+            bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
             bufferCtx.beginPath();
             for (i = 0; i < len; i++) {
                 p = particles[i];
@@ -463,7 +463,6 @@ export default function ReactionButton() {
             }
             bufferCtx.fill();
             bufferCtx.restore();
-
             context.drawImage(bufferCvs, 0, 0);
             requestAnimationFrame(loop);
         };
