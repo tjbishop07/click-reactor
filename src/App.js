@@ -23,7 +23,6 @@ import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import AboutModal from './components/AboutModal';
-import ReactionButton from './components/ReactionButton';
 
 // TODO: Cleanup!
 
@@ -180,7 +179,7 @@ export default function App(props) {
           maxSnack={1}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
           <HUD />
-          {user ? <ReactionButton></ReactionButton> : <Login />}
+          {user ? <Reactor></Reactor> : <Login />}
         </SnackbarProvider>
       </Provider >
       <AppBar position="fixed" color="primary" className={classes.appBar}>

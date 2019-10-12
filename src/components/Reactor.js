@@ -1,13 +1,12 @@
 import React, { useContext } from 'react';
 import { useListVals } from 'react-firebase-hooks/database';
 import { databaseRef } from '../config/firebase';
-import Reaction from './Reaction';
 import { useAuth } from '../state/auth';
 import * as firebase from 'firebase';
 import "../styles/reactor.scss";
 import GameContext from "../state/context";
 import useInterval from '../hooks/useInterval';
-import { Container } from '@material-ui/core';
+import ReactionButton from '../components/ReactionButton';
 
 export default function Reactor() {
 
@@ -31,11 +30,9 @@ export default function Reactor() {
 
   return (
     <React.Fragment>
-      <Container maxWidth="md" className="game-session-list-container">
-        {reactors.map(r => (
-          <Reaction key={r.id} propReaction={r} />
-        ))}
-      </Container>
+      {reactors.map(r => (
+        <ReactionButton key={r.id} propReaction={r} />
+      ))}
     </React.Fragment>
   );
 

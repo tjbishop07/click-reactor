@@ -1,11 +1,16 @@
 // Inspired by a Pen from Akimitsu Hamamuro (https://codepen.io/akm2/pen/rHIsa)
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import GameContext from "../state/context";
 import * as dat from 'dat.gui';
+import { databaseRef } from '../config/firebase';
+import { useAuth } from '../state/auth';
 
-export default function ReactionButton() {
+export default function ReactionButton(props) {
 
-    const context = useContext(GameContext);
+    const { propReaction } = props;
+    const gameContext = useContext(GameContext);
+    const [reactionState, setReactionState] = useState(null);
+    const { user } = useAuth();
 
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -198,10 +203,10 @@ export default function ReactionButton() {
                 this.radius *= 0.75;
                 if (this.currentRadius < 1) {
                     this.destroyed = true;
-                    ctx.font = "30px Arial";
-                    ctx.fillText("Sweet!", ctx.clientX, ctx.clientY);
-                    console.log('poof');
-                    context.updateActivityLog({ body: `Reaction triggered. Particles acquired: ${particles.length}` });
+                    console.log('poof', particles.length);
+                    gameContext.updateScore(particles.length);
+                    gameContext.updateActivityLog({ body: `Reaction triggered. Particles acquired: ${particles.length}` });
+
                 }
                 this._draw(ctx);
                 const p = new Particle(
@@ -257,7 +262,7 @@ export default function ReactionButton() {
             ctx.fill();
             r = Math.random() * this.currentRadius * 0.7 + this.currentRadius * 0.3;
             grd = ctx.createRadialGradient(this.x, this.y, r, this.x, this.y, this.currentRadius);
-            grd.addColorStop(0, '#3c1053');
+            grd.addColorStop(0, '#ffffff');
             grd.addColorStop(1, Math.random() < 0.2 ? 'rgba(255, 196, 0, 0.15)' : 'rgba(0, 0, 0, 0.75)');
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2, false);
@@ -291,6 +296,8 @@ export default function ReactionButton() {
 
     useEffect(() => {
 
+        setReactionState(propReaction);
+
         var PARTICLE_RADIUS = 1,
             G_POINT_RADIUS = 10;
 
@@ -301,6 +308,7 @@ export default function ReactionButton() {
             gravities = [],
             particles = [],
             grad,
+            trans,
             gui, control;
 
         function resize(e) {
@@ -315,6 +323,9 @@ export default function ReactionButton() {
             grad = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
             grad.addColorStop(0, '#ad5389');
             grad.addColorStop(1, '#3c1053');
+            trans = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
+            trans.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            trans.addColorStop(1, 'rgba(0, 0, 0, 0)');
         }
 
         function mouseMove(e) {
@@ -350,10 +361,6 @@ export default function ReactionButton() {
                     break;
                 }
             }
-        }
-
-        function click(e) {
-            context.updateScore(1);
         }
 
         function doubleClick(e) {
@@ -418,9 +425,7 @@ export default function ReactionButton() {
 
             context.save();
             context.fillStyle = grad;
-            context.fillRect(0, 0, screenWidth, screenHeight);
-            context.fillStyle = grad;
-            context.fillRect(0, 0, screenWidth, screenHeight);
+            context.fillRect(0, 0, screenWidth, screenHeight); // Make screen all black if no fillStyle specified. Good for a dark mode?
             context.restore();
 
             for (i = 0, len = gravities.length; i < len; i++) {
@@ -466,10 +471,23 @@ export default function ReactionButton() {
             context.drawImage(bufferCvs, 0, 0);
             requestAnimationFrame(loop);
         };
+
         loop();
 
     }, []);
 
+    const saveGame = () => {
+        // const starReward = generateStar();
+        // if (starReward) {
+        //   ReactDOM.render(
+        //     starReward,
+        //     document.getElementById('reaction')
+        //   );
+        // }
+        if (reactionState.id) {
+            databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
+        }
+    }
 
     return (
         <React.Fragment>
