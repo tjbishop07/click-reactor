@@ -193,11 +193,11 @@ export default function App(props) {
           >
             <MoreVertIcon />
           </IconButton>
-          {/* {user ?
+          {user ?
             <Fab color="secondary" aria-label="add" className={classes.fabButton} onClick={() => addReactionItem()}>
               <AddIcon />
             </Fab>
-            : null} */}
+            : null}
           <div className={classes.grow} />
           {user ?
             <React.Fragment>

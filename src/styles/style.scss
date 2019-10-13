@@ -1,10 +1,9 @@
 @import url('https://fonts.googleapis.com/css?family=Lexend+Deca|Codystar&display=swap');
 @import '../theme/default.scss';
 body {
-    // background: #ad5389;
-    // background: -webkit-linear-gradient(to bottom, #3c1053, #ad5389);
-    // background: linear-gradient(to bottom, #3c1053, #ad5389);
-    background: url(../img/hive.svg);
+    background: #ad5389;
+    background: -webkit-linear-gradient(to bottom, #3c1053, #ad5389);
+    background: linear-gradient(to bottom, #3c1053, #ad5389);
     min-height: 100vh;
     font-family: 'Lexend Deca', sans-serif;
     color: #ffffff;

@@ -10,6 +10,10 @@ export default function ReactionButton(props) {
     const { propReaction } = props;
     const gameContext = useContext(GameContext);
     const [reactionState, setReactionState] = useState(null);
+    const [showFadingText, setShowFadingText] = useState(false);
+    const [canvas, setCanvas] = useState(document.getElementById('button-canvas'));
+    const [canvasContext, setCanvasContext] = useState(null);
+
     const { user } = useAuth();
 
     window.requestAnimationFrame = (function () {
@@ -203,10 +207,10 @@ export default function ReactionButton(props) {
                 this.radius *= 0.75;
                 if (this.currentRadius < 1) {
                     this.destroyed = true;
-                    console.log('poof', particles.length);
+                    console.log('set show fade true');
+                    setShowFadingText(true);
                     gameContext.updateScore(particles.length);
-                    gameContext.updateActivityLog({ body: `Reaction triggered. Particles acquired: ${particles.length}` });
-
+                    gameContext.updateActivityLog({ body: `Reaction triggered. Particles found: ${particles.length}` });
                 }
                 this._draw(ctx);
                 const p = new Particle(
@@ -297,11 +301,12 @@ export default function ReactionButton(props) {
     useEffect(() => {
 
         setReactionState(propReaction);
+        console.log('canvas update');
 
         var PARTICLE_RADIUS = 1,
             G_POINT_RADIUS = 10;
 
-        var canvas, context,
+        var context,
             bufferCvs, bufferCtx,
             screenWidth, screenHeight,
             mouse = new Vector(),
@@ -312,20 +317,22 @@ export default function ReactionButton(props) {
             gui, control;
 
         function resize(e) {
-            screenWidth = canvas.width = window.innerWidth;
-            screenHeight = canvas.height = window.innerHeight;
-            bufferCvs.width = screenWidth;
-            bufferCvs.height = screenHeight;
-            context = canvas.getContext('2d');
-            bufferCtx = bufferCvs.getContext('2d');
-            var cx = canvas.width * 0.5,
-                cy = canvas.height * 0.5;
-            grad = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
-            grad.addColorStop(0, '#ad5389');
-            grad.addColorStop(1, '#3c1053');
-            trans = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
-            trans.addColorStop(0, 'rgba(0, 0, 0, 0)');
-            trans.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            if (canvas) {
+                screenWidth = canvas.width = window.innerWidth;
+                screenHeight = canvas.height = window.innerHeight;
+                bufferCvs.width = screenWidth;
+                bufferCvs.height = screenHeight;
+                context = canvas.getContext('2d');
+                bufferCtx = bufferCvs.getContext('2d');
+                var cx = canvas.width * 0.5,
+                    cy = canvas.height * 0.5;
+                grad = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
+                grad.addColorStop(0, '#ad5389');
+                grad.addColorStop(1, '#3c1053');
+                trans = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
+                trans.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                trans.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            }
         }
 
         function mouseMove(e) {
@@ -399,15 +406,18 @@ export default function ReactionButton(props) {
             particleNum: 2
         };
 
-        canvas = document.getElementById('button-canvas');
+        // canvas = document.getElementById('button-canvas');
+        setCanvas(document.getElementById('button-canvas'));
         bufferCvs = document.createElement('canvas');
         window.addEventListener('resize', resize, false);
         resize(null);
         addParticle(control.particleNum);
-        canvas.addEventListener('mousemove', mouseMove, false);
-        canvas.addEventListener('mousedown', mouseDown, false);
-        canvas.addEventListener('mouseup', mouseUp, false);
-        canvas.addEventListener('dblclick', doubleClick, false);
+        if (canvas) {
+            canvas.addEventListener('mousemove', mouseMove, false);
+            canvas.addEventListener('mousedown', mouseDown, false);
+            canvas.addEventListener('mouseup', mouseUp, false);
+            canvas.addEventListener('dblclick', doubleClick, false);
+        }
 
         gui = new dat.GUI();
         gui.add(control, 'particleNum', 0, 500).step(1).name('Particle Num').onChange(function () {
@@ -420,74 +430,89 @@ export default function ReactionButton(props) {
         gui.add(GravityPoint, 'interferenceToPoint').name('Interference Between Point');
         gui.close();
 
+        let fadeCount = 30;
         var loop = function () {
-            var i, len, g, p;
+            let i, len, g, p;
 
-            context.save();
-            context.fillStyle = grad;
-            context.fillRect(0, 0, screenWidth, screenHeight); // Make screen all black if no fillStyle specified. Good for a dark mode?
-            context.restore();
+            if (context && bufferCtx) {
 
-            for (i = 0, len = gravities.length; i < len; i++) {
-                g = gravities[i];
-                if (g.dragging) g.drag(mouse);
-                g.render(context);
-                if (g.destroyed) {
-                    gravities.splice(i, 1);
-                    len--;
-                    i--;
+                context.save();
+                context.fillStyle = grad;
+                context.fillRect(0, 0, screenWidth, screenHeight); // Make screen all black if no fillStyle specified. Good for a dark mode?
+                context.restore();
+
+                for (i = 0, len = gravities.length; i < len; i++) {
+                    g = gravities[i];
+                    if (g.dragging) g.drag(mouse);
+                    g.render(context);
+                    if (g.destroyed) {
+                        gravities.splice(i, 1);
+                        len--;
+                        i--;
+                    }
                 }
+
+                bufferCtx.save();
+                bufferCtx.globalCompositeOperation = 'destination-out';
+                bufferCtx.globalAlpha = 0.2; // NOTE: Turn this number down/up to create longer/shorter tails
+                bufferCtx.fillRect(0, 0, screenWidth, screenHeight);
+                bufferCtx.restore();
+
+                len = particles.length;
+                bufferCtx.save();
+                bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+                bufferCtx.lineCap = 'round';
+                bufferCtx.lineWidth = PARTICLE_RADIUS * 2;
+                bufferCtx.beginPath();
+                for (i = 0; i < len; i++) {
+                    p = particles[i];
+                    p.update();
+                    bufferCtx.moveTo(p.x, p.y);
+                    bufferCtx.lineTo(p._latest.x, p._latest.y);
+                }
+                bufferCtx.stroke();
+                bufferCtx.save();
+                bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+                bufferCtx.beginPath();
+                for (i = 0; i < len; i++) {
+                    p = particles[i];
+                    bufferCtx.moveTo(p.x, p.y);
+                    bufferCtx.arc(p.x, p.y, p.radius, 0, Math.PI / 2, false);
+                }
+
+
+                console.log('show fade', showFadingText);
+                if (showFadingText) {
+                    fadeCount = fadeCount - 1;
+                    bufferCtx.textAlign = "center";
+                    bufferCtx.font = `${i + 20}px Arial`;
+                    bufferCtx.fillText(`+ ${i}`, window.innerWidth / 2, ((window.innerHeight / 2) / 2) + fadeCount);
+                    if (fadeCount === 0) {
+                        // setShowFadingText(false);
+                        bufferCtx.fillStyle = `rgba(255, 255, 255, 0)`;
+                        // bufferCtx.fillText(`+ ${i}`, window.innerWidth / 2, window.innerHeight / 2);
+                        fadeCount = 80;
+                        console.log('reset');
+                    } else {
+                        console.log('set text', fadeCount);
+                        bufferCtx.fillStyle = `rgba(255, 255, 255, .${fadeCount})`;
+                    }
+                    // bufferCtx.save();
+                } else {
+                    bufferCtx.fill();
+                    bufferCtx.save();
+                }
+
+                bufferCtx.restore();
+                context.drawImage(bufferCvs, 0, 0);
             }
 
-            bufferCtx.save();
-            bufferCtx.globalCompositeOperation = 'destination-out';
-            bufferCtx.globalAlpha = 0.2; // NOTE: Turn this number down/up to create longer/shorter tails
-            bufferCtx.fillRect(0, 0, screenWidth, screenHeight);
-            bufferCtx.restore();
-
-            len = particles.length;
-            bufferCtx.save();
-            bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
-            bufferCtx.lineCap = 'round';
-            bufferCtx.lineWidth = PARTICLE_RADIUS * 2;
-            bufferCtx.beginPath();
-            for (i = 0; i < len; i++) {
-                p = particles[i];
-                p.update();
-                bufferCtx.moveTo(p.x, p.y);
-                bufferCtx.lineTo(p._latest.x, p._latest.y);
-            }
-            bufferCtx.stroke();
-            bufferCtx.save();
-            bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
-            bufferCtx.beginPath();
-            for (i = 0; i < len; i++) {
-                p = particles[i];
-                bufferCtx.moveTo(p.x, p.y);
-                bufferCtx.arc(p.x, p.y, p.radius, 0, Math.PI / 2, false);
-            }
-            bufferCtx.fill();
-            bufferCtx.restore();
-            context.drawImage(bufferCvs, 0, 0);
             requestAnimationFrame(loop);
         };
 
         loop();
 
-    }, []);
-
-    const saveGame = () => {
-        // const starReward = generateStar();
-        // if (starReward) {
-        //   ReactDOM.render(
-        //     starReward,
-        //     document.getElementById('reaction')
-        //   );
-        // }
-        if (reactionState.id) {
-            databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
-        }
-    }
+    }, [canvas]);
 
     return (
         <React.Fragment>
