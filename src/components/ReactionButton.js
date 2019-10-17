@@ -10,7 +10,6 @@ export default function ReactionButton(props) {
     const { propReaction } = props;
     const gameContext = useContext(GameContext);
     const [reactionState, setReactionState] = useState(null);
-    const [showFadingText, setShowFadingText] = useState(false);
     const [canvas, setCanvas] = useState(document.getElementById('button-canvas'));
     const [canvasContext, setCanvasContext] = useState(null);
 
@@ -193,7 +192,8 @@ export default function ReactionButton(props) {
         render: function (ctx) {
             if (this.destroyed) return;
 
-            var particles = this._targets.particles, i, len;
+            var particles = this._targets.particles,
+                i, len;
 
             for (i = 0, len = particles.length; i < len; i++) {
                 particles[i].addSpeed(Vector.sub(this, particles[i]).normalize().scale(this.gravity));
@@ -207,8 +207,7 @@ export default function ReactionButton(props) {
                 this.radius *= 0.75;
                 if (this.currentRadius < 1) {
                     this.destroyed = true;
-                    console.log('set show fade true');
-                    setShowFadingText(true);
+                    window.fadeText = true;
                     gameContext.updateScore(particles.length);
                     gameContext.updateActivityLog({ body: `Reaction triggered. Particles found: ${particles.length}` });
                 }
@@ -225,7 +224,8 @@ export default function ReactionButton(props) {
 
             var gravities = this._targets.gravities,
                 g, absorp,
-                area = this.radius * this.radius * Math.PI, garea;
+                area = this.radius * this.radius * Math.PI,
+                garea;
 
             for (i = 0, len = gravities.length; i < len; i++) {
                 g = gravities[i];
@@ -284,7 +284,8 @@ export default function ReactionButton(props) {
     }
 
     Particle.prototype = (function (o) {
-        var s = new Vector(0, 0), p;
+        var s = new Vector(0, 0),
+            p;
         for (p in o) s[p] = o[p];
         return s;
     })({
@@ -301,7 +302,6 @@ export default function ReactionButton(props) {
     useEffect(() => {
 
         setReactionState(propReaction);
-        console.log('canvas update');
 
         var PARTICLE_RADIUS = 1,
             G_POINT_RADIUS = 10;
@@ -406,7 +406,6 @@ export default function ReactionButton(props) {
             particleNum: 2
         };
 
-        // canvas = document.getElementById('button-canvas');
         setCanvas(document.getElementById('button-canvas'));
         bufferCvs = document.createElement('canvas');
         window.addEventListener('resize', resize, false);
@@ -480,27 +479,24 @@ export default function ReactionButton(props) {
                     bufferCtx.arc(p.x, p.y, p.radius, 0, Math.PI / 2, false);
                 }
 
+                bufferCtx.restore();
+                bufferCtx.save();
 
-                console.log('show fade', showFadingText);
-                if (showFadingText) {
+                if (window.fadeText) {
                     fadeCount = fadeCount - 1;
                     bufferCtx.textAlign = "center";
                     bufferCtx.font = `${i + 20}px Arial`;
                     bufferCtx.fillText(`+ ${i}`, window.innerWidth / 2, ((window.innerHeight / 2) / 2) + fadeCount);
                     if (fadeCount === 0) {
-                        // setShowFadingText(false);
+                        window.fadeText = false;
                         bufferCtx.fillStyle = `rgba(255, 255, 255, 0)`;
-                        // bufferCtx.fillText(`+ ${i}`, window.innerWidth / 2, window.innerHeight / 2);
-                        fadeCount = 80;
-                        console.log('reset');
+                        bufferCtx.fillText(`+ ${i}`, window.innerWidth / 2, window.innerHeight / 2);
+                        fadeCount = 100;
                     } else {
-                        console.log('set text', fadeCount);
                         bufferCtx.fillStyle = `rgba(255, 255, 255, .${fadeCount})`;
                     }
-                    // bufferCtx.save();
                 } else {
                     bufferCtx.fill();
-                    bufferCtx.save();
                 }
 
                 bufferCtx.restore();
