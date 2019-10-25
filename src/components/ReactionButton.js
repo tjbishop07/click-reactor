@@ -5,6 +5,9 @@ import * as dat from 'dat.gui';
 import { databaseRef } from '../config/firebase';
 import { useAuth } from '../state/auth';
 
+// TODO: save particles to global context so that they are saved with the game to firebase
+window._particles = [];
+
 export default function ReactionButton(props) {
 
     const { propReaction } = props;
@@ -12,6 +15,7 @@ export default function ReactionButton(props) {
     const [reactionState, setReactionState] = useState(null);
     const [canvas, setCanvas] = useState(document.getElementById('button-canvas'));
     const [canvasContext, setCanvasContext] = useState(null);
+    // const [particles, setParticles] = useState([]);
 
     const { user } = useAuth();
 
@@ -139,7 +143,7 @@ export default function ReactionButton(props) {
         this.currentRadius = radius * 0.5;
 
         this._targets = {
-            particles: targets.particles || [],
+            particles: window._particles,
             gravities: targets.gravities || []
         };
         this._speed = new Vector();
@@ -160,6 +164,7 @@ export default function ReactionButton(props) {
         _easeRadius: 0,
         _dragDistance: null,
         _collapsing: false,
+        _addedParticle: false,
 
         hitTest: function (p) {
             return this.distanceTo(p) < this.radius;
@@ -190,13 +195,14 @@ export default function ReactionButton(props) {
         },
 
         render: function (ctx) {
-            if (this.destroyed) return;
+            if (this.destroyed) {
+                this._addedParticle = false;
+                return;
+            }
+            let i;
 
-            var particles = this._targets.particles,
-                i, len;
-
-            for (i = 0, len = particles.length; i < len; i++) {
-                particles[i].addSpeed(Vector.sub(this, particles[i]).normalize().scale(this.gravity));
+            for (i = 0; i < window._particles.length; i++) {
+                window._particles[i].addSpeed(Vector.sub(this, window._particles[i]).normalize().scale(this.gravity));
             }
 
             this._easeRadius = (this._easeRadius + (this.radius - this.currentRadius) * 0.07) * 0.95;
@@ -208,26 +214,40 @@ export default function ReactionButton(props) {
                 if (this.currentRadius < 1) {
                     this.destroyed = true;
                     window.fadeText = true;
-                    gameContext.updateScore(particles.length);
-                    gameContext.updateActivityLog({ body: `Reaction triggered. Particles found: ${particles.length}` });
+                    gameContext.updateScore(window._particles.length);
+                    gameContext.updateActivityLog({ body: `Reaction triggered. Particles found: ${window._particles.length}` });
                 }
                 this._draw(ctx);
-                const p = new Particle(
-                    Math.floor(Math.random() * window.innerWidth - 1 * 2) + 1 + 1,
-                    Math.floor(Math.random() * window.innerHeight - 1 * 2) + 1 + 1,
-                    1
-                );
-                p.addSpeed(Vector.random());
-                this._targets.particles.push(p);
+                if (!this._addedParticle) {
+                    const p = new Particle(
+                        Math.floor(Math.random() * window.innerWidth - 1 * 2) + 1 + 1,
+                        Math.floor(Math.random() * window.innerHeight - 1 * 2) + 1 + 1,
+                        1
+                    );
+                    p.addSpeed(Vector.random());
+                    window._particles.push(p);
+
+                    gameContext.updateActivityLog({ body: `Quark found! Not sure what that means yet...` });
+
+
+                    const reactionUpdates = {
+                        ...reactionState,
+                        particles: window._particles
+                    };
+
+                    setReactionState(reactionUpdates);
+                    databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
+                    this._addedParticle = true;
+                }
                 return;
             }
 
-            var gravities = this._targets.gravities,
+            let gravities = this._targets.gravities,
                 g, absorp,
                 area = this.radius * this.radius * Math.PI,
                 garea;
 
-            for (i = 0, len = gravities.length; i < len; i++) {
+            for (i = 0; i < gravities.length; i++) {
                 g = gravities[i];
                 if (g === this || g.destroyed) continue;
                 if (
@@ -284,8 +304,7 @@ export default function ReactionButton(props) {
     }
 
     Particle.prototype = (function (o) {
-        var s = new Vector(0, 0),
-            p;
+        var s = new Vector(0, 0), p;
         for (p in o) s[p] = o[p];
         return s;
     })({
@@ -311,7 +330,6 @@ export default function ReactionButton(props) {
             screenWidth, screenHeight,
             mouse = new Vector(),
             gravities = [],
-            particles = [],
             grad,
             trans,
             gui, control;
@@ -356,7 +374,6 @@ export default function ReactionButton(props) {
                 }
             }
             gravities.push(new GravityPoint(e.clientX, e.clientY, G_POINT_RADIUS, {
-                particles: particles,
                 gravities: gravities
             }));
         }
@@ -373,8 +390,7 @@ export default function ReactionButton(props) {
         function doubleClick(e) {
             for (var i = gravities.length - 1; i >= 0; i--) {
                 if (gravities[i].isMouseOver) {
-                    gravities.push(new GravityPoint(e.clientX, e.clientY, G_POINT_RADIUS, {
-                        particles: particles,
+                    gravities.push(new GravityPoint(e.clientX, e.clientY, G_POINT_RADIUS, window._particles, {
                         gravities: gravities
                     }));
                     break;
@@ -382,35 +398,36 @@ export default function ReactionButton(props) {
             }
         }
 
-        function addParticle(num) {
-            var i, p;
-            for (i = 0; i < num; i++) {
-                p = new Particle(
-                    Math.floor(Math.random() * screenWidth - PARTICLE_RADIUS * 2) + 1 + PARTICLE_RADIUS,
-                    Math.floor(Math.random() * screenHeight - PARTICLE_RADIUS * 2) + 1 + PARTICLE_RADIUS,
-                    PARTICLE_RADIUS
-                );
-                p.addSpeed(Vector.random());
-                particles.push(p);
-            }
-        }
+        // function addParticle(num) {
+        //     var i, p;
+        //     let currentParticles = particles;
+        //     for (i = 0; i < num; i++) {
+        //         p = new Particle(
+        //             Math.floor(Math.random() * screenWidth - PARTICLE_RADIUS * 2) + 1 + PARTICLE_RADIUS,
+        //             Math.floor(Math.random() * screenHeight - PARTICLE_RADIUS * 2) + 1 + PARTICLE_RADIUS,
+        //             PARTICLE_RADIUS
+        //         );
+        //         p.addSpeed(Vector.random());
+        //         currentParticles.push(p);
+        //     }
+        //     setParticles(currentParticles);
+        //     console.log('add particles', currentParticles);
+        // }
 
-        function removeParticle(num) {
-            if (particles.length < num) num = particles.length;
-            for (var i = 0; i < num; i++) {
-                particles.pop();
-            }
-        }
-
-        control = {
-            particleNum: 2
-        };
+        // function removeParticle(num) {
+        //     let currentParticles = particles;
+        //     if (currentParticles.length < num) num = currentParticles.length;
+        //     for (var i = 0; i < num; i++) {
+        //         currentParticles.pop();
+        //     }
+        //     setParticles(currentParticles);
+        // }
 
         setCanvas(document.getElementById('button-canvas'));
         bufferCvs = document.createElement('canvas');
         window.addEventListener('resize', resize, false);
         resize(null);
-        addParticle(control.particleNum);
+        //addParticle(1);
         if (canvas) {
             canvas.addEventListener('mousemove', mouseMove, false);
             canvas.addEventListener('mousedown', mouseDown, false);
@@ -419,17 +436,19 @@ export default function ReactionButton(props) {
         }
 
         gui = new dat.GUI();
-        gui.add(control, 'particleNum', 0, 500).step(1).name('Particle Num').onChange(function () {
-            var n = (control.particleNum | 0) - particles.length;
-            if (n > 0)
-                addParticle(n);
-            else if (n < 0)
-                removeParticle(-n);
-        });
+        // gui.add({ particleCount: 2 }, 'particleCount', 0, 500).step(1).name('particleCount').onChange(function () {
+        //     let p = new Particle(
+        //         Math.floor(Math.random() * screenWidth - PARTICLE_RADIUS * 2) + 1 + PARTICLE_RADIUS,
+        //         Math.floor(Math.random() * screenHeight - PARTICLE_RADIUS * 2) + 1 + PARTICLE_RADIUS,
+        //         PARTICLE_RADIUS
+        //     );
+        //     p.addSpeed(Vector.random());
+        //     console.log('particle change', 'ye');
+        // });
         gui.add(GravityPoint, 'interferenceToPoint').name('Interference Between Point');
         gui.close();
 
-        let fadeCount = 30;
+        let fadeCount = 100;
         var loop = function () {
             let i, len, g, p;
 
@@ -443,7 +462,7 @@ export default function ReactionButton(props) {
                 for (i = 0, len = gravities.length; i < len; i++) {
                     g = gravities[i];
                     if (g.dragging) g.drag(mouse);
-                    g.render(context);
+                    g.render(context, window._particles);
                     if (g.destroyed) {
                         gravities.splice(i, 1);
                         len--;
@@ -457,14 +476,14 @@ export default function ReactionButton(props) {
                 bufferCtx.fillRect(0, 0, screenWidth, screenHeight);
                 bufferCtx.restore();
 
-                len = particles.length;
+                len = window._particles.length;
                 bufferCtx.save();
                 bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
                 bufferCtx.lineCap = 'round';
                 bufferCtx.lineWidth = PARTICLE_RADIUS * 2;
                 bufferCtx.beginPath();
                 for (i = 0; i < len; i++) {
-                    p = particles[i];
+                    p = window._particles[i];
                     p.update();
                     bufferCtx.moveTo(p.x, p.y);
                     bufferCtx.lineTo(p._latest.x, p._latest.y);
@@ -474,7 +493,7 @@ export default function ReactionButton(props) {
                 bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
                 bufferCtx.beginPath();
                 for (i = 0; i < len; i++) {
-                    p = particles[i];
+                    p = window._particles[i];
                     bufferCtx.moveTo(p.x, p.y);
                     bufferCtx.arc(p.x, p.y, p.radius, 0, Math.PI / 2, false);
                 }
@@ -485,7 +504,7 @@ export default function ReactionButton(props) {
                 if (window.fadeText) {
                     fadeCount = fadeCount - 1;
                     bufferCtx.textAlign = "center";
-                    bufferCtx.font = `${i + 20}px Arial`;
+                    bufferCtx.font = `15px Arial`;
                     bufferCtx.fillText(`+ ${i}`, window.innerWidth / 2, ((window.innerHeight / 2) / 2) + fadeCount);
                     if (fadeCount === 0) {
                         window.fadeText = false;

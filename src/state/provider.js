@@ -10,7 +10,8 @@ export default function Provider(props) {
         activityLog: [],
         fullName: 'Anonymous',
         score: 0,
-        rewards: []
+        rewards: [],
+        particles: []
     });
 
     useEffect(() => {
@@ -22,7 +23,8 @@ export default function Provider(props) {
                         const newState = {
                             ...state,
                             score: snapshot.val().score,
-                            fullName: snapshot.val().fullName
+                            fullName: snapshot.val().fullName,
+                            particles: snapshot.val().particles
                         };
                         setState(newState);
                     }
@@ -60,6 +62,18 @@ export default function Provider(props) {
     function updateGameStateActivityLog() {
         if (state.activityLog && user) {
             databaseRef.child(`gameStates/${user.uid}/activityLog`).set(state.activityLog);
+        }
+    }
+
+    if (state.particles) {
+        useEffect(() => {
+            updateGameStateParticles();
+        }, [state.particles.length]);
+    }
+
+    function updateGameStateParticles() {
+        if (state.activityLog && user) {
+            databaseRef.child(`gameStates/${user.uid}/particles`).set(state.particles);
         }
     }
 
