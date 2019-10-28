@@ -96,7 +96,7 @@ export default function Provider(props) {
                     setState({ ...state, fullName: newName });
                 },
                 updateScore: (newScore) => {
-                    setState({ ...state, score: (state.score + newScore) });
+                    setState({ ...state, score: ((state.score ? state.score : 0) + newScore) });
                 },
                 updateActivityLog: (newActivityLogItem) => {
                     newActivityLogItem.timestamp = new Date().getTime();

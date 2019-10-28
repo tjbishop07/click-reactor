@@ -21,12 +21,14 @@ export default function HUD() {
   const { user } = useAuth();
   const [nameModalOpen, setNameModalOpen] = React.useState(false);
   const [fullName, setFullName] = React.useState(null);
+  const [score, setScore] = React.useState(0);
 
   useEffect(() => {
     if (context.data.fullName) {
       setFullName(context.data.fullName);
     }
-  }, [context.data.fullName]);
+    setScore(context.data.score);
+  }, [context.data]);
 
   const handleInputChange = e => {
     const { value } = e.target
@@ -65,7 +67,7 @@ export default function HUD() {
         </Grid>
         <Grid item>
           {!user ? 'Welcome to Click Reactors.' : <h4 className="username" onClick={() => { setNameModalOpen(true); }}>PLAYER: {fullName}</h4>}
-          <h4 className="score">SCORE: {context.data.score < 0 ? '0' : context.data.score}</h4>
+          <h4 className="score">SCORE: {score}</h4>
         </Grid>
         <Grid>
         </Grid>

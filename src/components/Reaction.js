@@ -224,6 +224,7 @@ export default function Reaction(props) {
                     window._particles.push(p);
                     gameContext.updateActivityLog({ body: `Particle found! Not sure what that means yet...` });
                     gameContext.updateParticles(p);
+                    gameContext.updateScore(window._particles.length);
                     this._addedParticle = true;
                 }
                 return;
