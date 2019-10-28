@@ -29,9 +29,7 @@ export default function Reactor() {
     });
     const particleScore = window._particles.length;
     context.updateScore(particleScore);
-    setTimeout(() => {
-      context.updateActivityLog({ body: `Game Saved. Score: ${context.data.score ? context.data.score : 0}` });
-    }, 1000);
+    context.updateActivityLog({ body: `Game Saved. Score: ${context.data.score ? (context.data.score + particleScore) : 0}` });
   }
 
   useInterval(saveGame.bind(), 60000);

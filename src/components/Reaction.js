@@ -219,6 +219,8 @@ export default function Reaction(props) {
                         1
                     );
                     p.addSpeed(Vector.random());
+
+                    // TODO: Maybe create chance to spawn "god particle" that does something for some amount of time?
                     window._particles.push(p);
                     gameContext.updateActivityLog({ body: `Particle found! Not sure what that means yet...` });
                     gameContext.updateParticles(p);
