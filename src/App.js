@@ -165,7 +165,7 @@ export default function App(props) {
           {
             (gameStates && gameStates.length) ? gameStates.reverse().map((r, index) => (
               <li key={index}>
-                <strong>{r.score.toLocaleString()}</strong> &nbsp;&nbsp;
+                <strong>{r.score.toLocaleString(navigator.language, { minimumFractionDigits: 0 })}</strong> &nbsp;&nbsp;
                 {r.fullName ? r.fullName : 'Anonymous'}
               </li>
             ))

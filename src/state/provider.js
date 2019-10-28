@@ -24,7 +24,8 @@ export default function Provider(props) {
                             ...state,
                             score: snapshot.val().score,
                             fullName: snapshot.val().fullName,
-                            particles: snapshot.val().particles
+                            particles: snapshot.val().particles,
+                            gravityOrbs: snapshot.val().gravityOrbs
                         };
                         setState(newState);
                     }
@@ -65,14 +66,12 @@ export default function Provider(props) {
         }
     }
 
-    if (state.particles) {
-        useEffect(() => {
-            updateGameStateParticles();
-        }, [state.particles.length]);
-    }
+    useEffect(() => {
+        updateGameStateParticles();
+    }, [state.particles]);
 
     function updateGameStateParticles() {
-        if (state.activityLog && user) {
+        if (state.particles && user) {
             databaseRef.child(`gameStates/${user.uid}/particles`).set(state.particles);
         }
     }
@@ -107,6 +106,14 @@ export default function Provider(props) {
                     }
                     tempActivityLog.push(newActivityLogItem);
                     setState({ ...state, activityLog: tempActivityLog });
+                },
+                updateParticles: (newParticle) => {
+                    let tempParticles = state.particles;
+                    if (!tempParticles) {
+                        tempParticles = [];
+                    }
+                    tempParticles.push(newParticle);
+                    setState({ ...state, particles: tempParticles });
                 }
             }}
         >

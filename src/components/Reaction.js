@@ -1,384 +1,509 @@
-import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
-import ReactDOM from 'react-dom';
-import { useTransition, useSpring, useChain, config } from 'react-spring'
-import useInterval from '../hooks/useInterval';
-import { databaseRef } from '../config/firebase';
-import hive from '../img/hive-animated.svg';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Fab from '@material-ui/core/Fab';
-import BatteryChargingFullIcon from '@material-ui/icons/BatteryChargingFull';
+// Inspired by a Pen from Akimitsu Hamamuro (https://codepen.io/akm2/pen/rHIsa)
+import React, { useEffect, useContext, useState } from 'react';
 import GameContext from "../state/context";
+import * as dat from 'dat.gui';
+import { databaseRef } from '../config/firebase';
 import { useAuth } from '../state/auth';
-import { useSnackbar } from 'notistack';
-import Button from '@material-ui/core/Button';
-import '../styles/reaction.scss';
-import store from '../data/store';
-import { Item, Container } from '../styles/styles'
-import ReactionButton from './ReactionButton';
 
-// TODO: This component is too big? Need to see if we car break it down
-export default function ReactionItem(props) {
+window._particles = [];
+window._gravityOrbs = [];
 
-  const { propReaction } = props;
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { user } = useAuth();
-  const context = useContext(GameContext);
-  const [state, toggle] = useState(true)
-  const [openDrawer, setOpenDrawer] = useState(false);
-  const [duration, setDuration] = useState('');
-  const [clickCount, setClickCount] = useState(0);
-  const [reactionState, setReactionState] = useState(null);
-  const [reactionTimerDelay, setReactionTimerDelay] = useState(null);
-  const [durationTimerDelay, setDurationTimerDelay] = useState(null);
-  const [saveTimerDelay, setSaveTimerDelay] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [reactionStartDateTime, setReactionStartDateTime] = useState(null);
+export default function Reaction(props) {
 
-  const storeItems = useMemo(() => store, []);
-  const transRef = useRef();
-  const transitions = useTransition(openDrawer ? storeItems : [], item => item.name, {
-    ref: transRef,
-    unique: true,
-    trail: 400 / store.length,
-    from: { opacity: 0, marginTop: '-250px' },
-    enter: { opacity: 1, marginTop: '0' },
-    leave: { opacity: 0, marginTop: '0' }
-  })
+    const { reactionState } = props;
+    const gameContext = useContext(GameContext);
+    const [canvas, setCanvas] = useState(document.getElementById('button-canvas'));
+    const { user } = useAuth();
 
-  const springRef = useRef()
-  const { size, opacity, ...rest } = useSpring({
-    ref: springRef,
-    config: config.gentle,
-    from: { marginTop: '-250px' },
-    to: { marginTop: openDrawer ? '0' : '-250px' }
-  })
+    window.requestAnimationFrame = (function () {
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+    })();
 
-  useChain(openDrawer ? [springRef, transRef] : [transRef, springRef], [0, openDrawer ? 0.1 : 0.6])
-
-  useEffect(() => {
-    setReactionState(propReaction);
-    setClickCount(propReaction.clicks);
-    if (propReaction && !propReaction.extinguished) {
-      setSaveTimerDelay(5000);
-      setDurationTimerDelay(100);
-      setReactionTimerDelay(1000);
-    }
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-  }, []);
-
-  // Hook into props
-  useEffect(() => {
-    if (propReaction) {
-      // setReactionState(propReaction);
-      setClickCount(propReaction.clicks);
-      return () => (propReaction);
-    }
-  }, [propReaction.energy]);
-
-  const getReactionStartTimestamp = () => {
-    // NOTE: This check is required since we use the ServerValue. TIMESTAMP for Firebase. 
-    //       When initially set, it's and object so we need this to work around that.
-    return (typeof reactionState.reactionStartedAt === 'object' ?
-      reactionStartDateTime :
-      new Date(reactionState.reactionStartedAt));
-  }
-
-  const saveGame = () => {
-    const starReward = generateStar();
-    if (starReward) {
-      ReactDOM.render(
-        starReward,
-        document.getElementById('reaction')
-      );
-    }
-    if (reactionState.id) {
-      databaseRef.child(`userReactors/${user.uid}/${reactionState.id}`).set(reactionState);
-    }
-  }
-
-  const updateDurationLabel = () => {
-
-    if (reactionState) {
-
-      if (!reactionState.reactionStarted && !reactionState.extinguished) {
-        setDuration('--:--:--:--:--');
-        return;
-      }
-
-      let nowDate = new Date();
-      if (reactionState.extinguished) {
-        nowDate = new Date(reactionState.extinguishedAt);
-      }
-
-      let diff = nowDate.getTime() - getReactionStartTimestamp().getTime();
-
-      let days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-
-      let hours = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hours * (1000 * 60 * 60);
-
-      let mins = Math.floor(diff / (1000 * 60));
-      diff -= mins * (1000 * 60);
-
-      let seconds = Math.floor(diff / (1000));
-      diff -= seconds * (1000);
-
-      let milliSeconds = Math.floor(diff / (1000000));
-      diff -= milliSeconds * (1000000);
-
-      setDuration((days < 10 ? `0${days}` : days) + ":" +
-        (hours < 10 ? `0${hours}` : hours) + ":" +
-        (mins < 10 ? `0${mins}` : mins) + ":" +
-        (seconds < 10 ? `0${seconds}` : seconds) + ":" +
-        diff.toString().substr(0, 2));
-
+    function Vector(x, y) {
+        this.x = x || 0;
+        this.y = y || 0;
     }
 
-  }
-
-  const burnEnergy = () => {
-    if (reactionState
-      && reactionState.reactionStarted) {
-
-      const reactionUpdates = {
-        ...reactionState
-      };
-
-      var nowDate = new Date();
-      var duration = nowDate.getTime() - getReactionStartTimestamp();
-      var durationMinutes = Math.floor(duration / (1000 * 60));
-
-      const diff = Math.random() * durationMinutes;
-      let newEnergyCalculation = Math.min(reactionState.energy - diff, 100);
-      newEnergyCalculation = Math.min(newEnergyCalculation + (reactionState.cps * 2), 100);
-
-      if (newEnergyCalculation <= 0) {
-        killReaction();
-        return;
-      } else {
-        reactionUpdates.energy = newEnergyCalculation;
-        reactionUpdates.reactionStarted = true;
-        setReactionState(reactionUpdates);
-      }
-
-      if (reactionState.cps > 0) {
-        calculateClicks();
-      }
-
-    }
-  }
-
-  const killReaction = () => {
-    // NOTE: Times HAVE to be killed first. Do not move. Seems smelly. Good point for future refactor.
-    setReactionTimerDelay(null);
-    setDurationTimerDelay(null);
-    setSaveTimerDelay(null);
-    // ------------------------------------
-    const reactionUpdates = {
-      ...reactionState,
-      energy: 0,
-      cps: 0,
-      extinguished: true,
-      title: 'Extinguished',
-      extinguishedAt: new Date().getTime()
+    Vector.add = function (a, b) {
+        return new Vector(a.x + b.x, a.y + b.y);
     };
-    setReactionState(reactionUpdates);
-    context.updateActivityLog({ body: `Reaction extinguised. Sad day.` });
-    setTimeout(() => {
-      saveGame();
-    }, 1000);
-  };
 
-  const chargeReaction = () => {
-    toggle(!state);
-    let reactionUpdates = { ...reactionState };
-    if (!reactionUpdates.reactionStarted) {
-      const diff = Math.random() * 2;
-      const newCompletedCalulcation = Math.min(reactionState.energy + diff, 100);
-      reactionUpdates.clicks = parseFloat((parseFloat(reactionUpdates.clicks) || 0) + 1).toFixed(2);
-      reactionUpdates.energy = newCompletedCalulcation;
-      setClickCount(reactionUpdates.clicks);
-      context.updateScore(1);
-      if (reactionUpdates.energy >= 100) {
-        reactionUpdates.energy = 100;
-        reactionUpdates.reactionStarted = true;
-        reactionUpdates.reactionStartedAt = new Date().getTime();
-        setReactionStartDateTime(new Date());
-        context.updateScore(reactionState.clicks * 10);
-        context.updateActivityLog({ body: `Oh sweet! You started a reaction. It will slowly burn out unless you keep it going. Try exploring energy sources to throw into the reactor.` });
-        setDurationTimerDelay(100);
-        saveGame();
-      }
-    } else {
-      if (!reactionUpdates.extinguished) {
-        const diff = Math.random() * 2;
-        const newCompletedCalulcation = Math.min(reactionUpdates.energy + diff, 100);
-        reactionUpdates.energy = newCompletedCalulcation;
-        calculateClicks();
-      }
-    }
-    setReactionState(reactionUpdates);
-  };
-
-  const calculateClicks = () => {
-    const reactionUpdates = {
-      ...reactionState
+    Vector.sub = function (a, b) {
+        return new Vector(a.x - b.x, a.y - b.y);
     };
-    let totalClickCount = Math.min((reactionUpdates.cps), 100);
-    context.updateScore(1);
-    totalClickCount = totalClickCount + parseFloat(clickCount);
-    setClickCount(totalClickCount.toFixed(2));
-    reactionUpdates.clicks = parseFloat(totalClickCount.toFixed(2));
-    setReactionState(reactionUpdates);
-  }
 
-  const showMessage = (message, variant) => {
-    enqueueSnackbar(message,
-      {
-        variant: variant,
-        action:
-          <Button onClick={() => { closeSnackbar() }}>
-            {'OK'}
-          </Button>
-      });
-  }
-
-  const purchaseItem = (energySource) => {
-    const cost = calculateCost(energySource.id, energySource.basePrice);
-    if (parseFloat(cost) > parseFloat(clickCount)) {
-      showMessage('You do not have enough cash for this item.', 'error');
-      return;
-    }
-    const reactionUpdates = {
-      ...reactionState,
-      cps: reactionState.cps + energySource.baseCPS,
-      clicks: parseFloat(clickCount - cost).toFixed(2)
+    Vector.scale = function (v, s) {
+        return v.clone().scale(s);
     };
-    if (!reactionUpdates.energySources) {
-      reactionUpdates.energySources = [];
+
+    Vector.random = function () {
+        return new Vector(
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1
+        );
+    };
+
+    Vector.prototype = {
+        set: function (x, y) {
+            if (typeof x === 'object') {
+                y = x.y;
+                x = x.x;
+            }
+            this.x = x || 0;
+            this.y = y || 0;
+            return this;
+        },
+
+        add: function (v) {
+            this.x += v.x;
+            this.y += v.y;
+            return this;
+        },
+
+        sub: function (v) {
+            this.x -= v.x;
+            this.y -= v.y;
+            return this;
+        },
+
+        scale: function (s) {
+            this.x *= s;
+            this.y *= s;
+            return this;
+        },
+
+        length: function () {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        },
+
+        lengthSq: function () {
+            return this.x * this.x + this.y * this.y;
+        },
+
+        normalize: function () {
+            var m = Math.sqrt(this.x * this.x + this.y * this.y);
+            if (m) {
+                this.x /= m;
+                this.y /= m;
+            }
+            return this;
+        },
+
+        angle: function () {
+            return Math.atan2(this.y, this.x);
+        },
+
+        angleTo: function (v) {
+            var dx = v.x - this.x,
+                dy = v.y - this.y;
+            return Math.atan2(dy, dx);
+        },
+
+        distanceTo: function (v) {
+            var dx = v.x - this.x,
+                dy = v.y - this.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        },
+
+        distanceToSq: function (v) {
+            var dx = v.x - this.x,
+                dy = v.y - this.y;
+            return dx * dx + dy * dy;
+        },
+
+        lerp: function (v, t) {
+            this.x += (v.x - this.x) * t;
+            this.y += (v.y - this.y) * t;
+            return this;
+        },
+
+        clone: function () {
+            return new Vector(this.x, this.y);
+        },
+
+        toString: function () {
+            return '(x:' + this.x + ', y:' + this.y + ')';
+        }
+    };
+
+    function GravityPoint(x, y, radius, targets) {
+        Vector.call(this, x, y);
+        this.radius = radius;
+        this.currentRadius = radius * 0.5;
+
+        this._targets = {
+            particles: window._particles,
+            gravities: window._gravityOrbs
+        };
+        this._speed = new Vector();
     }
-    reactionUpdates.energySources.push(energySource);
-    setReactionState(reactionUpdates);
-    setClickCount(reactionUpdates.clicks);
-    context.updateActivityLog({ body: `${energySource.name} purchased for $${cost}` })
-  }
 
-  const calculateCost = (id, basePrice) => {
-    if (reactionState && reactionState.energySources) {
-      const purchasedItemResults = reactionState.energySources.filter(source => source.id === id);
-      if (purchasedItemResults.length === 0) {
-        return parseFloat(basePrice).toFixed(2);
-      } else {
-        return parseFloat(basePrice * (purchasedItemResults.length + 1)).toFixed(2);
-      }
+    GravityPoint.RADIUS_LIMIT = 65;
+    GravityPoint.interferenceToPoint = true;
+
+    GravityPoint.prototype = (function (o) {
+        var s = new Vector(0, 0), p;
+        for (p in o) s[p] = o[p];
+        return s;
+    })({
+        gravity: 0.05,
+        isMouseOver: false,
+        dragging: false,
+        destroyed: false,
+        _easeRadius: 0,
+        _dragDistance: null,
+        _collapsing: false,
+        _addedParticle: false,
+
+        hitTest: function (p) {
+            return this.distanceTo(p) < this.radius;
+        },
+
+        startDrag: function (dragStartPoint) {
+            this._dragDistance = Vector.sub(dragStartPoint, this);
+            this.dragging = true;
+        },
+
+        drag: function (dragToPoint) {
+            this.x = dragToPoint.x - this._dragDistance.x;
+            this.y = dragToPoint.y - this._dragDistance.y;
+        },
+
+        endDrag: function () {
+            this._dragDistance = null;
+            this.dragging = false;
+        },
+
+        addSpeed: function (d) {
+            this._speed = this._speed.add(d);
+        },
+
+        collapse: function (e) {
+            this.currentRadius *= 1.75;
+            this._collapsing = true;
+        },
+
+        render: function (ctx) {
+            if (this.destroyed) {
+                this._addedParticle = false;
+                return;
+            }
+            let i;
+
+            for (i = 0; i < window._particles.length; i++) {
+                window._particles[i].addSpeed(Vector.sub(this, window._particles[i]).normalize().scale(this.gravity));
+            }
+
+            this._easeRadius = (this._easeRadius + (this.radius - this.currentRadius) * 0.07) * 0.95;
+            this.currentRadius += this._easeRadius;
+            if (this.currentRadius < 0) this.currentRadius = 0;
+
+            if (this._collapsing) {
+                this.radius *= 0.75;
+                if (this.currentRadius < 1) {
+                    this.destroyed = true;
+                    window.fadeText = true;
+                }
+                this._draw(ctx);
+                if (!this._addedParticle) {
+                    const p = new Particle(
+                        Math.floor(Math.random() * window.innerWidth - 1 * 2) + 1 + 1,
+                        Math.floor(Math.random() * window.innerHeight - 1 * 2) + 1 + 1,
+                        1
+                    );
+                    p.addSpeed(Vector.random());
+                    window._particles.push(p);
+                    gameContext.updateActivityLog({ body: `Particle found! Not sure what that means yet...` });
+                    gameContext.updateParticles(p);
+                    this._addedParticle = true;
+                }
+                return;
+            }
+
+            let gravities = window._gravityOrbs,
+                g, absorp,
+                area = this.radius * this.radius * Math.PI,
+                garea;
+
+            for (i = 0; i < gravities.length; i++) {
+                g = gravities[i];
+                if (g === this || g.destroyed) continue;
+                if (
+                    (this.currentRadius >= g.radius || this.dragging) &&
+                    this.distanceTo(g) < (this.currentRadius + g.radius) * 0.85
+                ) {
+                    g.destroyed = true;
+                    this.gravity += g.gravity;
+                    absorp = Vector.sub(g, this).scale(g.radius / this.radius * 0.5);
+                    this.addSpeed(absorp);
+                    garea = g.radius * g.radius * Math.PI;
+                    this.currentRadius = Math.sqrt((area + garea * 3) / Math.PI);
+                    this.radius = Math.sqrt((area + garea) / Math.PI);
+                }
+                g.addSpeed(Vector.sub(this, g).normalize().scale(this.gravity));
+            }
+
+            if (GravityPoint.interferenceToPoint && !this.dragging) {
+                this.add(this._speed);
+            }
+
+            this._speed = new Vector();
+            if (this.currentRadius > GravityPoint.RADIUS_LIMIT) this.collapse();
+            this._draw(ctx);
+        },
+
+        _draw: function (ctx) {
+            var grd, r;
+            ctx.save();
+            grd = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, this.radius * 25);
+            grd.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            grd.addColorStop(1, 'rgba(255, 255, 255, .1)');
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 5, 0, Math.PI * 2, false);
+            ctx.fillStyle = grd;
+            ctx.fill();
+            r = Math.random() * this.currentRadius * 0.7 + this.currentRadius * 0.3;
+            grd = ctx.createRadialGradient(this.x, this.y, r, this.x, this.y, this.currentRadius);
+            grd.addColorStop(0, '#ffffff');
+            grd.addColorStop(1, Math.random() < 0.2 ? 'rgba(255, 196, 0, 0.15)' : 'rgba(0, 0, 0, 0.75)');
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2, false);
+            ctx.fillStyle = grd;
+            ctx.fill();
+            ctx.restore();
+        }
+    });
+
+    function Particle(x, y, radius) {
+        Vector.call(this, x, y);
+        this.radius = radius;
+        this._latest = new Vector();
+        this._speed = new Vector();
     }
-    return 0;
-  }
 
-  const generateStar = () => {
+    Particle.prototype = (function (o) {
+        var s = new Vector(0, 0), p;
+        for (p in o) s[p] = o[p];
+        return s;
+    })({
+        addSpeed: function (d) {
+            // NOTE: Update this to speed up/slow down the particle movement
+            d.x = d.x / 50;
+            d.y = d.y / 50;
+            this._speed.add(d);
+        },
+        update: function () {
+            if (this._speed.length() > 12) this._speed.normalize().scale(12);
+            this._latest.set(this);
+            this.add(this._speed);
+        }
+    });
 
-    if (!reactionState.reactionStarted) {
-      return null;
-    }
+    useEffect(() => {
 
-    const min = 1;
-    const max = 100;
-    const rand = min + Math.random() * (max - min);
-    let result = null;
-    if (rand <= 5) {
+        var PARTICLE_RADIUS = 1,
+            G_POINT_RADIUS = 10;
 
-      // TODO: I think these should add to the score somehow.
-      //       Maybe just a fixed value for now. I quark = 100points?
-      context.updateActivityLog({ body: `Quark found! Not sure what that means yet...` });
-      let newRewardList = [];
-      if (!reactionState.rewards) {
-        newRewardList = [{
-          type: 'star',
-          amount: 1.5
-        }];
-      } else {
-        newRewardList = reactionState.rewards;
-        newRewardList.push({
-          type: 'star',
-          amount: 1.5
-        });
-      }
+        var context,
+            bufferCvs, bufferCtx,
+            screenWidth, screenHeight,
+            mouse = new Vector(),
+            gravities = [],
+            grad,
+            trans,
+            gui, control;
 
-      const reactionUpdates = {
-        ...reactionState,
-        rewards: newRewardList
-      };
+        function resize(e) {
+            if (canvas) {
+                screenWidth = canvas.width = window.innerWidth;
+                screenHeight = canvas.height = window.innerHeight;
+                bufferCvs.width = screenWidth;
+                bufferCvs.height = screenHeight;
+                context = canvas.getContext('2d');
+                bufferCtx = bufferCvs.getContext('2d');
+                var cx = canvas.width * 0.5,
+                    cy = canvas.height * 0.5;
+                grad = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
+                grad.addColorStop(0, '#ad5389');
+                grad.addColorStop(1, '#3c1053');
+                trans = context.createRadialGradient(cx, cy, 0, cx, cy, Math.sqrt(cx * cx + cy * cy));
+                trans.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                trans.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            }
+        }
 
-      setReactionState(reactionUpdates);
-      saveGame();
+        function mouseMove(e) {
+            mouse.set(e.clientX, e.clientY);
+            var i, g, hit = false;
+            for (i = window._gravityOrbs.length - 1; i >= 0; i--) {
+                g = window._gravityOrbs[i];
+                if ((!hit && g.hitTest(mouse)) || g.dragging)
+                    g.isMouseOver = hit = true;
+                else
+                    g.isMouseOver = false;
+            }
+            canvas.style.cursor = hit ? 'pointer' : 'default';
+        }
 
-    }
-    return result;
-  }
+        function mouseDown(e) {
+            for (var i = window._gravityOrbs.length - 1; i >= 0; i--) {
+                if (window._gravityOrbs[i].isMouseOver) {
+                    window._gravityOrbs[i].startDrag(mouse);
+                    return;
+                }
+            }
+            let newGravityOrb = new GravityPoint(e.clientX, e.clientY, G_POINT_RADIUS, {
+                gravities: window._gravityOrbs
+            });
+            window._gravityOrbs.push(newGravityOrb);
+        }
 
-  useInterval(burnEnergy.bind(), reactionTimerDelay);
-  useInterval(updateDurationLabel.bind(), durationTimerDelay);
-  useInterval(saveGame.bind(), saveTimerDelay);
+        function mouseUp(e) {
+            for (var i = 0, len = window._gravityOrbs.length; i < len; i++) {
+                if (window._gravityOrbs[i].dragging) {
+                    window._gravityOrbs[i].endDrag();
+                    break;
+                }
+            }
+        }
 
-  return (
+        function doubleClick(e) {
+            for (var i = window._gravityOrbs.length - 1; i >= 0; i--) {
+                if (window._gravityOrbs[i].isMouseOver) {
+                    let newGravityOrb = new GravityPoint(e.clientX, e.clientY, G_POINT_RADIUS, {
+                        gravities: gravities
+                    });
+                    window._gravityOrbs.push(newGravityOrb);
+                    break;
+                }
+            }
+        }
 
-    <React.Fragment>
-      {(isLoading) ? '' :
-        <div>
-          <div id="reaction" className={`reaction-container ${reactionState.extinguished ? 'extinguished' : ''}`} >
+        setCanvas(document.getElementById('button-canvas'));
+        bufferCvs = document.createElement('canvas');
+        window.addEventListener('resize', resize, false);
+        resize(null);
+        if (canvas) {
+            canvas.addEventListener('mousemove', mouseMove, false);
+            canvas.addEventListener('mousedown', mouseDown, false);
+            canvas.addEventListener('mouseup', mouseUp, false);
+            canvas.addEventListener('dblclick', doubleClick, false);
+        }
 
-            <ReactionButton></ReactionButton>
+        gui = new dat.GUI();
+        gui.add(GravityPoint, 'interferenceToPoint').name('Interference Between Point');
+        gui.close();
 
-            {/* {
-              reactionState.rewards ?
+        if (window._gravityOrbs.length === 0) {
+            let newGravityOrb = new GravityPoint(window.innerWidth / 2, window.innerHeight / 2, G_POINT_RADIUS, {
+                gravities: gravities
+            });
+            window._gravityOrbs.push(newGravityOrb);
+            if (gameContext.data.particles) {
+                gameContext.data.particles.forEach(() => {
+                    const p = new Particle(
+                        Math.floor(Math.random() * window.innerWidth - 1 * 2) + 1 + 1,
+                        Math.floor(Math.random() * window.innerHeight - 1 * 2) + 1 + 1,
+                        1
+                    );
+                    p.addSpeed(Vector.random());
+                    window._particles.push(p);
+                });
+            }
+        }
 
-                <div style={
-                  {
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px',
-                    color: '#000000',
-                    width: '100%',
-                    height: '200px',
-                    opacity: '.3'
-                  }}>
-                  {(reactionState.rewards.map((r, index) => (
-                    <i className="olive react icon" key={index}></i>
-                  )))}
-                </div> : null
-            } */}
+        let fadeCount = 100;
+        var loop = function () {
+            let i, len, g, p;
 
-            {!reactionState.extinguished ? <span className="totalcps">CPS: {parseFloat(reactionState.cps).toFixed(2)}</span> : ''}
-            <span className="duration">{duration}</span>
-            {!reactionState.extinguished ? <span className="clicks">${parseFloat(clickCount).toFixed(2)}</span> : ''}
-            {/* {!reactionState.extinguished ? <span className="energy">{reactionState.energy ? reactionState.energy.toFixed(2) : 0}%</span> : ''} */}
-            <LinearProgress className="progress-bar" color="primary" variant="determinate" value={reactionState.energy ? reactionState.energy : 0} />
-            {/* <div className={`reaction-graphic ${reactionState.reactionStarted ? 'charged' : ''}`}>
-              <img src={hive} className="hive" alt="hive" onClick={() => chargeReaction()} />
-            </div> */}
-            <Container style={{ ...rest, width: size, height: size }} className="reaction-store">
-              {transitions.map(({ item, key, props }) => (
-                <Item onClick={() => purchaseItem(item)} key={key} style={{ ...props, background: item.css }}>
-                  <h4>{item.name}</h4>
-                  <p>Price: ${calculateCost(item.id, item.basePrice)}</p>
-                  <p>Purchased: {(reactionState.energySources ? reactionState.energySources : []).filter(s => s.id === item.id).length}</p>
-                  {item.icon ? <svg viewBox="0 0 23 23" width="100px" height="100px" className="store-icon" xmlns="http://www.w3.org/2000/svg"><path d={item.icon} /></svg>
-                    : ''}
-                </Item>
-              ))}
-            </Container>
-          </div>
-          <Fab aria-label="Energy" className={`fab-reaction ${reactionState.extinguished ? 'hidden' : ''} ${!reactionState.reactionStarted ? 'hidden' : ''}`} color="secondary" onClick={() => setOpenDrawer(!openDrawer)}>
-            <BatteryChargingFullIcon />
-          </Fab>
-        </div>
-      }
-    </React.Fragment>
+            if (context && bufferCtx) {
 
+                context.save();
+                context.fillStyle = grad;
+                context.fillRect(0, 0, screenWidth, screenHeight); // Make screen all black if no fillStyle specified. Good for a dark mode?
+                context.restore();
 
-  );
+                for (i = 0, len = window._gravityOrbs.length; i < len; i++) {
+                    g = window._gravityOrbs[i];
+                    if (g.dragging) g.drag(mouse);
+                    g.render(context, window._particles);
+                    if (g.destroyed) {
+                        window._gravityOrbs.splice(i, 1);
+                        len--;
+                        i--;
+                    }
+                }
 
+                bufferCtx.save();
+                bufferCtx.globalCompositeOperation = 'destination-out';
+                bufferCtx.globalAlpha = 0.2; // NOTE: Turn this number down/up to create longer/shorter tails
+                bufferCtx.fillRect(0, 0, screenWidth, screenHeight);
+                bufferCtx.restore();
+
+                len = window._particles.length;
+
+                bufferCtx.save();
+                bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+                bufferCtx.lineCap = 'round';
+                bufferCtx.lineWidth = PARTICLE_RADIUS * 2;
+                bufferCtx.beginPath();
+                for (i = 0; i < len; i++) {
+                    p = window._particles[i];
+                    p.update();
+                    bufferCtx.moveTo(p.x, p.y);
+                    bufferCtx.lineTo(p._latest.x, p._latest.y);
+                }
+                bufferCtx.stroke();
+                bufferCtx.save();
+                bufferCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+                bufferCtx.beginPath();
+                for (i = 0; i < len; i++) {
+                    p = window._particles[i];
+                    bufferCtx.moveTo(p.x, p.y);
+                    bufferCtx.arc(p.x, p.y, p.radius, 0, Math.PI / 2, false);
+                }
+
+                bufferCtx.restore();
+                bufferCtx.save();
+
+                if (window.fadeText) {
+                    fadeCount = fadeCount - 1;
+                    bufferCtx.textAlign = "center";
+                    bufferCtx.font = `15px Arial`;
+                    bufferCtx.fillText(`+${i}`, window.innerWidth / 2, ((window.innerHeight / 2) / 2) + fadeCount);
+                    if (fadeCount === 0) {
+                        window.fadeText = false;
+                        bufferCtx.fillStyle = `rgba(255, 255, 255, 0)`;
+                        bufferCtx.fillText(`+${i}`, window.innerWidth / 2, window.innerHeight / 2);
+                        fadeCount = 100;
+                    } else {
+                        bufferCtx.fillStyle = `rgba(255, 255, 255, .${fadeCount})`;
+                    }
+                } else {
+                    bufferCtx.fill();
+                }
+
+                bufferCtx.restore();
+                context.drawImage(bufferCvs, 0, 0);
+            }
+
+            requestAnimationFrame(loop);
+        };
+
+        loop();
+
+    }, [canvas]);
+
+    return (
+        <React.Fragment>
+            <canvas id="button-canvas"></canvas>
+        </React.Fragment>
+    );
 }
